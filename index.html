@@ -2,19 +2,49 @@
 
 <head>
   <title>Trenchers Paper Trading</title>
-  <link rel="stylesheet" href="Styles/style.css">
+  <link rel="stylesheet" href="Styles/index.css">
   <script src="Scripts/index.js"></script>
 </head>
 
 <body>
   <div class="container">
-    <h1>Welcome to Trenchers Paper Trading</h1>
-    <label for="username">Username:</label>
-    <input type="text" id="username" placeholder="Enter your username">
-    <label for="password">Password:</label>
-    <input type="password" id="password" placeholder="Enter your password">
-    <button id="loginButton">Login</button>
-    <button id="registerButton">Register</button>
+    <h1 id="titleContainer">Trenchers Paper Trading</h1>
+    <div class="presetsContainer">
+      <p>Presets</p>
+      <button id="preset1">Preset 1</button>
+      <button id="preset2">Preset 2</button>
+      <button id="preset3">Preset 3</button>
+      <button id="preset4">Preset 4</button>
+    </div>
+    <div class="accountInfo">
+      <p>Account Name: </p>
+      <p id="accountName">Account Name</p>
+    </div>
+    <div class="balanceContainer">
+      <button id="setBalance">Set Balance</button>
+      <p>Sol: </p>
+      <p id="balance">1000</p>
+      <p>Position: </p>
+      <p id="position">0</p>
+    </div>
+    <div class="buyContainer">
+      <p>Buy</p>
+      <button id="BuyButton1">BuyButton1</button>
+      <button id="BuyButton2">BuyButton2</button>
+      <button id="BuyButton3">BuyButton3</button>
+      <button id="BuyButton4">BuyButton4</button>
+    </div>
+    <div class="sellContainer">
+      <p>Sell</p>
+      <button id="SellButton1">SellButton1</button>
+      <button id="SellButton2">SellButton2</button>
+      <button id="SellButton3">SellButton3</button>
+      <button id="SellButton4">SellButton4</button>
+    </div>
+    <div class="footerContainer">
+      <p>Version 0.1</p>
+      <p>&copy 2025</p>
+    </div>
   </div>
 </body>
 

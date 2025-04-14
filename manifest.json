@@ -6,10 +6,18 @@
   "action": {
     "default_popup": "index.html"
   },
+  "web_accessible_resources": [
+   {
+     "resources": ["index.html"],
+     "matches": ["<all_urls>"]
+   }
+  ],
   "js": [
-        "Scripts/index.js"
+        "Scripts/index.js",
+        "Scripts/account.js"
   ],
   "css": [
-    "Scripts/index.css"
+    "Styles/index.css",
+    "Styles/account.css"
   ]
 }
