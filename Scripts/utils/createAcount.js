@@ -57,17 +57,21 @@ async function createAccount({ username, password }) {
   }
 }
 
-(async () => {
-  const result = await createAccount({
-    username: 'newUser',
-    password: 'newPassword123',
-  });
+module.exports = {
+    createAccount
+}
 
-  if (result) {
-    console.log('Account creation successful');
-  } else {
-    console.log(' Failed to create account');
-  }
+  // (async () => {
+//   const result = await createAccount({
+//     username: 'newUser',
+//     password: 'newPassword123',
+//   });
+
+//   if (result) {
+//     console.log('Account creation successful');
+//   } else {
+//     console.log(' Failed to create account');
+//   }
 
 
-})();
+// })();

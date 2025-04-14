@@ -56,16 +56,21 @@ async function login({ username, password }) {
   }
 }
 
-(async () => {
-  const result = await login({
-    username: 'newUser',
-    password: 'newPassword123',
-  });
+module.exports = {
+  login
+}
 
-  if (result) {
-    console.log('User:', result);
-  } else {
-    console.log('Login failed');
-  }
 
-})();
+// (async () => {
+//   const result = await login({
+//     username: 'newUser',
+//     password: 'newPassword123',
+//   });
+
+//   if (result) {
+//     console.log('User:', result);
+//   } else {
+//     console.log('Login failed');
+//   }
+
+// })();
