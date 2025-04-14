@@ -23,49 +23,51 @@ async function getDatabase() {
   return mongoDBClient.db(dbName);
 }
 
-async function decryptData(encryptedData) {
-  const bytes = crypto.AES.decrypt(encryptedData, process.env.ENCRK);
-  const decrypted = bytes.toString(crypto.enc.Utf8);
-  return JSON.parse(decrypted);
+async function encryptData(data) {
+  return crypto.AES.encrypt(JSON.stringify(data), process.env.ENCRK).toString();
 }
 
-async function login({ username, password }) {
+async function createAccount({ username, password }) {
   try {
     if (!mongoDBClient) await connectToMongoDB();
     const db = await getDatabase();
-    const usersCollection = db.collection('loginInfo'); 
+    const usersCollection = db.collection('loginInfo');
 
-    const user = await usersCollection.findOne({ username });
-    if (!user) {
-      console.log('❌ User not found');
+    const existingUser = await usersCollection.findOne({ username });
+    if (existingUser) {
+      console.log('Username already taken');
       return false;
     }
 
-    const decryptedStoredPassword = await decryptData(user.password);
-    if (decryptedStoredPassword !== password) {
-      console.log('❌ Invalid password');
-      return false;
-    }
+    const encryptedPassword = await encryptData(password);
 
-    console.log('✅ Login successful');
-    return user;
+    const userData = {
+      username,
+      password: encryptedPassword,
+      createdAt: new Date(),
+    };
+
+    const result = await usersCollection.insertOne(userData);
+    console.log('Account created:', result.insertedId);
+    return true;
 
   } catch (err) {
-    console.error('❌ Login error:', err);
+    console.error(' Error creating account:', err);
     return false;
   }
 }
 
 (async () => {
-  const result = await login({
+  const result = await createAccount({
     username: 'newUser',
     password: 'newPassword123',
   });
 
   if (result) {
-    console.log('User:', result);
+    console.log('Account creation successful');
   } else {
-    console.log('Login failed');
+    console.log(' Failed to create account');
   }
+
 
 })();

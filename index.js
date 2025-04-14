@@ -1,1 +1,2 @@
-// test 123
+require('dotenv').config();
+const { login } = require('./scripts/utils/login');
