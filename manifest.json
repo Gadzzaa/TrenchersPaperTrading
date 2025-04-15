@@ -4,20 +4,30 @@
   "version": "1.0",
   "manifest_version": 3,
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "account.html"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "notifications"
+  ],
+  "background": {
+    "service_worker": "Scripts/background.js"
   },
   "web_accessible_resources": [
    {
-     "resources": ["index.html"],
+     "resources": ["dashboard.html"],
      "matches": ["<all_urls>"]
    }
   ],
-  "js": [
-        "Scripts/index.js",
-        "Scripts/account.js"
-  ],
-  "css": [
-    "Styles/index.css",
-    "Styles/account.css"
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": [
+        "Styles/index.css",
+        "Styles/account.css"
+      ]
+    }
   ]
 }
