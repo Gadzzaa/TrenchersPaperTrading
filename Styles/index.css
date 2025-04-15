@@ -24,3 +24,8 @@
   display: flex;
   gap: 10px;
 }
+
+.githubLogo {
+  width: 20px;
+  height: 20px;
+}
