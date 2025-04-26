@@ -1,0 +1,182 @@
+/* Global styles */
+* {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body styling */
+#body {
+  background-color: #333;
+  /* Darker background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 16px;
+  color: #fff;
+  /* Light text color for contrast */
+}
+
+/* Main container for the form */
+.container {
+  background-color: #444;
+  /* Darker background for the container */
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  /* Stronger shadow */
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  background: linear-gradient(145deg, #3b3b3b, #444);
+  /* Darker gradient */
+}
+
+/* Header styling */
+#header {
+  background-color: #555;
+  /* Slightly darker header */
+  padding: 20px;
+  border: 2px solid #666;
+  width: fit-content;
+  margin: 20px auto;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 700 !important;
+  font-size: 24px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Styling for input fields */
+.enterData {
+  background-color: #333;
+  /* Darker background for input box */
+  padding: 20px;
+  border: 2px solid #444;
+  /* Slightly lighter border */
+  border-radius: 10px;
+  width: fit-content;
+  margin: 15px auto;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* Label styles */
+.enterData label {
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #fff;
+  /* Lighter label text for contrast */
+  display: flex;
+  align-items: center;
+}
+
+/* Input field styles */
+.enterData input {
+  width: 250px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #666;
+  margin-bottom: 15px;
+  transition: border 0.3s ease;
+  background-color: #555;
+  /* Dark input field */
+  color: #fff;
+  /* Light text for input */
+}
+
+.enterData input:focus {
+  border-color: gray;
+  /* Green border when focused */
+  outline: none;
+}
+
+/* Icon styling */
+.enterData i {
+  margin-right: 10px;
+  color: #fff;
+  /* Lighter icons */
+}
+
+/* Button container */
+#buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* Button styling */
+button {
+  padding: 14px 30px;
+  font-size: 16px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-image: linear-gradient(135deg, #6e7bff, #4CAF50);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  /* Stronger shadow */
+  text-transform: uppercase;
+  will-change: transform;
+}
+
+button:hover {
+  transform: translateY(-4px);
+  /* Slight hover lift */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  /* Stronger shadow on hover */
+}
+
+/* Register button custom styling */
+#registerButton {
+  background-image: linear-gradient(135deg, #007BFF, #6c757d);
+  /* Blue gradient */
+}
+
+#registerButton:hover {
+  transform: translateY(-4px);
+  /* Slight hover lift */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  /* Stronger shadow on hover */
+}
+
+/* Button styles for a more modern look */
+button:active {
+  transform: translateY(2px);
+  /* Slight button press effect */
+}
+
+#registerButton:active {
+  transform: translateY(2px);
+}
+
+/* Input fields inside the form with better spacing */
+.enterData {
+  width: 100%;
+  max-width: 350px;
+}
+
+/* Responsive styling */
+@media screen and (max-width: 600px) {
+  .container {
+    padding: 30px;
+    width: 100%;
+    margin: 10px;
+  }
+
+  #buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}

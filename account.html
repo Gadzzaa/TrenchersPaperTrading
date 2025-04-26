@@ -3,18 +3,35 @@
 <head>
   <title>Trenchers Paper Trading</title>
   <link rel="stylesheet" href="Styles/account.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 </head>
 
-<body>
+<body id="body">
   <div class="container">
-    <h1>Welcome to Trenchers Paper Trading</h1>
-    <label for="username">Username:</label>
-    <input type="text" id="username" placeholder="Enter your username">
-    <label for="password">Password:</label>
-    <input type="password" id="password" placeholder="Enter your password">
-    <button id="loginButton">Login</button>
-    <button id="registerButton">Register</button>
-  </div>
+    <div id="header">
+      <h1>Trenchers Paper Trading</h1>
+    </div>
+    <div id="credentials">
+      <div class="enterData">
+        <label for="username">
+          <i class="fas fa-user"></i>
+          Username:
+        </label>
+        <input type="text" id="username" placeholder="Enter your username">
+      </div>
+      <div class="enterData">
+        <label for="password">
+          <i class="fas fa-key"></i>
+          Password:
+        </label>
+        <input type="password" id="password" placeholder="Enter your password">
+      </div>
+    </div>
+    <div id="buttons">
+      <button id="loginButton">Login</button>
+      <button id="registerButton">Register</button>
+    </div>
 </body>
 <script type="module" src="Scripts/account.js" defer></script>
 <script type="module" src="Scripts/api.js" defer></script>
