@@ -1,60 +1,83 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
   <title>Trenchers Paper Trading</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="Styles/index.css">
-  <script src="Scripts/index.js"></script>
+  <script src="Scripts/index.js" defer></script>
 </head>
 
 <body>
   <div class="container">
+
+    <!-- Header with Move Icon -->
     <div class="headerContainer">
-      <div class="Top Panel">
-        <button id="MoveButton">Move</button>
-        <button id="OptionsMenu">Options</button>
+      <div class="topBar">
+        <button id="OptionsMenu" class="optionsButton">⚙️</button>
+        <h1 id="titleContainer">Trenchers Paper Trading</h1>
+        <div id="moveHandle" class="moveIcon">
+          <i class="fas fa-arrows-up-down-left-right"></i>
+        </div> <!-- 4 arrows style -->
       </div>
-      <h1 id="titleContainer">Trenchers Paper Trading</h1>
     </div>
+
+    <!-- Account Name (Top Right) -->
+    <button class="accountNameButton" id="accountNameBtn">Account Name</button>
+    <div class="accountDropdown">
+      <button>Sign Out</button>
+      <button>Change Account</button>
+      <button>Reset Account</button>
+    </div>
+
+    <!-- Presets -->
     <div class="presetsContainer">
-      <p>Presets</p>
-      <button id="preset1">Preset 1</button>
-      <button id="preset2">Preset 2</button>
-      <button id="preset3">Preset 3</button>
-      <button id="preset4">Preset 4</button>
+      <button id="preset1">P1</button>
+      <button id="preset2">P2</button>
+      <button id="preset3">P3</button>
+      <button id="preset4">P4</button>
     </div>
-    <div class="accountInfo">
-      <p>Account Name: </p>
-      <p id="accountName">Account Name</p>
+
+    <!-- Minimal Info -->
+    <div class="infoContainer">
+      <p>Sol: <span id="balance">1000</span></p>
+      <p>Pos: <span id="position">0</span></p>
     </div>
-    <div class="balanceContainer">
-      <button id="setBalance">Set Balance</button>
-      <p>Sol: </p>
-      <p id="balance">1000</p>
-      <p>Position: </p>
-      <p id="position">0</p>
-    </div>
+
+    <!-- Buy Section -->
     <div class="buyContainer">
-      <p>Buy</p>
-      <button id="BuyButton1">BuyButton1</button>
-      <button id="BuyButton2">BuyButton2</button>
-      <button id="BuyButton3">BuyButton3</button>
-      <button id="BuyButton4">BuyButton4</button>
+      <h2>Buy</h2>
+      <div class="buyButtons">
+        <button id="BuyButton1">1</button>
+        <button id="BuyButton2">2</button>
+        <button id="BuyButton3">3</button>
+        <button id="BuyButton4">4</button>
+      </div>
     </div>
+
+    <!-- Sell Section -->
     <div class="sellContainer">
-      <p>Sell</p>
-      <button id="SellButton1">SellButton1</button>
-      <button id="SellButton2">SellButton2</button>
-      <button id="SellButton3">SellButton3</button>
-      <button id="SellButton4">SellButton4</button>
+      <h2>Sell</h2>
+      <div class="sellButtons">
+        <button id="SellButton1">1</button>
+        <button id="SellButton2">2</button>
+        <button id="SellButton3">3</button>
+        <button id="SellButton4">4</button>
+      </div>
     </div>
+
+    <!-- Footer -->
     <div class="footerContainer">
-      <p>Version 0.1</p>
-      <p>&copy 2025</p>
       <a href="https://github.com/Gadzzaa/TrenchersPaperTrading" target="_blank">
         <img class="githubLogo" src="Images/github-mark.png" alt="GitHub Logo" />
       </a>
+      <p>Version 1.0 &copy; 2025</p>
     </div>
+
   </div>
 </body>
+<script type="module" src="Scripts/dashboard.js" defer></script>
 
 </html>

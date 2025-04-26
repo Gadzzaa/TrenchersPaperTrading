@@ -1,31 +1,334 @@
-.buyContainer {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+body {
+  background: #121212;
+  font-family: 'Poppins', sans-serif;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Main Container */
+.container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 850px;
+  animation: fadeIn 0.8s ease-out;
+  position: relative;
+}
+
+/* Account Name - Top Right */
+.accountNameButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ccc;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.accountNameButton:hover {
+  color: #00FFAB;
+  transform: scale(1.05);
+}
+
+/* Dropdown Menu Styles */
+.accountDropdown {
+  position: absolute;
+  top: 3rem;
+  right: 0;
+  background-color: rgba(30, 30, 30, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 255, 171, 0.2);
+  min-width: 160px;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.accountNameButton:focus+.accountDropdown,
+.accountNameButton:active+.accountDropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.accountDropdown button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  color: #ccc;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.accountDropdown button:hover {
+  background-color: rgba(0, 255, 171, 0.1);
+  color: #00FFAB;
+}
+
+/* Top Bar */
+.topBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.optionsButton {
+  position: absolute;
+  left: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #b0b0b0;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.optionsButton:hover {
+  color: #FF4081;
+  transform: rotate(15deg);
+}
+
+.moveIcon {
+  position: absolute;
+  right: 1rem;
+  /* Hug the right side */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  color: #b0b0b0;
+  cursor: move;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+#titleContainer {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #00FFAB, #FF4081);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+}
+
+/* Presets */
+.presetsContainer {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.presetsContainer button {
+  padding: 0.5rem 1.2rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #eee;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.presetsContainer button:hover {
+  background: rgba(0, 255, 171, 0.15);
+  transform: scale(1.05);
+}
+
+.presetsContainer button:active {
+  transform: scale(0.95);
+  background: rgba(0, 255, 171, 0.25);
+  box-shadow: 0 0 10px rgba(0, 255, 171, 0.3);
+}
+
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 rgba(0, 255, 171, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 15px rgba(0, 255, 171, 0.7);
+  }
+
+  100% {
+    box-shadow: 0 0 0 rgba(0, 255, 171, 0);
+  }
+}
+
+.pulse-on-click {
+  animation: buttonPulse 0.4s ease;
+}
+
+/* Info (Sol / Pos) */
+.infoContainer {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.infoContainer p {
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #ccc;
+  margin: 0;
+}
+
+.infoContainer span {
+  font-size: 1.2rem;
+  color: #00FFAB;
+  font-weight: 700;
+  border-bottom: 1.5px solid #00FFAB;
+  margin-left: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+/* Buy and Sell Sections */
+.buyContainer,
 .sellContainer {
-  display: flex;
-  gap: 10px;
+  text-align: center;
+  margin: 2rem 0;
 }
 
-.balanceContainer {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+.buyContainer h2,
+.sellContainer h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  /* add breathing space */
+  color: #eee;
 }
 
-.accountInfo {
-  display: flex;
-  gap: 10px;
+.buyButtons,
+.sellButtons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
 }
 
+.buyButtons button,
+.sellButtons button {
+  padding: 1rem;
+  background: linear-gradient(135deg, #00C9A7, #008080);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sellButtons button {
+  background: linear-gradient(135deg, #FF6B6B, #B24545);
+}
+
+.buyButtons button:hover,
+.sellButtons button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(0, 255, 171, 0.25);
+}
+
+/* Footer */
 .footerContainer {
-  display: flex;
-  gap: 10px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 2.5rem;
 }
 
-.githubLogo {
-  width: 20px;
-  height: 20px;
+.footerContainer img.githubLogo {
+  width: 32px;
+  height: 32px;
+  margin: 0.5rem 0;
+  transition: transform 0.3s ease;
+}
+
+.footerContainer img.githubLogo:hover {
+  transform: scale(1.1);
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pulse {
+  animation: pulse 0.4s ease;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .infoContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .presetsContainer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .buyButtons,
+  .sellButtons {
+    grid-template-columns: 1fr;
+  }
 }
