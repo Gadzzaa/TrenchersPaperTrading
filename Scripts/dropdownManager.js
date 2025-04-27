@@ -1,6 +1,9 @@
 const accountNameBtn = document.getElementById('accountNameBtn');
 const accountDropdown = document.querySelector('.accountDropdown');
+const signOutBtn = document.getElementById('signOutBtn');
+const resetAccBtn = document.getElementById('resetAccBtn');
 let dropdownOpen = false;
+
 accountNameBtn.addEventListener('click', (e) => {
   e.stopPropagation(); // Stop event bubbling
 
@@ -33,3 +36,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
+signOutBtn.addEventListener('click', () => {
+  localStorage.removeItem('loggedInUsername');
+  window.location.href = 'account.html';
+});

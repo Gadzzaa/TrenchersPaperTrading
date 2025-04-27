@@ -7,13 +7,24 @@ import { showNotification } from './notificationSystem.js'; // Importing Notific
 import { showSpinner, hideSpinner } from './spinner.js'; // Importing Spinner Functions
 
 const actionButtons = document.querySelectorAll('.buyButtons button, .sellButtons button');
+const accountNameButton = document.getElementById('accountNameBtn');
+
+let loggedInUsername;
 
 document.addEventListener('DOMContentLoaded', function() {
-  loadPresets(); // Load presets from localStorage
-  if (defaultPreset) {
-    defaultPreset.classList.add('activePreset');
+  loggedInUsername = localStorage.getItem('loggedInUsername');
+
+  if (!loggedInUsername) {
+    window.location.href = 'account.html';
+  } else {
+    console.log("[dashboard.js] Logged in as:", loggedInUsername);
+    accountNameButton.innerText = loggedInUsername;
+    loadPresets(); // Load presets from localStorage
+    if (defaultPreset) {
+      defaultPreset.classList.add('activePreset');
+    }
+    applyPreset(getActivePreset()); // Load default preset on page load
   }
-  applyPreset(getActivePreset()); // Load default preset on page load
 });
 
 actionButtons.forEach(button => {
