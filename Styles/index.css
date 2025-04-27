@@ -6,26 +6,19 @@
 }
 
 body {
-  background: #0d0d0d;
   font-family: 'Poppins', sans-serif;
   color: #e0e0e0;
-  min-height: 100vh;
   padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Container */
 .container {
   padding: 0.8rem;
-  max-width: 320px;
+  height: 500px;
+  width: 330px;
   width: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
   position: relative;
-  background: linear-gradient(135deg, #0d0d0d, #111111, #0d0d0d);
   background-size: 400% 400%;
-  animation: breathingBackground 20s ease infinite;
   border-radius: 20px;
   overflow: hidden;
 }

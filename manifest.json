@@ -1,33 +1,33 @@
+
 {
   "name": "TrenchersPaperTrading",
   "description": "An application to simulate paper trading.",
   "version": "1.0",
   "manifest_version": 3,
-  "action": {
-    "default_popup": "account.html"
-  },
   "permissions": [
     "storage",
     "activeTab",
     "scripting",
     "notifications"
   ],
-  "background": {
-    "service_worker": "Scripts/background.js"
-  },
-  "web_accessible_resources": [
-   {
-     "resources": ["dashboard.html"],
-     "matches": ["<all_urls>"]
-   }
+  "host_permissions": [
+    "https://axiom.trade/meme/*"
   ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "css": [
+      "matches": ["https://axiom.trade/meme/*"],
+      "js": ["Scripts/inject.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "account.html",
+        "dashboard.html",
         "Styles/index.css",
         "Styles/account.css"
-      ]
+      ],
+      "matches": ["<all_urls>"]
     }
   ]
 }
