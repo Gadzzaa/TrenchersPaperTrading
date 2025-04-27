@@ -70,17 +70,6 @@ body {
   opacity: 0.8;
 }
 
-/* Spin Animation */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 .accountPresetsContainer {
   display: flex;
   justify-content: space-between;
@@ -168,30 +157,6 @@ body {
   transform: scale(1.03);
   /* Soft scale up */
   transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
-}
-
-@keyframes dropdownExpand {
-  0% {
-    transform: translateY(-5px) scale(0.95);
-    opacity: 0;
-  }
-
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes dropdownCollapse {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(-5px) scale(0.95);
-    opacity: 0;
-  }
 }
 
 /* TopBar (Header) */
@@ -473,6 +438,40 @@ body {
   background: #4DA8DA;
   color: #ffffff;
   box-shadow: 0 4px 10px rgba(77, 168, 218, 0.4);
+}
+
+@keyframes dropdownExpand {
+  0% {
+    transform: translateY(-5px) scale(0.95);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dropdownCollapse {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-5px) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes textScalePop {
