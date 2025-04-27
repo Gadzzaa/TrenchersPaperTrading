@@ -7,66 +7,79 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="Styles/index.css">
-  <script src="Scripts/index.js" defer></script>
 </head>
 
 <body>
   <div class="container">
 
-    <!-- Header with Move Icon -->
-    <div class="headerContainer">
-      <div class="topBar">
-        <button id="OptionsMenu" class="optionsButton">⚙️</button>
-        <h1 id="titleContainer">Trenchers Paper Trading</h1>
-        <div id="moveHandle" class="moveIcon">
-          <i class="fas fa-arrows-up-down-left-right"></i>
-        </div> <!-- 4 arrows style -->
+    <div class="spinnerOverlay" id="spinnerOverlay">
+      <div class="spinnerBlock">
+        <div class="spinner"></div>
+        <p class="spinnerText" id="spinnerText">Processing...</p>
+      </div>
+    </div>
+    <!-- Header -->
+    <div class="topBar">
+      <button id="OptionsMenu" class="optionsButton">⚙️</button>
+      <h1 id="titleContainer">TrenchersPT</h1>
+      <div id="moveHandle" class="moveIcon">
+        <i class="fas fa-arrows-up-down-left-right"></i>
       </div>
     </div>
 
-    <!-- Account Name (Top Right) -->
-    <button class="accountNameButton" id="accountNameBtn">Account Name</button>
-    <div class="accountDropdown">
-      <button>Sign Out</button>
-      <button>Change Account</button>
-      <button>Reset Account</button>
+    <!-- New container under TopBar -->
+    <div class="accountPresetsContainer">
+      <div class="accountDropdownWrapper">
+        <button class="accountNameButton" id="accountNameBtn">Account Name</button>
+        <div class="accountDropdown">
+          <button>Sign Out</button>
+          <button>Change Account</button>
+          <button>Reset Account</button>
+        </div>
+      </div>
+      <div class="presetsContainer">
+        <button id="preset1">P1</button>
+        <button id="preset2">P2</button>
+        <button id="preset3">P3</button>
+        <button id="preset4">P4</button>
+      </div>
     </div>
 
-    <!-- Presets -->
-    <div class="presetsContainer">
-      <button id="preset1">P1</button>
-      <button id="preset2">P2</button>
-      <button id="preset3">P3</button>
-      <button id="preset4">P4</button>
-    </div>
-
-    <!-- Minimal Info -->
+    <!-- Info -->
     <div class="infoContainer">
       <p>Sol: <span id="balance">1000</span></p>
       <p>Pos: <span id="position">0</span></p>
     </div>
 
-    <!-- Buy Section -->
+    <!-- Buy -->
     <div class="buyContainer">
-      <h2>Buy</h2>
+      <div class="sectionTitleBox">
+        <h2>Buy</h2>
+      </div>
       <div class="buyButtons">
-        <button id="BuyButton1">1</button>
-        <button id="BuyButton2">2</button>
-        <button id="BuyButton3">3</button>
-        <button id="BuyButton4">4</button>
+        <button id="BuyButton1" data-action="buy" data-amount="1" data-symbol="SOL"></button>
+        <button id="BuyButton2" data-action="buy" data-amount="2" data-symbol="SOL"></button>
+        <button id="BuyButton3" data-action="buy" data-amount="3" data-symbol="SOL"></button>
+        <button id="BuyButton4" data-action="buy" data-amount="4" data-symbol="SOL"></button>
       </div>
     </div>
 
-    <!-- Sell Section -->
+    <hr class="sectionDivider2">
+
+    <!-- Sell -->
     <div class="sellContainer">
-      <h2>Sell</h2>
+      <div class="sectionTitleBox">
+        <h2>Sell</h2>
+      </div>
       <div class="sellButtons">
-        <button id="SellButton1">1</button>
-        <button id="SellButton2">2</button>
-        <button id="SellButton3">3</button>
-        <button id="SellButton4">4</button>
+        <button id="SellButton1" data-action="sell" data-amount="10" data-symbol="%"></button>
+        <button id="SellButton2" data-action="sell" data-amount="25" data-symbol="%"></button>
+        <button id="SellButton3" data-action="sell" data-amount="50" data-symbol="%"></button>
+        <button id="SellButton4" data-action="sell" data-amount="100" data-symbol="%"></button>
       </div>
     </div>
+
+    <hr class="sectionDivider">
 
     <!-- Footer -->
     <div class="footerContainer">
@@ -76,8 +89,13 @@
       <p>Version 1.0 &copy; 2025</p>
     </div>
 
+    <div id="notificationPopup" class="notificationPopup">
+      <div id="notificationInner">
+        <span id="notificationText"></span>
+      </div>
+    </div>
   </div>
 </body>
-<script type="module" src="Scripts/dashboard.js" defer></script>
+<script src="Scripts/dashboard.js" defer></script>
 
 </html>
