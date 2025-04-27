@@ -5,7 +5,15 @@ const spinnerText = document.getElementById('spinnerText');
 const notificationPopup = document.getElementById('notificationPopup');
 const notificationText = document.getElementById('notificationText');
 const notificationInner = document.getElementById('notificationInner');
+const accountNameBtn = document.getElementById('accountNameBtn');
+const accountDropdown = document.querySelector('.accountDropdown');
+const editModeToggle = document.getElementById('editModeToggle');
+const container = document.querySelector('.container');
+const buyButtons = document.querySelectorAll('.buyButtons button');
+const sellButtons = document.querySelectorAll('.sellButtons button');
 let dotInterval;
+let dropdownOpen = false;
+let editMode = false;
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -28,12 +36,91 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+accountNameBtn.addEventListener('click', (e) => {
+  e.stopPropagation(); // Stop event bubbling
 
+  if (!dropdownOpen) {
+    // Open dropdown
+    accountDropdown.style.animation = 'dropdownExpand 0.3s ease forwards';
+    accountDropdown.style.opacity = '1';
+    accountDropdown.style.pointerEvents = 'auto';
+    dropdownOpen = true;
+  } else {
+    // Close dropdown
+    accountDropdown.style.animation = 'dropdownCollapse 0.3s ease forwards';
+    setTimeout(() => {
+      accountDropdown.style.opacity = '0';
+      accountDropdown.style.pointerEvents = 'none';
+    }, 300); // Wait for collapse animation
+    dropdownOpen = false;
+  }
+});
+
+// Close dropdown if click outside
+document.addEventListener('click', (e) => {
+  if (dropdownOpen && !accountNameBtn.contains(e.target) && !accountDropdown.contains(e.target)) {
+    accountDropdown.style.animation = 'dropdownCollapse 0.3s ease forwards';
+    setTimeout(() => {
+      accountDropdown.style.opacity = '0';
+      accountDropdown.style.pointerEvents = 'none';
+    }, 300);
+    dropdownOpen = false;
+  }
+});
 presetButtons.forEach(button => {
   button.addEventListener('click', () => {
     button.classList.remove('pulse-on-click');
     void button.offsetWidth; // restart animation
     button.classList.add('pulse-on-click');
+  });
+});
+
+editModeToggle.addEventListener('click', () => {
+  editMode = !editMode;
+  if (editMode) {
+    container.classList.add('editModeActive');
+  } else {
+    container.classList.remove('editModeActive');
+  }
+});
+
+buyButtons.forEach(button => {
+  button.addEventListener('click', (e) => {
+    if (editMode) {
+      e.preventDefault();
+      e.stopImmediatePropagation(); // <--- FULLY stop the event from continuing
+      const newValue = prompt('Enter new BUY label:', button.dataset.amount);
+      if (newValue !== null && newValue.trim() !== '') {
+        button.dataset.amount = newValue;
+        let amount = button.dataset.amount;
+        let symbol = button.dataset.symbol;
+        button.textContent = `${amount} ${symbol}`;
+      }
+      return;
+    } else {
+      // Normal Buy logic (your existing functionality)
+      console.log('Normal Buy Action');
+    }
+  });
+});
+
+sellButtons.forEach(button => {
+  button.addEventListener('click', (e) => {
+    if (editMode) {
+      e.preventDefault();
+      e.stopImmediatePropagation(); // <--- FULLY stop the event from continuing
+      const newValue = prompt('Enter new SELL label:', button.dataset.amount);
+      if (newValue !== null && newValue.trim() !== '') {
+        button.dataset.amount = newValue;
+        let amount = button.dataset.amount;
+        let symbol = button.dataset.symbol;
+        button.textContent = `${amount} ${symbol}`;
+      }
+      return;
+    } else {
+      // Normal Sell logic (your existing functionality)
+      console.log('Normal Sell Action');
+    }
   });
 });
 
