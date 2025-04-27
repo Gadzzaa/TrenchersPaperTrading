@@ -1,31 +1,552 @@
-.buyContainer {
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0d0d0d;
+  font-family: 'Poppins', sans-serif;
+  color: #e0e0e0;
+  min-height: 100vh;
+  padding: 0.5rem;
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container */
+.container {
+  padding: 0.8rem;
+  max-width: 320px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  position: relative;
+  background: linear-gradient(135deg, #0d0d0d, #111111, #0d0d0d);
+  background-size: 400% 400%;
+  animation: breathingBackground 20s ease infinite;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.spinnerBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinnerOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 15, 15, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  border-radius: 10px;
+  z-index: 20;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid rgba(0, 255, 171, 0.2);
+  border-top: 4px solid #00FFAB;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinnerText {
+  font-size: 0.8rem;
+  color: #aaa;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.accountPresetsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.accountNameButton {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  /* Soft Cyan Glow */
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.accountNameButton:hover {
+  box-shadow: 0 0 8px rgba(93, 228, 199, 0.6);
+}
+
+.activePreset {
+  background: rgba(93, 228, 199, 0.15);
+  box-shadow: 0 0 8px rgba(93, 228, 199, 0.5);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+/* Dropdown */
+
+.accountDropdownWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* align dropdown left under button */
+}
+
+.accountDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.3rem;
+  background: #1f1f1f;
+  border: 1px solid rgba(93, 228, 199, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px) scale(0.95);
+  transition: none;
+  /* Animation now handled by JS */
+  min-width: 150px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.accountNameButton:focus+.accountDropdown,
+.accountNameButton:active+.accountDropdown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  animation: dropdownExpand 0.3s ease forwards;
+}
+
+.accountDropdown button {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: none;
+  color: #ccc;
+  border: none;
+  text-align: left;
+  font-size: 0.8rem;
+  transition: background 0.3s ease, color 0.3s ease;
+  border-radius: 8px;
+  cursor: pointer;
+  /* Rounded hover feeling */
+}
+
+.accountDropdown button:hover {
+  background: rgba(93, 228, 199, 0.08);
+  color: #5de4c7;
+  transform: scale(1.03);
+  /* Soft scale up */
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+/* TopBar (Header) */
+.topBar {
+  position: relative;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.optionsButton {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.optionsButton:hover {
+  color: #FF4081;
+  transform: translateY(-50%) rotate(15deg);
+}
+
+.moveIcon {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #bbb;
+  cursor: move;
+}
+
+#titleContainer {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: linear-gradient(90deg, #00FFAB, #FF4081);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Presets */
+.presetsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.2rem;
+  margin: 0.6rem 0;
+}
+
+.presetsContainer button {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  /* Match the same glow */
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.presetsContainer button:hover {
+  box-shadow: 0 0 8px rgba(93, 228, 199, 0.6);
+}
+
+/* Edit Mode Toggle Button */
+.editModeButton {
+  position: absolute;
+  top: 0.2rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  height: 2rem;
+}
+
+/* Glow effect for buy/sell buttons during Edit Mode */
+.editModeActive .buyButtons button,
+.editModeActive .sellButtons button {
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+  transition: box-shadow 0.3s ease;
+}
+
+.editModeActive #editModeToggle {
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.6);
+  background: rgba(255, 255, 0, 0.1);
+}
+
+/* Info (SOL / POS) */
+.infoContainer {
+  background: rgba(255, 255, 255, 0.02);
+  /* very faint background */
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* faint border */
+  /* REMOVE big box-shadow */
+}
+
+.infoContainer p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+}
+
+.infoContainer span {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #00FFAB;
+}
+
+/* Section Divider */
+.sectionDivider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  width: 50%;
+  margin: 0.5rem auto;
+}
+
+.sectionDivider2 {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  width: 25%;
+  margin: 0.5rem auto;
+}
+
+/* Buy / Sell Sections */
+.buyContainer,
+.sellContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.0rem;
+  margin-bottom: 1.0rem;
+  gap: 1.0rem;
 }
 
 .sellContainer {
-  display: flex;
-  gap: 10px;
+  margin-bottom: 1.0rem;
 }
 
-.balanceContainer {
+.buyButtons,
+.sellButtons {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 0.4rem;
 }
 
-.accountInfo {
+.buyTopBar {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
+.sectionTitleBox {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.4rem 1rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitleBox h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.buyButtons button,
+.sellButtons button {
+  flex: 1 1 0;
+  white-space: nowrap;
+  min-width: 70px;
+  min-height: 40px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.buyButtons button {
+  background: linear-gradient(135deg, #00c9a7, #008080);
+}
+
+.sellButtons button {
+  background: linear-gradient(135deg, #ff6b6b, #b24545);
+}
+
+.buyButtons button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0, 255, 171, 0.25);
+}
+
+.sellButtons button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 100, 100, 0.25);
+}
+
+/* Footer */
 .footerContainer {
-  display: flex;
-  gap: 10px;
+  text-align: center;
+  font-size: 0.6rem;
+  color: #777;
+  margin-top: 0.8rem;
 }
 
-.githubLogo {
-  width: 20px;
-  height: 20px;
+.footerContainer img.githubLogo {
+  width: 24px;
+  height: 24px;
+  margin-top: 0.3rem;
+  transition: transform 0.3s ease;
+}
+
+.footerContainer img.githubLogo:hover {
+  transform: scale(1.1);
+}
+
+#notificationPopup {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  color: #0d0d0d;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 30;
+}
+
+#notificationInner {
+  display: inline-block;
+  transform: scale(1);
+  transition: transform 0.4s ease;
+}
+
+/* Different color types */
+.successNotification {
+  background: #00FFAB;
+  color: #0d0d0d;
+  box-shadow: 0 4px 10px rgba(0, 255, 171, 0.4);
+}
+
+.errorNotification {
+  background: #FF4B5C;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(255, 75, 92, 0.4);
+}
+
+.infoNotification {
+  background: #4DA8DA;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(77, 168, 218, 0.4);
+}
+
+@keyframes dropdownExpand {
+  0% {
+    transform: translateY(-5px) scale(0.95);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dropdownCollapse {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-5px) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes textScalePop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes textGlowPulse {
+  0% {
+    text-shadow: 0 0 0px rgba(0, 255, 171, 0);
+  }
+
+  50% {
+    text-shadow: 0 0 8px rgba(0, 255, 171, 0.6);
+  }
+
+  100% {
+    text-shadow: 0 0 0px rgba(0, 255, 171, 0);
+  }
+}
+
+@keyframes slideUpFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+@keyframes slideDownFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes breathingBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }

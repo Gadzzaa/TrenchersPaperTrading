@@ -1,21 +1,68 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
   <title>Trenchers Paper Trading</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="Styles/account.css">
-  <script src="Scripts/account.js"></script>
 </head>
 
 <body>
   <div class="container">
-    <h1>Welcome to Trenchers Paper Trading</h1>
-    <label for="username">Username:</label>
-    <input type="text" id="username" placeholder="Enter your username">
-    <label for="password">Password:</label>
-    <input type="password" id="password" placeholder="Enter your password">
-    <button id="loginButton">Login</button>
-    <button id="registerButton">Register</button>
+
+    <div class="spinnerOverlay" id="spinnerOverlay">
+      <div class="spinnerBlock">
+        <div class="spinner"></div>
+        <p class="spinnerText" id="spinnerText">Processing...</p>
+      </div>
+    </div>
+    <!-- Header -->
+    <div class="topBar">
+      <h1 id="titleContainer">TrenchersPT</h1>
+    </div>
+
+    <div id="credentials">
+      <div class="enterData">
+        <label for="username">
+          <i class="fas fa-user"></i>
+          Username:
+        </label>
+        <input type="text" id="username" placeholder="Enter your username">
+      </div>
+      <div class="enterData">
+        <label for="password">
+          <i class="fas fa-key"></i>
+          Password:
+        </label>
+        <input type="password" id="password" placeholder="Enter your password">
+      </div>
+    </div>
+    <div id="buttons">
+      <button id="loginButton">Login</button>
+      <button id="registerButton">Register</button>
+    </div>
+
+    <hr class="sectionDivider">
+
+    <!-- Footer -->
+    <div class="footerContainer">
+      <a href="https://github.com/Gadzzaa/TrenchersPaperTrading" target="_blank">
+        <img class="githubLogo" src="Images/github-mark.png" alt="GitHub Logo" />
+      </a>
+      <p>Version 1.0 &copy; 2025</p>
+    </div>
+
+    <div id="notificationPopup" class="notificationPopup">
+      <div id="notificationInner">
+        <span id="notificationText"></span>
+      </div>
+    </div>
   </div>
 </body>
+<script type="module" src="Scripts/notificationSystem.js" defer></script>
+<script type="module" src="Scripts/spinner.js" defer></script>
+<script type="module" src="Scripts/account.js" defer></script>
 
 </html>
