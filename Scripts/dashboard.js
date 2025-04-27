@@ -11,30 +11,75 @@ const editModeToggle = document.getElementById('editModeToggle');
 const container = document.querySelector('.container');
 const buyButtons = document.querySelectorAll('.buyButtons button');
 const sellButtons = document.querySelectorAll('.sellButtons button');
+const defaultPreset = document.getElementById('preset1'); // Assuming P1 has id 'preset1'
 let dotInterval;
 let dropdownOpen = false;
 let editMode = false;
-
-document.addEventListener('DOMContentLoaded', function() {
-
-  actionButtons.forEach(button => {
-    const action = button.dataset.action;
-    const amount = button.dataset.amount;
-    const symbol = button.dataset.symbol;
-    const preset = button.dataset.preset;
-
-    // Build button text based on available data
-    if (action && amount && symbol) {
-      // It's a Buy or Sell button
-      button.textContent = `${amount} ${symbol}`;
-    } else if (preset) {
-      // It's a Preset button
-      button.textContent = `Preset ${preset}`;
-    } else {
-      // Fallback if no data (optional)
-      button.textContent = 'Action';
+let activePreset = 'preset1'; // Default preset
+let presets = {
+  preset1: {
+    buys: {
+      BuyButton1: { amount: '0.1', symbol: 'SOL' },
+      BuyButton2: { amount: '0.25', symbol: 'SOL' },
+      BuyButton3: { amount: '0.5', symbol: 'SOL' },
+      BuyButton4: { amount: '1', symbol: 'SOL' },
+    },
+    sells: {
+      SellButton1: { amount: '10', symbol: '%' },
+      SellButton2: { amount: '25', symbol: '%' },
+      SellButton3: { amount: '50', symbol: '%' },
+      SellButton4: { amount: '100', symbol: '%' },
     }
-  });
+  },
+  preset2: {
+    buys: {
+      BuyButton1: { amount: '0.25', symbol: 'SOL' },
+      BuyButton2: { amount: '0.5', symbol: 'SOL' },
+      BuyButton3: { amount: '0.75', symbol: 'SOL' },
+      BuyButton4: { amount: '1', symbol: 'SOL' },
+    },
+    sells: {
+      SellButton1: { amount: '10', symbol: '%' },
+      SellButton2: { amount: '25', symbol: '%' },
+      SellButton3: { amount: '50', symbol: '%' },
+      SellButton4: { amount: '100', symbol: '%' },
+    }
+  },
+  preset3: {
+    buys: {
+      BuyButton1: { amount: '0.5', symbol: 'SOL' },
+      BuyButton2: { amount: '0.75', symbol: 'SOL' },
+      BuyButton3: { amount: '1', symbol: 'SOL' },
+      BuyButton4: { amount: '1.25', symbol: 'SOL' },
+    },
+    sells: {
+      SellButton1: { amount: '10', symbol: '%' },
+      SellButton2: { amount: '25', symbol: '%' },
+      SellButton3: { amount: '50', symbol: '%' },
+      SellButton4: { amount: '100', symbol: '%' },
+    }
+  },
+  preset4: {
+    buys: {
+      BuyButton1: { amount: '1', symbol: 'SOL' },
+      BuyButton2: { amount: '2.5', symbol: 'SOL' },
+      BuyButton3: { amount: '5', symbol: 'SOL' },
+      BuyButton4: { amount: '10', symbol: 'SOL' },
+    },
+    sells: {
+      SellButton1: { amount: '10', symbol: '%' },
+      SellButton2: { amount: '25', symbol: '%' },
+      SellButton3: { amount: '50', symbol: '%' },
+      SellButton4: { amount: '100', symbol: '%' },
+    }
+  }
+};
+document.addEventListener('DOMContentLoaded', function() {
+  loadPresets(); // Load presets from localStorage
+  if (defaultPreset) {
+    defaultPreset.classList.add('activePreset');
+  }
+  applyPreset(activePreset); // Load default preset on page load
 });
 accountNameBtn.addEventListener('click', (e) => {
   e.stopPropagation(); // Stop event bubbling
@@ -69,12 +114,14 @@ document.addEventListener('click', (e) => {
 });
 presetButtons.forEach(button => {
   button.addEventListener('click', () => {
-    button.classList.remove('pulse-on-click');
-    void button.offsetWidth; // restart animation
-    button.classList.add('pulse-on-click');
+    presetButtons.forEach(btn => btn.classList.remove('activePreset'));
+    button.classList.add('activePreset');
+
+    activePreset = button.id;
+    applyPreset(activePreset);          // 🔥 apply the selected preset to buttons
+    console.log("Applying preset: " + activePreset);
   });
 });
-
 editModeToggle.addEventListener('click', () => {
   editMode = !editMode;
   if (editMode) {
@@ -95,6 +142,11 @@ buyButtons.forEach(button => {
         let amount = button.dataset.amount;
         let symbol = button.dataset.symbol;
         button.textContent = `${amount} ${symbol}`;
+        if (presets[activePreset] && presets[activePreset].buys[button.id]) {
+          presets[activePreset].buys[button.id].amount = newValue;
+          savePresets(); // save all presets
+          console.log("Saved buyButton update for:", button.id, "in", activePreset);
+        }
       }
       return;
     } else {
@@ -115,6 +167,11 @@ sellButtons.forEach(button => {
         let amount = button.dataset.amount;
         let symbol = button.dataset.symbol;
         button.textContent = `${amount} ${symbol}`;
+        if (presets[activePreset] && presets[activePreset].buys[button.id]) {
+          presets[activePreset].buys[button.id].amount = newValue;
+          savePresets(); // save all presets
+          console.log("Saved buyButton update for:", button.id, "in", activePreset);
+        }
       }
       return;
     } else {
@@ -234,7 +291,56 @@ function showNotification(message, type) {
     notificationPopup.style.transform = 'translateX(-50%) translateY(10px)';
   }, 2000);
 }
+function savePresets() {
+  localStorage.setItem('presets', JSON.stringify(presets));
+}
+function loadPresets() {
+  const savedPresets = localStorage.getItem('presets');
+  if (savedPresets) {
+    presets = JSON.parse(savedPresets);
+  }
+}
+function applyPreset(presetName) {
+  const preset = presets[presetName];
+  if (!preset) {
+    console.error(`No preset found for: ${presetName}`);
+    return;
+  }
+
+  console.log(`Applying Preset: ${presetName}`, preset); // Debug print preset content
+
+  // Apply Buy buttons
+  for (const buttonId in preset.buys) {
+    const buttonData = preset.buys[buttonId];
+    const button = document.getElementById(buttonId);
+
+    if (button && buttonData) {
+      button.dataset.amount = buttonData.amount;
+      button.dataset.symbol = buttonData.symbol;
+      button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
+      console.log(`Updated ${buttonId}: Buy ${buttonData.amount}`);
+    } else {
+      console.warn(`Buy button ${buttonId} not found or data missing.`);
+    }
+  }
+
+  // Apply Sell buttons
+  for (const buttonId in preset.sells) {
+    const buttonData = preset.sells[buttonId];
+    const button = document.getElementById(buttonId);
+
+    if (button && buttonData) {
+      button.dataset.amount = buttonData.amount;
+      button.dataset.symbol = buttonData.symbol;
+      button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
+      console.log(`Updated ${buttonId}: Sell ${buttonData.amount}`);
+    } else {
+      console.warn(`Sell button ${buttonId} not found or data missing.`);
+    }
+  }
+}
 // Example usage when you update:
+// a
 /*
 document.getElementById('balance').innerText = '1200';
 triggerPulse('balance');

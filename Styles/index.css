@@ -104,6 +104,13 @@ body {
   box-shadow: 0 0 8px rgba(93, 228, 199, 0.6);
 }
 
+.activePreset {
+  background: rgba(93, 228, 199, 0.15);
+  box-shadow: 0 0 8px rgba(93, 228, 199, 0.5);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
 /* Dropdown */
 
 .accountDropdownWrapper {
