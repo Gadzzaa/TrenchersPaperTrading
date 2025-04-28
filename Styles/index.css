@@ -5,22 +5,37 @@
   box-sizing: border-box;
 }
 
+html,
 body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  position: relative;
   font-family: 'Poppins', sans-serif;
   color: #e0e0e0;
-  padding: 0.5rem;
 }
 
 /* Container */
 .container {
-  padding: 0.8rem;
-  height: 500px;
-  width: 330px;
-  width: 100%;
   position: relative;
-  background-size: 400% 400%;
+  width: 100%;
+  height: 100%;
   border-radius: 20px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 1rem;
+  /* centers your login form vertically */
 }
 
 .spinnerBlock {
@@ -67,7 +82,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0.5rem 0;
+  margin: 0.5rem;
 }
 
 .accountNameButton {
@@ -115,8 +130,6 @@ body {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-5px) scale(0.95);
-  transition: none;
-  /* Animation now handled by JS */
   min-width: 150px;
   overflow: hidden;
   z-index: 10;
@@ -156,7 +169,7 @@ body {
 .topBar {
   position: relative;
   text-align: center;
-  margin-bottom: 0.5rem;
+  margin: 1rem;
 }
 
 .optionsButton {
@@ -254,8 +267,7 @@ body {
   /* very faint background */
   padding: 0.5rem 1rem;
   border-radius: 10px;
-  margin-top: 1rem;
-  margin-bottom: 1.2rem;
+  margin: 1rem 0.5rem;
   display: flex;
   justify-content: center;
   gap: 2rem;
@@ -379,7 +391,8 @@ body {
   text-align: center;
   font-size: 0.6rem;
   color: #777;
-  margin-top: 0.8rem;
+  margin-top: auto;
+  margin-bottom: 1rem;
 }
 
 .footerContainer img.githubLogo {
@@ -393,11 +406,17 @@ body {
   transform: scale(1.1);
 }
 
-#notificationPopup {
-  position: absolute;
+.notificationPopup {
+  position: fixed;
   bottom: 1rem;
+  min-width: 250px;
+  max-width: 650px;
+  width: fit-content;
+  padding: 10px 30px;
   left: 50%;
+  text-align: center;
   transform: translateX(-50%) translateY(10px);
+  z-index: 100;
   color: #0d0d0d;
   padding: 0.4rem 1rem;
   border-radius: 20px;
@@ -406,7 +425,6 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s ease, transform 0.4s ease;
-  z-index: 30;
 }
 
 #notificationInner {
@@ -543,4 +561,22 @@ body {
   100% {
     background-position: 0% 50%;
   }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulse {
+  animation: pulse 0.4s ease;
 }

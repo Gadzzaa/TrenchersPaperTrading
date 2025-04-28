@@ -36,6 +36,7 @@ export async function handleLogin() {
     if (response.ok) {
       showNotification('Login Successful', 'success');
       localStorage.setItem('loggedInUsername', username);
+      localStorage.setItem('sessionToken', result.token);
       setTimeout(() => {
         window.location.href = 'dashboard.html';
         hideSpinner();

@@ -21,51 +21,57 @@
     <!-- Header -->
     <div class="topBar">
       <h1 id="titleContainer">TrenchersPT</h1>
+      <div id="moveHandle" class="moveIcon">
+        <i class="fas fa-arrows-up-down-left-right"></i>
+      </div>
     </div>
 
     <div id="credentials">
-      <div class="enterData">
-        <label for="username">
-          <i class="fas fa-user"></i>
-          Username:
-        </label>
-        <input type="text" id="username" placeholder="Enter your username">
+      <div id="mainContent">
+        <div class="enterData">
+          <label class="dataLabel" for="username">
+            <i class="fas fa-user"></i>
+            Username:
+          </label>
+          <input type="text" id="username" placeholder="Enter your username">
+        </div>
+        <div class="enterData">
+          <label class="dataLabel" for="password">
+            <i class="fas fa-key"></i>
+            Password:
+          </label>
+          <input type="password" id="password" placeholder="Enter your password">
+        </div>
       </div>
-      <div class="enterData">
-        <label for="password">
-          <i class="fas fa-key"></i>
-          Password:
+
+      <div class="rememberContainer">
+        <label class="checkboxWrapper">
+          <input type="checkbox" id="rememberMeCheckbox">
+          <span class="customCheckbox"></span>
+          Remember Me
         </label>
-        <input type="password" id="password" placeholder="Enter your password">
+      </div>
+      <div id="buttons">
+        <button id="loginButton">Login</button>
+        <button id="registerButton">Register</button>
       </div>
     </div>
 
-    <div class="rememberContainer">
-      <label class="checkboxWrapper">
-        <input type="checkbox" id="rememberMeCheckbox">
-        <span class="customCheckbox"></span>
-        Remember Me
-      </label>
-    </div>
-    <div id="buttons">
-      <button id="loginButton">Login</button>
-      <button id="registerButton">Register</button>
-    </div>
-
-    <hr class="sectionDivider">
 
     <!-- Footer -->
     <div class="footerContainer">
+      <hr class="sectionDivider">
       <a href="https://github.com/Gadzzaa/TrenchersPaperTrading" target="_blank">
         <img class="githubLogo" src="Images/github-mark.png" alt="GitHub Logo" />
       </a>
       <p>Version 1.0 &copy; 2025</p>
     </div>
 
-    <div id="notificationPopup" class="notificationPopup">
-      <div id="notificationInner">
-        <span id="notificationText"></span>
-      </div>
+  </div>
+
+  <div id="notificationPopup" class="notificationPopup">
+    <div id="notificationInner">
+      <span id="notificationText"></span>
     </div>
   </div>
 </body>

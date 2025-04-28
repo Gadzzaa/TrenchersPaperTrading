@@ -6,9 +6,15 @@ import { showNotification } from './notificationSystem.js'; // Importing Notific
 
 import { showSpinner, hideSpinner } from './spinner.js'; // Importing Spinner Functions
 
+import { getPortfolio } from './portofolioHandler.js'; // Importing Balance Functions
+
+import { buyToken } from './buyHandler.js'; // Importing Buy Functions
+import { sellByPercentage } from './sellHandler.js'; // Importing Sell Functions
+
 const actionButtons = document.querySelectorAll('.buyButtons button, .sellButtons button');
 const accountNameButton = document.getElementById('accountNameBtn');
 
+const tokenMint = 'J8dRS5coBftCrhVcbH93cZq748jTBVp4ErtWgbnbpump'
 let loggedInUsername;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -19,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
   } else {
     console.log("[dashboard.js] Logged in as:", loggedInUsername);
     accountNameButton.innerText = loggedInUsername;
+    updateBalanceUI(); // Update balance on page load
     loadPresets(); // Load presets from localStorage
     if (defaultPreset) {
       defaultPreset.classList.add('activePreset');
@@ -26,31 +33,59 @@ document.addEventListener('DOMContentLoaded', function() {
     applyPreset(getActivePreset()); // Load default preset on page load
   }
 });
-
 actionButtons.forEach(button => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     showSpinner();
 
-    // Simulate "server delay"
-    setTimeout(() => {
-      hideSpinner();
-      const action = button.dataset.action;
-      const amount = button.dataset.amount;
-      const symbol = button.dataset.symbol;
+    const action = button.dataset.action;
+    const amount = parseFloat(button.dataset.amount);
+    const symbol = button.dataset.symbol;  // TODO: GRAB TOKEN SYMBOL AFTER PARSING
 
-      if (action && amount && symbol) {
+    if (action && amount && symbol && tokenMint) {
+      try {
         if (action === 'buy') {
-          showNotification(`You bought ${amount} ${symbol}!`, 'success');
+          const result = await buyToken(tokenMint, amount);
+
+          if (result) {
+            showNotification(`✅ You bought ${result.tokensReceived.toFixed(2)} ${symbol}!`, 'success');
+            await updateBalanceUI();
+          } else {
+            showNotification('❌ Failed to buy token.', 'error');
+          }
+
         } else if (action === 'sell') {
-          showNotification(`You sold ${amount} ${symbol}!`, 'error');
+          const result = await sellByPercentage(tokenMint, amount);
+
+          if (result) {
+            showNotification(`✅ You sold ${result.tokensSold.toFixed(2)} ${symbol} for ${result.solReceived.toFixed(2)} SOL!`, 'success');
+            await updateBalanceUI();
+          } else {
+            showNotification('❌ Failed to sell token.', 'error');
+          }
+        } else {
+          showNotification('❓ Unknown action.', 'error');
         }
-      } else {
-        showNotification(`Action complete!`, 'info');
+      } catch (error) {
+        console.error('Action error:', error);
+        showNotification('❌ Server error during action.', 'error');
       }
-    }, 2000); // 2 seconds fake loading
+    } else {
+      showNotification(`❓ Missing button data attributes.`, 'error');
+    }
+
+    hideSpinner();
   });
 });
-
+export async function updateBalanceUI() {
+  const solBalance = document.getElementById('balance');
+  const result = await getPortfolio(); // must await
+  if (result) {
+    solBalance.innerText = result.solBalance;
+    triggerPulse('balance');
+  } else {
+    console.error('Failed to fetch balance');
+  }
+}
 function triggerPulse(elementId) {
   const element = document.getElementById(elementId);
   element.classList.remove('pulse');
