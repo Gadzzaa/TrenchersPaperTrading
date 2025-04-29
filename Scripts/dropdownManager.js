@@ -38,5 +38,6 @@ document.addEventListener('click', (e) => {
 
 signOutBtn.addEventListener('click', () => {
   localStorage.removeItem('loggedInUsername');
+  localStorage.removeItem('sessionToken');
   window.location.href = 'account.html';
 });

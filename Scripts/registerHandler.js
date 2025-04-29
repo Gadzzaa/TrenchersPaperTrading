@@ -32,13 +32,9 @@ export async function handleRegister() {
     if (response.ok) {
       showNotification('Account created successfully!', 'success');
       localStorage.setItem('loggedInUsername', username);
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-        hideSpinner();
-        loginButton.disabled = false; // 🔥 Re-enable button
-        loginButton.style.opacity = '1';
-        loginButton.style.cursor = 'pointer';
-      }, 1000);
+      localStorage.setItem('sessionToken', result.token);
+      showNotification('You can now attempt to login.', 'success');
+      hideSpinner();
     } else {
       showNotification(result.message || 'Registration failed.', 'error');
     }

@@ -11,11 +11,11 @@
     "notifications"
   ],
   "host_permissions": [
-    "https://axiom.trade/meme/*"
+    "https://axiom.trade/*"
   ],
   "content_scripts": [
     {
-      "matches": ["https://axiom.trade/meme/*"],
+      "matches": ["https://axiom.trade/*"],
       "js": ["Scripts/inject.js"]
     }
   ],

@@ -3,6 +3,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+
 }
 
 html,
@@ -287,6 +288,7 @@ body {
   font-size: 1.2rem;
   font-weight: 700;
   color: #00FFAB;
+  display: inline-block;
 }
 
 /* Section Divider */
@@ -366,6 +368,11 @@ body {
   border: none;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
+  width: 75px;
+  text-align: center;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 .buyButtons button {
@@ -450,6 +457,12 @@ body {
   background: #4DA8DA;
   color: #ffffff;
   box-shadow: 0 4px 10px rgba(77, 168, 218, 0.4);
+}
+
+.movableObjects {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-origin: center center;
 }
 
 @keyframes dropdownExpand {

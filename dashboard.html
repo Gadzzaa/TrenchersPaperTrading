@@ -14,7 +14,7 @@
 
     <div class="spinnerOverlay" id="spinnerOverlay">
       <div class="spinnerBlock">
-        <div class="spinner"></div>
+        <div class="spinner movableObjects"></div>
         <p class="spinnerText" id="spinnerText">Processing...</p>
       </div>
     </div>
@@ -29,7 +29,7 @@
 
     <div id="mainContent">
       <!-- New container under TopBar -->
-      <div class="accountPresetsContainer">
+      <div class="accountPresetsContainer movableObjects">
         <div class="accountDropdownWrapper">
           <button class="accountNameButton" id="accountNameBtn">Account Name</button>
           <div class="accountDropdown">
@@ -57,7 +57,7 @@
           <h2>Buy</h2>
         </div>
         <button id="editModeToggle" class="editModeButton">✏️</button>
-        <div class="buyButtons">
+        <div class="buyButtons movableObjects">
           <button id="BuyButton1" data-action="buy" data-amount="1" data-symbol="SOL"></button>
           <button id="BuyButton2" data-action="buy" data-amount="2" data-symbol="SOL"></button>
           <button id="BuyButton3" data-action="buy" data-amount="3" data-symbol="SOL"></button>
@@ -72,7 +72,7 @@
         <div class="sectionTitleBox">
           <h2>Sell</h2>
         </div>
-        <div class="sellButtons">
+        <div class="sellButtons movableObjects">
           <button id="SellButton1" data-action="sell" data-amount="10" data-symbol="%"></button>
           <button id="SellButton2" data-action="sell" data-amount="25" data-symbol="%"></button>
           <button id="SellButton3" data-action="sell" data-amount="50" data-symbol="%"></button>
@@ -92,7 +92,7 @@
     </div>
 
   </div>
-  <div id="notificationPopup" class="notificationPopup">
+  <div id="notificationPopup" class="notificationPopup movableObjects">
     <div id="notificationInner">
       <span id="notificationText"></span>
     </div>
@@ -106,6 +106,7 @@
 <script type="module" src="Scripts/portofolioHandler.js" defer></script>
 <script type="module" src="Scripts/buyHandler.js" defer></script>
 <script type="module" src="Scripts/sellHandler.js" defer></script>
+<script type="module" src="Scripts/sessionChecker.js" defer></script>
 <script type="module" src="Scripts/dashboard.js" defer></script>
 
 </html>
