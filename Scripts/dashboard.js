@@ -57,7 +57,7 @@ actionButtons.forEach(button => {
 
     const action = button.dataset.action;
     const amount = parseFloat(button.dataset.amount);
-    const symbol = button.dataset.symbol;  // TODO: GRAB TOKEN SYMBOL AFTER PARSING
+    const symbol = await requestSymbol(); // Fetch the symbol of the token
     const price = await requestPrice(); // Fetch the price of the token
     if (price == null) {
       console.warn('❌ Failed to fetch token price: ', price);
@@ -114,6 +114,28 @@ actionButtons.forEach(button => {
   });
 });
 
+function requestSymbol() {
+  return new Promise((resolve) => {
+    const requestId = 'get-symbol-' + Date.now();
+
+    // Listen for response
+    function handleMessage(event) {
+      const { type, symbol, requestId: responseId } = event.data;
+      if (type === 'SYMBOL_RESPONSE' && responseId === requestId) {
+        window.removeEventListener('message', handleMessage);
+        resolve(symbol);
+      }
+    }
+
+    window.addEventListener('message', handleMessage);
+
+    // Send request
+    window.parent.postMessage({
+      type: 'SYMBOL_REQUEST',
+      requestId: requestId
+    }, '*');
+  });
+}
 function requestPrice() {
   return new Promise((resolve) => {
     const requestId = 'get-price-' + Date.now();

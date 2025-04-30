@@ -24,6 +24,14 @@ window.addEventListener('message', async (event) => {
       requestId
     }, '*');
   }
+  if (type === 'SYMBOL_REQUEST' && requestId) {
+    const symbol = extractSymbol();
+    event.source.postMessage({
+      type: 'SYMBOL_RESPONSE',
+      symbol,
+      requestId
+    }, '*');
+  }
 });
 // Extract contract from image src
 function extractContractFromImage() {
@@ -43,6 +51,29 @@ function extractContractFromImage() {
   }
 
   return null;
+}
+function extractSymbol() {
+  const xpath = '/html/body/div[1]/div[3]/div/div/div/div/div[1]/div[1]/div/div[1]/div[2]/div/div[1]/div[2]/div[1]/span[1]'
+  const symbolElement = getElementByXPath(xpath);
+  if (!symbolElement) return null;
+  try {
+    const symbol = symbolElement.innerText;
+    if (symbol && symbol.length > 0) {
+      return symbol.trim();
+    }
+  } catch (error) {
+    console.error('❌ Error parsing symbol from element:', error);
+  }
+}
+function getElementByXPath(xpath, context = document) {
+  const result = document.evaluate(
+    xpath,
+    context,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null
+  );
+  return result.singleNodeValue;
 }
 
 function makeDraggable(target, handle) {
