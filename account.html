@@ -27,34 +27,37 @@
     </div>
 
     <div id="credentials">
-      <div id="mainContent">
-        <div class="enterData">
-          <label class="dataLabel" for="username">
-            <i class="fas fa-user"></i>
-            Username:
-          </label>
-          <input type="text" id="username" placeholder="Enter your username">
+      <form id="authForm" onsubmit="return false;">
+        <div id="mainContent">
+          <div class="enterData">
+            <label class="dataLabel" for="username">
+              <i class="fas fa-user"></i>
+              Username:
+            </label>
+            <input type="text" id="username" required minlength="3" aria-label="Username"
+              placeholder="Enter your username">
+          </div>
+          <div class="enterData">
+            <label class="dataLabel" for="password">
+              <i class="fas fa-key"></i>
+              Password:
+            </label>
+            <input type="password" id="password" required minlength="6" placeholder="Enter your password">
+          </div>
         </div>
-        <div class="enterData">
-          <label class="dataLabel" for="password">
-            <i class="fas fa-key"></i>
-            Password:
-          </label>
-          <input type="password" id="password" placeholder="Enter your password">
-        </div>
-      </div>
 
-      <div class="rememberContainer">
-        <label class="checkboxWrapper">
-          <input type="checkbox" id="rememberMeCheckbox">
-          <span class="customCheckbox"></span>
-          Remember Me
-        </label>
-      </div>
-      <div id="buttons">
-        <button id="loginButton">Login</button>
-        <button id="registerButton">Register</button>
-      </div>
+        <div class="rememberContainer">
+          <label class="checkboxWrapper">
+            <input type="checkbox" id="rememberMeCheckbox">
+            <span class="customCheckbox"></span>
+            Remember Me
+          </label>
+        </div>
+        <div id="buttons">
+          <button id="loginButton">Login</button>
+          <button id="registerButton">Register</button>
+        </div>
+      </form>
     </div>
 
 
@@ -69,7 +72,7 @@
 
   </div>
 
-  <div id="notificationPopup" class="notificationPopup">
+  <div id="notificationPopup" class="notificationPopup" role="alert" aria-live="polite">
     <div id="notificationInner">
       <span id="notificationText"></span>
     </div>
@@ -78,7 +81,6 @@
 <script type="module" src="Scripts/notificationSystem.js" defer></script>
 <script type="module" src="Scripts/spinner.js" defer></script>
 <script type="module" src="Scripts/loginHandler.js" defer></script>
-<script type="module" src="Scripts/spinner.js" defer></script>
 <script type="module" src="Scripts/sessionChecker.js" defer></script>
 <script type="module" src="Scripts/account.js" defer></script>
 

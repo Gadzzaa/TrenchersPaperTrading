@@ -1,20 +1,32 @@
 import { requestPrice } from './dashboard.js';
+import { showNotification } from './notificationSystem.js'; // 🔥 notification
 const openPositions = [];
+const lastWarningShown = {};
 export async function updateUnrealizedPnl() {
   let totalCost = 0, totalValue = 0;
 
   for (const pos of openPositions) {
     const { mint, entryPrice, quantity } = pos;
-    const currentPrice = await requestPrice(mint);
+    const currentPrice = parseFloat(await requestPrice(mint));
+
+    if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
+      console.warn(`⚠️ Skipping ${mint}: invalid price`, currentPrice);
+      if (!lastWarningShown[mint] || (Date.now() - lastWarningShown[mint]) > 5000) {
+        showNotification(`⚠️ Skipped PnL for ${mint} – price unavailable.`, 'info');
+        lastWarningShown[mint] = Date.now();
+      }
+      continue;
+    }
+
     totalCost += entryPrice * quantity;
     totalValue += currentPrice * quantity;
   }
-
   const totalPnl = (totalValue - totalCost);
   const pnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
 
   // Update the DOM
   const position = document.getElementById('position');
+  if (!position) return;
   position.classList.remove('positive', 'negative');
   position.textContent = `${totalPnl.toFixed(2)} SOL (${pnlPct.toFixed(2)}%)`;
   if (totalPnl >= 0) {
@@ -51,9 +63,7 @@ export async function recordBuy(mint, entryPrice, solSpent) {
     openPositions.push({ mint, entryPrice, quantity });
   }
 
-  console.log(
-    `Recorded buy: ${mint} – now ${openPositions.find(p => p.mint === mint).quantity.toFixed(6)} tokens @ ${openPositions.find(p => p.mint === mint).entryPrice.toFixed(6)}`
-  );
+  `Recorded buy: ${mint} – now ${openPositions.find(p => p.mint === mint).quantity.toFixed(6)} tokens @ ${openPositions.find(p => p.mint === mint).entryPrice.toFixed(6)}`
 
   // 4) Refresh Unrealized PnL (assumes you have this function)
   await updateUnrealizedPnl();
@@ -92,10 +102,6 @@ export async function recordSell(mint, exitPrice, quantitySold = 0, quantityPerc
   // 1) Realized PnL on this slice
   const costBasis = pos.entryPrice * sellQty;
   const proceeds = exitPrice * sellQty;
-  const realizedPnl = proceeds - costBasis;
-  console.log(
-    `Realized PnL for ${sellQty.toFixed(6)} ${mint}: ${realizedPnl.toFixed(6)} SOL`
-  );
 
   // 2) Subtract from the position
   pos.quantity -= sellQty;
@@ -112,6 +118,7 @@ export async function recordSell(mint, exitPrice, quantitySold = 0, quantityPerc
 
   // 4) Refresh your PnL display
   await updateUnrealizedPnl();
+  localStorage.setItem('openPositions', JSON.stringify(openPositions));
 }
 export async function removePosition(mint) {
   const idx = openPositions.findIndex(p => p.mint === mint);
@@ -124,6 +131,7 @@ export async function removePosition(mint) {
 
   // Refresh your PnL display
   await updateUnrealizedPnl();
+  localStorage.setItem('openPositions', JSON.stringify(openPositions));
 }
 export function loadPositions() {
   clearPositions(); // Clear existing positions

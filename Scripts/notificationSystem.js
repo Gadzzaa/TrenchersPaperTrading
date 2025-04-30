@@ -1,7 +1,3 @@
-const notificationPopup = document.getElementById('notificationPopup');
-const notificationText = document.getElementById('notificationText');
-const notificationInner = document.getElementById('notificationInner');
-
 let slideOutTimeout;
 let popTimeout1;
 let popTimeout2;
@@ -10,6 +6,10 @@ let glowTimeout2;
 
 // Generic Notification System
 export function showNotification(message, type) {
+  const notificationPopup = document.getElementById('notificationPopup');
+  const notificationText = document.getElementById('notificationText');
+  const notificationInner = document.getElementById('notificationInner');
+  if (!notificationPopup || !notificationText || !notificationInner) return;
   // Clear old animations first if any
   clearTimeout(slideOutTimeout);
   clearTimeout(popTimeout1);
@@ -22,14 +22,12 @@ export function showNotification(message, type) {
   notificationPopup.classList.remove('successNotification', 'errorNotification', 'infoNotification');
   notificationPopup.style.color = ''; // reset inline color if any
 
-  if (type === 'success') {
-    notificationPopup.classList.add('successNotification');
-  } else if (type === 'error') {
-    notificationPopup.classList.add('errorNotification');
-  } else if (type === 'info') {
-    notificationPopup.classList.add('infoNotification');
-  }
-
+  const typeClasses = {
+    success: 'successNotification',
+    error: 'errorNotification',
+    info: 'infoNotification'
+  };
+  notificationPopup.classList.add(typeClasses[type] || '');
   notificationPopup.style.opacity = '0';
   notificationPopup.style.transform = 'translateX(-50%) translateY(10px)';
   notificationInner.style.transform = 'scale(1)';

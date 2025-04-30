@@ -6,6 +6,7 @@ const accountNameBtn = document.getElementById('accountNameBtn');
 const accountDropdown = document.querySelector('.accountDropdown');
 const signOutBtn = document.getElementById('signOutBtn');
 const resetAccBtn = document.getElementById('resetAccBtn');
+import CONFIG from '../config.js';
 let dropdownOpen = false;
 
 accountNameBtn.addEventListener('click', (e) => {
@@ -49,21 +50,20 @@ function getAuthHeaders() {
 }
 
 resetAccBtn.addEventListener('click', async () => {
-  // Ask the user what they want to do:
-  //   • leave blank or type "reset" → reset portfolio
-  //   • enter a number ≥ 1 → set new balance
   const input = prompt(
-    `Enter a new SOL balance (≥1),\n`
+    `Enter a new SOL balance (≥1): `
   );
   if (input === null) return; // user clicked Cancel
+  if (!confirm(`This will reset your account and set balance to ${input} SOL. Continue?`)) return;
 
   showSpinner();
+  resetAccBtn.disabled = true;
   try {
     const loggedInUsername = localStorage.getItem('loggedInUsername');
     let resp, data;
 
     // RESET
-    resp = await fetch(`http://localhost:3000/api/reset/:${loggedInUsername}`, {
+    resp = await fetch(CONFIG.API_BASE_URL + `/api/reset/:${loggedInUsername}`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -98,6 +98,7 @@ resetAccBtn.addEventListener('click', async () => {
     console.error('Manage balance error:', err);
     showNotification(`❌ ${err.message}`, 'error');
   } finally {
+    resetAccBtn.disabled = false;
     hideSpinner();
   }
 });
@@ -105,6 +106,6 @@ resetAccBtn.addEventListener('click', async () => {
 signOutBtn.addEventListener('click', () => {
   localStorage.removeItem('loggedInUsername');
   localStorage.removeItem('sessionToken');
-  localstorage.removeItem('openPositions');
+  localStorage.removeItem('openPositions');
   window.location.href = 'account.html';
 });

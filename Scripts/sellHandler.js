@@ -1,11 +1,14 @@
-import { getPortfolio } from './portofolioHandler.js';
+import { getPortfolio } from './portfolioHandler.js';
 import { showNotification } from './notificationSystem.js';
 import { showSpinner, hideSpinner } from './spinner.js';
 import { updateBalanceUI } from './dashboard.js';
+import CONFIG from '../config.js'; // Importing Config
+const buttons = document.querySelectorAll('.sellButtons button');
 
 export async function sellByPercentage(tokenMint, percentage, price) {
   try {
     showSpinner();
+    buttons.forEach(btn => btn.disabled = true);
 
     const portfolio = await getPortfolio();
     if (!portfolio || !portfolio.tokens) {
@@ -13,7 +16,7 @@ export async function sellByPercentage(tokenMint, percentage, price) {
     }
 
     const totalAmount = portfolio.tokens[tokenMint];
-    if (!totalAmount) {
+    if (typeof totalAmount !== 'number' || totalAmount <= 0) {
       showNotification('❌ No tokens found for this mint.', 'error');
       return;
     }
@@ -42,46 +45,59 @@ export async function sellByPercentage(tokenMint, percentage, price) {
     showNotification('❌ Server error during selling.', 'error');
   } finally {
     hideSpinner();
+    buttons.forEach(btn => btn.disabled = false);
   }
 }
 
 async function sellToken(tokenMint, tokenAmount, tokenPrice, slippage = 2, fee = 0.1) {
-  try {
-    const sessionToken = localStorage.getItem('sessionToken');
-    if (!sessionToken) {
-      throw new Error('No sessionToken found. Please log in again.');
+  const sessionToken = localStorage.getItem('sessionToken');
+  if (!sessionToken) {
+    throw new Error('No sessionToken found. Please log in again.');
+  }
+
+  const payload = {
+    tokenMint,
+    tokenAmount,
+    tokenPrice,
+    slippage,
+    fee
+  }
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(CONFIG.API_BASE_URL + '/api/sell', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        return {
+          solReceived: result.solReceived,
+          tokensSold: result.tokensSold,
+          fees: result.fees
+        };
+      } else {
+        throw new Error(result.error || 'Sell failed');
+      }
+
+    } catch (error) {
+      if (attempt === 1) {
+        console.error('❌ Sell failed after retry:', error);
+        return null;
+      }
+      if (attempt === 2) throw error;
+      console.warn(`Retrying sellToken... (${attempt + 1})`);
     }
-
-    const response = await fetch('http://localhost:3000/api/sell', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionToken}`
-      },
-      body: JSON.stringify({
-        tokenMint,
-        tokenAmount,
-        tokenPrice,
-        slippage,
-        fee
-      })
-    });
-
-    const result = await response.json();
-
-    if (response.ok && result.success) {
-      console.log('✅ Token sale successful:', result);
-      return {
-        solReceived: result.solReceived,
-        tokensSold: result.tokensSold,
-        fees: result.fees
-      };
-    } else {
-      throw new Error(result.error || 'Sell failed');
-    }
-
-  } catch (error) {
-    console.error('❌ Error selling token:', error.message);
-    return null;
   }
 }

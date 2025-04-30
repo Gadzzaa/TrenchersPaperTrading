@@ -131,6 +131,7 @@ function handleRouteChange() {
   } else {
     if (appInjected) {
       removeApp();
+      removeEventListener()
       appInjected = false;
     }
   }
@@ -322,7 +323,7 @@ async function getPrice() {
     const solUsdPrice = localStorage.getItem('solUsdPrice');
     const tokenPriceUsd = marketCapUsd / tokenSupply;
     console.log('Finished getting price:', (tokenPriceUsd / solUsdPrice).toFixed(9), solUsdPrice);
-    return (tokenPriceUsd / solUsdPrice).toFixed(9);
+    return parseFloat((tokenPriceUsd / solUsdPrice).toFixed(9));
   } catch (error) {
     console.error('Error fetching price:', error);
     return null;
