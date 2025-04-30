@@ -13,6 +13,8 @@ import { getPortfolio } from './portofolioHandler.js'; // Importing Balance Func
 import { buyToken } from './buyHandler.js'; // Importing Buy Functions
 import { sellByPercentage } from './sellHandler.js'; // Importing Sell Functions
 
+import { updateUnrealizedPnl, recordBuy, recordSell, loadPositions, removePosition } from './pnlHandler.js'; // Importing PnL Functions
+
 const actionButtons = document.querySelectorAll('.buyButtons button, .sellButtons button');
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -50,13 +52,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     defaultPreset.classList.add('activePreset');
   }
   applyPreset(getActivePreset()); // Load default preset on page load
+
+  loadPositions();
+  updateUnrealizedPnl();
+  // refresh periodically if you like:
+  setInterval(updateUnrealizedPnl, 250);
 });
 actionButtons.forEach(button => {
   button.addEventListener('click', async () => {
     showSpinner();
 
     const action = button.dataset.action;
-    const amount = parseFloat(button.dataset.amount);
+    const solSpent = parseFloat(button.dataset.amount);
     const symbol = await requestSymbol(); // Fetch the symbol of the token
     const price = await requestPrice(); // Fetch the price of the token
     if (price == null) {
@@ -73,31 +80,34 @@ actionButtons.forEach(button => {
     }
 
     console.log('Action:', action);
-    console.log('Amount:', amount);
+    console.log('Sol Spent:', solSpent);
     console.log('Symbol:', symbol);
     console.log('Price:', price);
     console.log('Token Mint:', tokenMint);
 
-    if (action && amount && symbol && tokenMint) {
+    if (action && solSpent && symbol && tokenMint) {
       try {
         if (action === 'buy') {
-          const result = await buyToken(tokenMint, amount, price);
+          const result = await buyToken(tokenMint, solSpent, price);
 
           if (result) {
             showNotification(`✅ You bought ${parseFloat(result.tokensReceived).toFixed(2)} ${symbol}!`, 'success');
+            await recordBuy(tokenMint, parseFloat(price), solSpent); // Add to open positions
             await updateBalanceUI();
           } else {
             showNotification('❌ Failed to buy token.', 'error');
           }
 
         } else if (action === 'sell') {
-          const result = await sellByPercentage(tokenMint, amount, price);
+          const result = await sellByPercentage(tokenMint, solSpent, price);
 
           if (result) {
             showNotification(`✅ You sold ${parseFloat(result.tokensSold).toFixed(2)} ${symbol} for ${parseFloat(result.solReceived).toFixed(2)} SOL!`, 'success');
+            //await recordSell(tokenMint, parseFloat(price), result.tokensSold, solSpent); // Remove from open positions
             await updateBalanceUI();
           } else {
             showNotification('❌ Failed to sell token.', 'error');
+            removePosition(tokenMint); // Remove from open positions
           }
         } else {
           showNotification('❓ Unknown action.', 'error');
@@ -136,7 +146,7 @@ function requestSymbol() {
     }, '*');
   });
 }
-function requestPrice() {
+export function requestPrice() {
   return new Promise((resolve) => {
     const requestId = 'get-price-' + Date.now();
 

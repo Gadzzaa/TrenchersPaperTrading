@@ -271,25 +271,46 @@ body {
   margin: 1rem 0.5rem;
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  gap: 4rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   /* faint border */
   /* REMOVE big box-shadow */
 }
 
-.infoContainer p {
-  font-size: 0.9rem;
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  /* stack label above value */
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  /* center them */
+}
+
+.infoLabel {
+  font-size: 0.8rem;
   font-weight: 600;
   margin: 0;
   color: #ffffff;
+  margin-bottom: 0.25rem;
 }
 
-.infoContainer span {
-  font-size: 1.2rem;
+.infoValue {
+  font-weight: bold;
+  font-size: 1.0rem;
   font-weight: 700;
   color: #00FFAB;
   display: inline-block;
 }
+
+.positive {
+  color: #00FFAB;
+}
+
+.negative {
+  color: #FF4B5C;
+}
+
 
 /* Section Divider */
 .sectionDivider {

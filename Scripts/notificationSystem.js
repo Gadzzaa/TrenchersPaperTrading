@@ -63,5 +63,5 @@ export function showNotification(message, type) {
   slideOutTimeout = setTimeout(() => {
     notificationPopup.style.opacity = '0';
     notificationPopup.style.transform = 'translateX(-50%) translateY(10px)';
-  }, 2000);
+  }, 3000);
 }

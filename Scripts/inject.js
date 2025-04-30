@@ -5,6 +5,12 @@ let contractObserver = null;
 let lastFullPath = location.pathname;
 let lastContract = null;
 
+// 🚀 Start the app
+monitorRouteChanges();
+getSolPrice();
+setInterval(getSolPrice, 60 * 60 * 500);
+
+
 window.addEventListener('message', async (event) => {
   const { type, requestId } = event.data;
 
@@ -146,7 +152,7 @@ function injectApp() {
     top: '100px',
     left: '100px',
     width: '340px',
-    height: '525px',
+    height: '530px',
     zIndex: '99999',
     background: 'rgba(30, 30, 30, 0.95)',
     borderRadius: '12px',
@@ -218,9 +224,6 @@ function monitorRouteChanges() {
 
   handleRouteChange();
 }
-
-// 🚀 Start the app
-monitorRouteChanges();
 
 /**
  * Parses a compact number string like "27.9K", "1B", "123M" into a Number.
@@ -316,16 +319,7 @@ async function getPrice() {
   try {
     const tokenSupply = getSupply();
     const marketCapUsd = getMarketCapFromTitle();
-
-    const resp = await fetchWithTimeout(
-      'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd',
-      {},
-      5000
-    );
-    if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-    const { solana } = await resp.json();
-    const solUsdPrice = solana.usd;
-
+    const solUsdPrice = localStorage.getItem('solUsdPrice');
     const tokenPriceUsd = marketCapUsd / tokenSupply;
     console.log('Finished getting price:', (tokenPriceUsd / solUsdPrice).toFixed(9), solUsdPrice);
     return (tokenPriceUsd / solUsdPrice).toFixed(9);
@@ -333,4 +327,15 @@ async function getPrice() {
     console.error('Error fetching price:', error);
     return null;
   }
+}
+async function getSolPrice() {
+  const resp = await fetchWithTimeout(
+    'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd',
+    {},
+    5000
+  );
+  if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+  const { solana } = await resp.json();
+  const solUsdPrice = solana.usd;
+  localStorage.setItem('solUsdPrice', solUsdPrice);
 }

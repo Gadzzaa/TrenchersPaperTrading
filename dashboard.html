@@ -47,8 +47,14 @@
 
       <!-- Info -->
       <div class="infoContainer">
-        <p>Sol: <span id="balance">0</span></p>
-        <p>Pos: <span id="position">0</span></p>
+        <div class="infoItem">
+          <div class="infoLabel">Balance</div>
+          <div class="infoValue" id="balance">0</div>
+        </div>
+        <div class="infoItem">
+          <div class="infoLabel">PNL</div>
+          <div class="infoValue" id="position">0</div>
+        </div>
       </div>
 
       <!-- Buy -->
@@ -107,6 +113,7 @@
 <script type="module" src="Scripts/buyHandler.js" defer></script>
 <script type="module" src="Scripts/sellHandler.js" defer></script>
 <script type="module" src="Scripts/sessionChecker.js" defer></script>
+<script type="module" src="Scripts/pnlHandler.js" defer></script>
 <script type="module" src="Scripts/dashboard.js" defer></script>
 
 </html>

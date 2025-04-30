@@ -1,6 +1,7 @@
 import { showSpinner, hideSpinner } from './spinner.js';
 import { showNotification } from './notificationSystem.js';
 import { updateBalanceUI } from './dashboard.js';
+import { clearPositions } from './pnlHandler.js'; // Importing PnL Functions
 const accountNameBtn = document.getElementById('accountNameBtn');
 const accountDropdown = document.querySelector('.accountDropdown');
 const signOutBtn = document.getElementById('signOutBtn');
@@ -82,6 +83,7 @@ resetAccBtn.addEventListener('click', async () => {
     data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Set balance failed');
     showNotification(`✅ ${data.message}`, 'success');
+    clearPositions(); // Clear positions
     // Refresh your UI
     await updateBalanceUI();
     if (dropdownOpen) {
@@ -103,5 +105,6 @@ resetAccBtn.addEventListener('click', async () => {
 signOutBtn.addEventListener('click', () => {
   localStorage.removeItem('loggedInUsername');
   localStorage.removeItem('sessionToken');
+  localstorage.removeItem('openPositions');
   window.location.href = 'account.html';
 });
