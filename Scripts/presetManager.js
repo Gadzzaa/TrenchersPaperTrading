@@ -1,3 +1,4 @@
+const presetButtons = document.querySelectorAll('.presetsContainer button');
 let activePreset = 'preset1'; // Default preset
 let presets = {
   preset1: {
@@ -57,18 +58,15 @@ let presets = {
     }
   }
 };
-document.addEventListener('DOMContentLoaded', () => {
-  const presetButtons = document.querySelectorAll('.presetsContainer button');
 
-  presetButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      presetButtons.forEach(btn => btn.classList.remove('activePreset'));
-      button.classList.add('activePreset');
+presetButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    presetButtons.forEach(btn => btn.classList.remove('activePreset'));
+    button.classList.add('activePreset');
 
-      activePreset = button.id;
-      applyPreset(activePreset);          // 🔥 apply the selected preset to buttons
-      console.log("Applying preset: " + activePreset);
-    });
+    activePreset = button.id;
+    applyPreset(activePreset);          // 🔥 apply the selected preset to buttons
+    console.log("Applying preset: " + activePreset);
   });
 });
 // Getters
@@ -97,55 +95,50 @@ export function savePresets() {
 export function loadPresets() {
   const savedPresets = localStorage.getItem('presets');
   if (savedPresets !== null) {
-    try {
-      const parsed = JSON.parse(savedPresets);
+    const parsed = JSON.parse(savedPresets);
 
-      console.log("[loadPresets] Parsed Presets from Storage:", parsed);
+    console.log("[loadPresets] Parsed Presets from Storage:", parsed);
 
-      // Only copy valid fields
-      for (const presetName in parsed) {
-        if (!presets[presetName]) {
-          console.warn(`[loadPresets] Unknown preset '${presetName}' found, skipping.`);
+    // Only copy valid fields
+    for (const presetName in parsed) {
+      if (!presets[presetName]) {
+        console.warn(`[loadPresets] Unknown preset '${presetName}' found, skipping.`);
+        continue;
+      }
+
+      // Buys
+      for (const buyId in parsed[presetName].buys) {
+        const buy = parsed[presetName].buys[buyId];
+
+        if (!buy) {
+          console.warn(`[loadPresets] Null or undefined buy for ${buyId} in ${presetName}, skipping.`);
           continue;
         }
 
-        // Buys
-        for (const buyId in parsed[presetName].buys) {
-          const buy = parsed[presetName].buys[buyId];
-
-          if (!buy) {
-            console.warn(`[loadPresets] Null or undefined buy for ${buyId} in ${presetName}, skipping.`);
-            continue;
-          }
-
-          if (buy.amount !== "" && buy.amount !== null && buy.amount !== undefined) {
-            presets[presetName].buys[buyId] = buy;
-            console.log(`[loadPresets] Loaded BUY ${buyId} for ${presetName}:`, buy);
-          } else {
-            console.warn(`[loadPresets] Blank BUY amount for ${buyId} in ${presetName}, skipping.`);
-          }
-        }
-
-        // Sells
-        for (const sellId in parsed[presetName].sells) {
-          const sell = parsed[presetName].sells[sellId];
-
-          if (!sell) {
-            console.warn(`[loadPresets] Null or undefined sell for ${sellId} in ${presetName}, skipping.`);
-            continue;
-          }
-
-          if (sell.amount !== "" && sell.amount !== null && sell.amount !== undefined) {
-            presets[presetName].sells[sellId] = sell;
-            console.log(`[loadPresets] Loaded SELL ${sellId} for ${presetName}:`, sell);
-          } else {
-            console.warn(`[loadPresets] Blank SELL amount for ${sellId} in ${presetName}, skipping.`);
-          }
+        if (buy.amount !== "" && buy.amount !== null && buy.amount !== undefined) {
+          presets[presetName].buys[buyId] = buy;
+          console.log(`[loadPresets] Loaded BUY ${buyId} for ${presetName}:`, buy);
+        } else {
+          console.warn(`[loadPresets] Blank BUY amount for ${buyId} in ${presetName}, skipping.`);
         }
       }
-    } catch (e) {
-      console.error('[loadPresets] Failed to parse presets:', e);
-      return;
+
+      // Sells
+      for (const sellId in parsed[presetName].sells) {
+        const sell = parsed[presetName].sells[sellId];
+
+        if (!sell) {
+          console.warn(`[loadPresets] Null or undefined sell for ${sellId} in ${presetName}, skipping.`);
+          continue;
+        }
+
+        if (sell.amount !== "" && sell.amount !== null && sell.amount !== undefined) {
+          presets[presetName].sells[sellId] = sell;
+          console.log(`[loadPresets] Loaded SELL ${sellId} for ${presetName}:`, sell);
+        } else {
+          console.warn(`[loadPresets] Blank SELL amount for ${sellId} in ${presetName}, skipping.`);
+        }
+      }
     }
   } else {
     console.warn("[loadPresets] No saved presets found in storage.");

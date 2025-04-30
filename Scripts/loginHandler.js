@@ -1,13 +1,12 @@
 import { showSpinner, hideSpinner } from './spinner.js'; // 🔥 loading
 import { showNotification } from './notificationSystem.js'; // 🔥 notification
-import CONFIG from '../config.js';
-
+const rememberMe = document.getElementById('rememberMeCheckbox').checked;
 
 export async function handleLogin() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   const loginButton = document.getElementById('loginButton');
-  const rememberMe = document.getElementById('rememberMeCheckbox').checked;
+
   if (!username || !password) {
     showNotification('Please fill in both fields.', 'error');
     return;
@@ -23,7 +22,7 @@ export async function handleLogin() {
   await new Promise(resolve => setTimeout(resolve, 600)); // 600ms small delay
 
   try {
-    const response = await fetch(CONFIG.API_BASE_URL + '/api/login', {
+    const response = await fetch('http://localhost:3000/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -35,32 +34,28 @@ export async function handleLogin() {
 
 
     if (response.ok) {
-      if (!result.token) {
-        showNotification('Invalid token received. Please try again.', 'error');
-        return;
-      }
       showNotification('Login Successful', 'success');
       localStorage.setItem('loggedInUsername', username);
       localStorage.setItem('sessionToken', result.token);
       setTimeout(() => {
         window.location.href = 'dashboard.html';
+        hideSpinner();
         loginButton.disabled = false; // 🔥 Re-enable button
         loginButton.style.opacity = '1';
         loginButton.style.cursor = 'pointer';
-        hideSpinner();
       }, 1000);
     } else {
       showNotification(result.message || 'Login Failed', 'error');
+      hideSpinner();
       loginButton.disabled = false; // 🔥 Re-enable button
       loginButton.style.opacity = '1';
       loginButton.style.cursor = 'pointer';
-      hideSpinner();
     }
   } catch (error) {
+    hideSpinner();
     loginButton.disabled = false; // 🔥 Re-enable button
     loginButton.style.opacity = '1';
     loginButton.style.cursor = 'pointer';
-    hideSpinner();
 
     showNotification('Server Error', 'error');
     console.error('Login error:', error);

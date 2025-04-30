@@ -48,10 +48,8 @@
       <!-- Info -->
       <div class="infoContainer">
         <div class="infoItem">
-          <section aria-labelledby="balanceLabel">
-            <div class="infoLabel" id="balanceLabel">Balance</div>
-          </section>
-          <div class="infoValue" id="balance" role="status" aria-live="polite">0</div>
+          <div class="infoLabel">Balance</div>
+          <div class="infoValue" id="balance">0</div>
         </div>
         <div class="infoItem">
           <div class="infoLabel">PNL</div>
@@ -80,7 +78,7 @@
         <div class="sectionTitleBox">
           <h2>Sell</h2>
         </div>
-        <div class="sellButtons movableObjects" id="sellButtons">
+        <div class="sellButtons movableObjects">
           <button id="SellButton1" data-action="sell" data-amount="10" data-symbol="%"></button>
           <button id="SellButton2" data-action="sell" data-amount="25" data-symbol="%"></button>
           <button id="SellButton3" data-action="sell" data-amount="50" data-symbol="%"></button>
@@ -100,7 +98,7 @@
     </div>
 
   </div>
-  <div id="notificationPopup" class="notificationPopup movableObjects" role="alert" aria-live="polite">
+  <div id="notificationPopup" class="notificationPopup movableObjects">
     <div id="notificationInner">
       <span id="notificationText"></span>
     </div>
@@ -111,12 +109,11 @@
 <script type="module" src="Scripts/notificationSystem.js" defer></script>
 <script type="module" src="Scripts/presetManager.js" defer></script>
 <script type="module" src="Scripts/spinner.js" defer></script>
-<script type="module" src="Scripts/portfolioHandler.js" defer></script>
+<script type="module" src="Scripts/portofolioHandler.js" defer></script>
 <script type="module" src="Scripts/buyHandler.js" defer></script>
 <script type="module" src="Scripts/sellHandler.js" defer></script>
 <script type="module" src="Scripts/sessionChecker.js" defer></script>
 <script type="module" src="Scripts/pnlHandler.js" defer></script>
-<script type="module" src="Scripts/getTokenInfo.js" defer></script>
 <script type="module" src="Scripts/dashboard.js" defer></script>
 
 </html>

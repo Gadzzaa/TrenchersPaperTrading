@@ -1,4 +1,5 @@
 // Importing Presets
+const defaultPreset = document.getElementById('preset1'); // Assuming P1 has id 'preset1'
 import { applyPreset, loadPresets, getActivePreset } from './presetManager.js'; // Importing Preset Functions
 
 import { showNotification } from './notificationSystem.js'; // Importing Notification Functions
@@ -7,7 +8,7 @@ import { checkSession } from './sessionChecker.js'; // Importing Session Functio
 
 import { showSpinner, hideSpinner } from './spinner.js'; // Importing Spinner Functions
 
-import { getPortfolio } from './portfolioHandler.js'; // Importing Balance Functions
+import { getPortfolio } from './portofolioHandler.js'; // Importing Balance Functions
 
 import { buyToken } from './buyHandler.js'; // Importing Buy Functions
 import { sellByPercentage } from './sellHandler.js'; // Importing Sell Functions
@@ -17,7 +18,6 @@ import { updateUnrealizedPnl, recordBuy, recordSell, loadPositions, removePositi
 const actionButtons = document.querySelectorAll('.buyButtons button, .sellButtons button');
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const defaultPreset = document.getElementById('preset1'); // Assuming P1 has id 'preset1'
   const sessionToken = localStorage.getItem('sessionToken');
   const loggedInUsername = localStorage.getItem('loggedInUsername');
 
@@ -54,25 +54,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyPreset(getActivePreset()); // Load default preset on page load
 
   loadPositions();
-  requestAnimationFrame(animateUnrealizedPnl);
+  updateUnrealizedPnl();
   // refresh periodically if you like:
   setInterval(updateUnrealizedPnl, 250);
 });
-function animateUnrealizedPnl() {
-  updateUnrealizedPnl();
-  requestAnimationFrame(animateUnrealizedPnl);
-}
 actionButtons.forEach(button => {
   button.addEventListener('click', async () => {
     showSpinner();
-    button.disabled = true;
 
     const action = button.dataset.action;
     const solSpent = parseFloat(button.dataset.amount);
-    if (isNaN(solSpent)) {
-      showNotification('❌ Invalid amount provided.', 'error');
-      return;
-    }
+    const symbol = await requestSymbol(); // Fetch the symbol of the token
     const price = await requestPrice(); // Fetch the price of the token
     if (price == null) {
       console.warn('❌ Failed to fetch token price: ', price);
@@ -128,24 +120,18 @@ actionButtons.forEach(button => {
       showNotification(`❓ Missing button data attributes.`, 'error');
     }
 
-    button.disabled = false;
     hideSpinner();
   });
 });
 
-export function requestSymbol() {
+function requestSymbol() {
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => {
-      window.removeEventListener('message', handleMessage);
-      reject('Timeout waiting for SYMBOL_RESPONSE');
-    }, 5000);
     const requestId = 'get-symbol-' + Date.now();
 
     // Listen for response
     function handleMessage(event) {
       const { type, symbol, requestId: responseId } = event.data;
       if (type === 'SYMBOL_RESPONSE' && responseId === requestId) {
-        clearTimeout(timeout);
         window.removeEventListener('message', handleMessage);
         resolve(symbol);
       }
@@ -162,18 +148,12 @@ export function requestSymbol() {
 }
 export function requestPrice() {
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => {
-      window.removeEventListener('message', handleMessage);
-      reject('Timeout waiting for PRICE_RESPONSE');
-    }, 5000);
-
     const requestId = 'get-price-' + Date.now();
 
     // Listen for response
     function handleMessage(event) {
       const { type, price, requestId: responseId } = event.data;
       if (type === 'PRICE_RESPONSE' && responseId === requestId) {
-        clearTimeout(timeout);
         window.removeEventListener('message', handleMessage);
         resolve(price);
       }
@@ -188,20 +168,14 @@ export function requestPrice() {
     }, '*');
   });
 }
-export function requestCurrentContract() {
+function requestCurrentContract() {
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => {
-      window.removeEventListener('message', handleMessage);
-      reject('Timeout waiting for CONTRACT_RESPONSE');
-    }, 5000);
-
     const requestId = 'get-contract-' + Date.now();
 
     // Listen for response
     function handleMessage(event) {
       const { type, contract, requestId: responseId } = event.data;
       if (type === 'CONTRACT_RESPONSE' && responseId === requestId) {
-        clearTimeout(timeout);
         window.removeEventListener('message', handleMessage);
         resolve(contract);
       }
