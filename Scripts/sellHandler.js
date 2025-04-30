@@ -3,7 +3,7 @@ import { showNotification } from './notificationSystem.js';
 import { showSpinner, hideSpinner } from './spinner.js';
 import { updateBalanceUI } from './dashboard.js';
 
-export async function sellByPercentage(tokenMint, percentage) {
+export async function sellByPercentage(tokenMint, percentage, price) {
   try {
     showSpinner();
 
@@ -18,7 +18,7 @@ export async function sellByPercentage(tokenMint, percentage) {
       return;
     }
 
-    const amountToSell = parseFloat((totalAmount * (percentage / 100)).toFixed(6));
+    const amountToSell = parseFloat((totalAmount * (percentage / 100)).toFixed(9));
 
     if (amountToSell <= 0) {
       showNotification('❌ No tokens to sell.', 'error');
@@ -27,7 +27,7 @@ export async function sellByPercentage(tokenMint, percentage) {
 
     console.log(`Selling ${amountToSell} tokens (${percentage}% of your ${tokenMint})`);
 
-    const result = await sellToken(tokenMint, amountToSell);
+    const result = await sellToken(tokenMint, amountToSell, price);
 
     if (result) {
       showNotification(`✅ Sold ${result.tokensSold.toFixed(2)} tokens for ${result.solReceived.toFixed(2)} SOL!`, 'success');
@@ -45,7 +45,7 @@ export async function sellByPercentage(tokenMint, percentage) {
   }
 }
 
-async function sellToken(tokenMint, tokenAmount, slippage = 2, fee = 0.1) {
+async function sellToken(tokenMint, tokenAmount, tokenPrice, slippage = 2, fee = 0.1) {
   try {
     const sessionToken = localStorage.getItem('sessionToken');
     if (!sessionToken) {
@@ -61,6 +61,7 @@ async function sellToken(tokenMint, tokenAmount, slippage = 2, fee = 0.1) {
       body: JSON.stringify({
         tokenMint,
         tokenAmount,
+        tokenPrice,
         slippage,
         fee
       })

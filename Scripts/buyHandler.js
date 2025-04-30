@@ -1,4 +1,4 @@
-export async function buyToken(tokenMint, solAmount, slippage = 2, fee = 0.1) {
+export async function buyToken(tokenMint, solAmount, tokenPrice, slippage = 2, fee = 0.1) {
   try {
     const sessionToken = localStorage.getItem('sessionToken');
     if (!sessionToken) {
@@ -14,6 +14,7 @@ export async function buyToken(tokenMint, solAmount, slippage = 2, fee = 0.1) {
       body: JSON.stringify({
         tokenMint,
         solAmount,
+        tokenPrice,
         slippage,
         fee
       })

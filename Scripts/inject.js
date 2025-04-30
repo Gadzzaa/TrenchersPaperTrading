@@ -5,7 +5,7 @@ let contractObserver = null;
 let lastFullPath = location.pathname;
 let lastContract = null;
 
-window.addEventListener('message', (event) => {
+window.addEventListener('message', async (event) => {
   const { type, requestId } = event.data;
 
   if (type === 'CONTRACT_REQUEST' && requestId) {
@@ -16,8 +16,15 @@ window.addEventListener('message', (event) => {
       requestId
     }, '*');
   }
+  if (type === 'PRICE_REQUEST' && requestId) {
+    const price = await getPrice();
+    event.source.postMessage({
+      type: 'PRICE_RESPONSE',
+      price,
+      requestId
+    }, '*');
+  }
 });
-
 // Extract contract from image src
 function extractContractFromImage() {
   const link = document.querySelector('a[href*="x.com/search?q="]');
@@ -183,3 +190,116 @@ function monitorRouteChanges() {
 
 // 🚀 Start the app
 monitorRouteChanges();
+
+/**
+ * Parses a compact number string like "27.9K", "1B", "123M" into a Number.
+ */
+function parseCompactNumber(txt) {
+  // 1) Make sure we have a string
+  const raw = String(txt).trim();
+
+  // 2) Remove any leading $ or commas
+  const cleaned = raw.replace(/[$,]/g, "");
+
+  // 3) Regex: capture number + optional unit (K/M/B)
+  const re = /^(\d+(?:\.\d+)?)([KMB])?$/i;
+  const m = cleaned.match(re);
+  if (!m) {
+    const asNum = Number(cleaned);
+    if (isNaN(asNum)) {
+      throw new Error(`Unrecognized number format: "${txt}"`);
+    }
+    return asNum;
+  }
+
+  // 4) Parse the numeric part
+  const num = parseFloat(m[1]);
+  const unit = (m[2] || "").toUpperCase();
+
+  // 5) Apply multiplier if needed
+  const mult = unit === "K" ? 1e3
+    : unit === "M" ? 1e6
+      : unit === "B" ? 1e9
+        : 1;
+
+  return num * mult;
+}
+
+
+/**
+ * Finds the on-page "Supply" label, reads the next span's text,
+ * and returns the circulating supply as a Number.
+ */
+function getSupply() {
+  // 1. Grab all spans that style numeric values
+  const els = document.querySelectorAll('span.text-textPrimary');
+  // 2. Regex: digits (with optional decimals) ending in K, M, or B
+  const re = /^(\d+(?:\.\d+)?)([KMB])$/;
+
+  for (const el of els) {
+    const txt = el.textContent.trim();
+    const m = txt.match(re);
+    if (m) {
+      // parseCompactNumber is your helper from before
+      const supply = parseCompactNumber(txt);
+      console.log('Parsed supply:', supply);
+      return supply;
+    }
+  }
+
+  throw new Error('Supply element not found');
+}
+
+function getMarketCapFromTitle() {
+  const title = document.title.trim();
+  // e.g. "MyTokenName → $8.71K | Price: 0.00003 SOL"
+
+  // 1) Split on arrow
+  const arrowParts = title.split('$');
+  if (arrowParts.length < 2) {
+    throw new Error('Title missing arrow separator');
+  }
+
+  // 2) Take right side and split on pipe
+  const rightSide = arrowParts[1].trim();     // "$8.71K | Price:…"
+  const pipeParts = rightSide.split('|');
+  if (pipeParts.length < 1) {
+    throw new Error('Title missing pipe separator');
+  }
+
+  // 3) The first segment is the market cap string
+  const rawCap = pipeParts[0].trim();         // "$8.71K"
+
+  // 4) Parse it
+  const capNumber = parseCompactNumber(rawCap);
+  return capNumber;
+}
+function fetchWithTimeout(url, options = {}, ms = 5000) {
+  const timeout = new Promise((_, rej) =>
+    setTimeout(() => rej(new Error('Request timed out')), ms)
+  );
+  return Promise.race([fetch(url, options), timeout]);
+}
+
+async function getPrice() {
+  try {
+    const tokenSupply = getSupply();
+    const marketCapUsd = getMarketCapFromTitle();
+
+    const resp = await fetchWithTimeout(
+      'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd',
+      {},
+      5000
+    );
+    if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+    const { solana } = await resp.json();
+    const solUsdPrice = solana.usd;
+
+    const tokenPriceUsd = marketCapUsd / tokenSupply;
+    console.log('Finished getting price:', (tokenPriceUsd / solUsdPrice).toFixed(9), solUsdPrice);
+    return (tokenPriceUsd / solUsdPrice).toFixed(9);
+  } catch (error) {
+    console.error('Error fetching price:', error);
+    return null;
+  }
+}

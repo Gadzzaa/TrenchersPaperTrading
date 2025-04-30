@@ -58,20 +58,30 @@ actionButtons.forEach(button => {
     const action = button.dataset.action;
     const amount = parseFloat(button.dataset.amount);
     const symbol = button.dataset.symbol;  // TODO: GRAB TOKEN SYMBOL AFTER PARSING
+    const price = await requestPrice(); // Fetch the price of the token
+    if (price == null) {
+      console.warn('❌ Failed to fetch token price: ', price);
+      showNotification('❌ Token price is not an integer.', 'error');
+      hideSpinner();
+      return;
+    }
     const tokenMint = await requestCurrentContract();
     if (!tokenMint) {
       showNotification('❌ No contract loaded.', 'error');
+      hideSpinner();
       return;
     }
+
     console.log('Action:', action);
     console.log('Amount:', amount);
     console.log('Symbol:', symbol);
+    console.log('Price:', price);
     console.log('Token Mint:', tokenMint);
 
     if (action && amount && symbol && tokenMint) {
       try {
         if (action === 'buy') {
-          const result = await buyToken(tokenMint, amount);
+          const result = await buyToken(tokenMint, amount, price);
 
           if (result) {
             showNotification(`✅ You bought ${parseFloat(result.tokensReceived).toFixed(2)} ${symbol}!`, 'success');
@@ -81,7 +91,7 @@ actionButtons.forEach(button => {
           }
 
         } else if (action === 'sell') {
-          const result = await sellByPercentage(tokenMint, amount);
+          const result = await sellByPercentage(tokenMint, amount, price);
 
           if (result) {
             showNotification(`✅ You sold ${parseFloat(result.tokensSold).toFixed(2)} ${symbol} for ${parseFloat(result.solReceived).toFixed(2)} SOL!`, 'success');
@@ -103,6 +113,29 @@ actionButtons.forEach(button => {
     hideSpinner();
   });
 });
+
+function requestPrice() {
+  return new Promise((resolve) => {
+    const requestId = 'get-price-' + Date.now();
+
+    // Listen for response
+    function handleMessage(event) {
+      const { type, price, requestId: responseId } = event.data;
+      if (type === 'PRICE_RESPONSE' && responseId === requestId) {
+        window.removeEventListener('message', handleMessage);
+        resolve(price);
+      }
+    }
+
+    window.addEventListener('message', handleMessage);
+
+    // Send request
+    window.parent.postMessage({
+      type: 'PRICE_REQUEST',
+      requestId: requestId
+    }, '*');
+  });
+}
 function requestCurrentContract() {
   return new Promise((resolve) => {
     const requestId = 'get-contract-' + Date.now();

@@ -36,6 +36,10 @@ document.addEventListener('click', (e) => {
   }
 });
 
+resetAccBtn.addEventListener('click', () => {
+
+});
+
 signOutBtn.addEventListener('click', () => {
   localStorage.removeItem('loggedInUsername');
   localStorage.removeItem('sessionToken');
