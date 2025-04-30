@@ -20,10 +20,12 @@ buyButtons.forEach(button => {
     if (editMode) {
       e.preventDefault();
       e.stopImmediatePropagation(); // <--- FULLY stop the event from continuing
-      const newValue = prompt('Enter new BUY label:', button.dataset.amount);
-      const activePreset = getActivePreset();
-      const presets = getPresets();
+      let newValue = prompt('Enter new BUY label:', button.dataset.amount);
       if (newValue !== null && newValue.trim() !== '') {
+        newValue = parseFloat(newValue); // first parse to number
+        newValue = parseFloat(newValue.toFixed(2));
+        const activePreset = getActivePreset();
+        const presets = getPresets();
         button.dataset.amount = newValue;
         let amount = button.dataset.amount;
         let symbol = button.dataset.symbol;
@@ -48,10 +50,12 @@ sellButtons.forEach(button => {
     if (editMode) {
       e.preventDefault();
       e.stopImmediatePropagation(); // <--- FULLY stop the event from continuing
-      const newValue = prompt('Enter new SELL label:', button.dataset.amount);
-      const activePreset = getActivePreset();
-      const presets = getPresets();
+      let newValue = prompt('Enter new SELL label:', button.dataset.amount);
       if (newValue !== null && newValue.trim() !== '') {
+        newValue = parseFloat(newValue); // first parse to number
+        newValue = parseFloat(newValue.toFixed(2));
+        const activePreset = getActivePreset();
+        const presets = getPresets();
         button.dataset.amount = newValue;
         let amount = button.dataset.amount;
         let symbol = button.dataset.symbol;

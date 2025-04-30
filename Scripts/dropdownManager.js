@@ -1,6 +1,13 @@
+import { showSpinner, hideSpinner } from './spinner.js';
+import { showNotification } from './notificationSystem.js';
+import { updateBalanceUI } from './dashboard.js';
+import { clearPositions } from './pnlHandler.js'; // Importing PnL Functions
 const accountNameBtn = document.getElementById('accountNameBtn');
 const accountDropdown = document.querySelector('.accountDropdown');
+const signOutBtn = document.getElementById('signOutBtn');
+const resetAccBtn = document.getElementById('resetAccBtn');
 let dropdownOpen = false;
+
 accountNameBtn.addEventListener('click', (e) => {
   e.stopPropagation(); // Stop event bubbling
 
@@ -33,3 +40,71 @@ document.addEventListener('click', (e) => {
   }
 });
 
+function getAuthHeaders() {
+  const token = localStorage.getItem('sessionToken');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
+
+resetAccBtn.addEventListener('click', async () => {
+  // Ask the user what they want to do:
+  //   • leave blank or type "reset" → reset portfolio
+  //   • enter a number ≥ 1 → set new balance
+  const input = prompt(
+    `Enter a new SOL balance (≥1),\n`
+  );
+  if (input === null) return; // user clicked Cancel
+
+  showSpinner();
+  try {
+    const loggedInUsername = localStorage.getItem('loggedInUsername');
+    let resp, data;
+
+    // RESET
+    resp = await fetch(`http://localhost:3000/api/reset/:${loggedInUsername}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Reset failed');
+    showNotification('✅ Portfolio reset successfully!', 'success');
+    // SET BALANCE
+    const amount = parseFloat(input);
+    if (isNaN(amount) || amount < 1) {
+      throw new Error('Invalid amount—must be a number ≥ 1');
+    }
+    resp = await fetch('http://localhost:3000/api/set-balance', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ amount })
+    });
+    data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Set balance failed');
+    showNotification(`✅ ${data.message}`, 'success');
+    clearPositions(); // Clear positions
+    // Refresh your UI
+    await updateBalanceUI();
+    if (dropdownOpen) {
+      accountDropdown.style.animation = 'dropdownCollapse 0.3s ease forwards';
+      setTimeout(() => {
+        accountDropdown.style.opacity = '0';
+        accountDropdown.style.pointerEvents = 'none';
+      }, 300);
+    }
+    dropdownOpen = false;
+  } catch (err) {
+    console.error('Manage balance error:', err);
+    showNotification(`❌ ${err.message}`, 'error');
+  } finally {
+    hideSpinner();
+  }
+});
+
+signOutBtn.addEventListener('click', () => {
+  localStorage.removeItem('loggedInUsername');
+  localStorage.removeItem('sessionToken');
+  localStorage.removeItem('openPositions');
+  window.location.href = 'account.html';
+});

@@ -14,7 +14,7 @@
 
     <div class="spinnerOverlay" id="spinnerOverlay">
       <div class="spinnerBlock">
-        <div class="spinner"></div>
+        <div class="spinner movableObjects"></div>
         <p class="spinnerText" id="spinnerText">Processing...</p>
       </div>
     </div>
@@ -27,73 +27,80 @@
       </div>
     </div>
 
-    <!-- New container under TopBar -->
-    <div class="accountPresetsContainer">
-      <div class="accountDropdownWrapper">
-        <button class="accountNameButton" id="accountNameBtn">Account Name</button>
-        <div class="accountDropdown">
-          <button>Sign Out</button>
-          <button>Change Account</button>
-          <button>Reset Account</button>
+    <div id="mainContent">
+      <!-- New container under TopBar -->
+      <div class="accountPresetsContainer movableObjects">
+        <div class="accountDropdownWrapper">
+          <button class="accountNameButton" id="accountNameBtn">Account Name</button>
+          <div class="accountDropdown">
+            <button id="signOutBtn">Sign Out</button>
+            <button id="resetAccBtn">Reset Account</button>
+          </div>
+        </div>
+        <div class="presetsContainer">
+          <button id="preset1">P1</button>
+          <button id="preset2">P2</button>
+          <button id="preset3">P3</button>
+          <button id="preset4">P4</button>
         </div>
       </div>
-      <div class="presetsContainer">
-        <button id="preset1">P1</button>
-        <button id="preset2">P2</button>
-        <button id="preset3">P3</button>
-        <button id="preset4">P4</button>
+
+      <!-- Info -->
+      <div class="infoContainer">
+        <div class="infoItem">
+          <div class="infoLabel">Balance</div>
+          <div class="infoValue" id="balance">0</div>
+        </div>
+        <div class="infoItem">
+          <div class="infoLabel">PNL</div>
+          <div class="infoValue" id="position">0</div>
+        </div>
       </div>
+
+      <!-- Buy -->
+      <div class="buyContainer">
+        <div class="sectionTitleBox">
+          <h2>Buy</h2>
+        </div>
+        <button id="editModeToggle" class="editModeButton">✏️</button>
+        <div class="buyButtons movableObjects">
+          <button id="BuyButton1" data-action="buy" data-amount="1" data-symbol="SOL"></button>
+          <button id="BuyButton2" data-action="buy" data-amount="2" data-symbol="SOL"></button>
+          <button id="BuyButton3" data-action="buy" data-amount="3" data-symbol="SOL"></button>
+          <button id="BuyButton4" data-action="buy" data-amount="4" data-symbol="SOL"></button>
+        </div>
+      </div>
+
+      <hr class="sectionDivider2">
+
+      <!-- Sell -->
+      <div class="sellContainer">
+        <div class="sectionTitleBox">
+          <h2>Sell</h2>
+        </div>
+        <div class="sellButtons movableObjects">
+          <button id="SellButton1" data-action="sell" data-amount="10" data-symbol="%"></button>
+          <button id="SellButton2" data-action="sell" data-amount="25" data-symbol="%"></button>
+          <button id="SellButton3" data-action="sell" data-amount="50" data-symbol="%"></button>
+          <button id="SellButton4" data-action="sell" data-amount="100" data-symbol="%"></button>
+        </div>
+      </div>
+
     </div>
-
-    <!-- Info -->
-    <div class="infoContainer">
-      <p>Sol: <span id="balance">1000</span></p>
-      <p>Pos: <span id="position">0</span></p>
-    </div>
-
-    <!-- Buy -->
-    <div class="buyContainer">
-      <div class="sectionTitleBox">
-        <h2>Buy</h2>
-      </div>
-      <button id="editModeToggle" class="editModeButton">✏️</button>
-      <div class="buyButtons">
-        <button id="BuyButton1" data-action="buy" data-amount="1" data-symbol="SOL"></button>
-        <button id="BuyButton2" data-action="buy" data-amount="2" data-symbol="SOL"></button>
-        <button id="BuyButton3" data-action="buy" data-amount="3" data-symbol="SOL"></button>
-        <button id="BuyButton4" data-action="buy" data-amount="4" data-symbol="SOL"></button>
-      </div>
-    </div>
-
-    <hr class="sectionDivider2">
-
-    <!-- Sell -->
-    <div class="sellContainer">
-      <div class="sectionTitleBox">
-        <h2>Sell</h2>
-      </div>
-      <div class="sellButtons">
-        <button id="SellButton1" data-action="sell" data-amount="10" data-symbol="%"></button>
-        <button id="SellButton2" data-action="sell" data-amount="25" data-symbol="%"></button>
-        <button id="SellButton3" data-action="sell" data-amount="50" data-symbol="%"></button>
-        <button id="SellButton4" data-action="sell" data-amount="100" data-symbol="%"></button>
-      </div>
-    </div>
-
-    <hr class="sectionDivider">
 
     <!-- Footer -->
     <div class="footerContainer">
+      <hr class="sectionDivider">
       <a href="https://github.com/Gadzzaa/TrenchersPaperTrading" target="_blank">
         <img class="githubLogo" src="Images/github-mark.png" alt="GitHub Logo" />
       </a>
       <p>Version 1.0 &copy; 2025</p>
     </div>
 
-    <div id="notificationPopup" class="notificationPopup">
-      <div id="notificationInner">
-        <span id="notificationText"></span>
-      </div>
+  </div>
+  <div id="notificationPopup" class="notificationPopup movableObjects">
+    <div id="notificationInner">
+      <span id="notificationText"></span>
     </div>
   </div>
 </body>
@@ -102,6 +109,11 @@
 <script type="module" src="Scripts/notificationSystem.js" defer></script>
 <script type="module" src="Scripts/presetManager.js" defer></script>
 <script type="module" src="Scripts/spinner.js" defer></script>
+<script type="module" src="Scripts/portofolioHandler.js" defer></script>
+<script type="module" src="Scripts/buyHandler.js" defer></script>
+<script type="module" src="Scripts/sellHandler.js" defer></script>
+<script type="module" src="Scripts/sessionChecker.js" defer></script>
+<script type="module" src="Scripts/pnlHandler.js" defer></script>
 <script type="module" src="Scripts/dashboard.js" defer></script>
 
 </html>
