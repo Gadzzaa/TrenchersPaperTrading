@@ -105,6 +105,6 @@ resetAccBtn.addEventListener('click', async () => {
 signOutBtn.addEventListener('click', () => {
   localStorage.removeItem('loggedInUsername');
   localStorage.removeItem('sessionToken');
-  localstorage.removeItem('openPositions');
+  localStorage.removeItem('openPositions');
   window.location.href = 'account.html';
 });

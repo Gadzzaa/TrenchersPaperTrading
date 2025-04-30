@@ -103,7 +103,7 @@ actionButtons.forEach(button => {
 
           if (result) {
             showNotification(`✅ You sold ${parseFloat(result.tokensSold).toFixed(2)} ${symbol} for ${parseFloat(result.solReceived).toFixed(2)} SOL!`, 'success');
-            //await recordSell(tokenMint, parseFloat(price), result.tokensSold, solSpent); // Remove from open positions
+            await recordSell(tokenMint, parseFloat(price), result.tokensSold, solSpent); // Remove from open positions
             await updateBalanceUI();
           } else {
             showNotification('❌ Failed to sell token.', 'error');

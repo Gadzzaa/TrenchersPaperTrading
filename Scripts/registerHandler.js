@@ -47,4 +47,10 @@ export async function handleRegister() {
     showNotification('Server Error', 'error');
     console.error('Register error:', error);
   }
+  hideSpinner();
+  registerButton.disabled = false; // 🔥 Re-enable
+  registerButton.style.opacity = '1';
+  registerButton.style.cursor = 'pointer';
+
+
 }
