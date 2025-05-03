@@ -6,20 +6,20 @@ let pnlIntervalId = null;
 
 
 export function setActiveToken(mint, entryPrice, quantity) {
-  const positionEl = document.getElementById('position');
 
-  // Always clear text when switching tokens
-  if (positionEl) {
+
+  localStorage.setItem('currentMint', mint); // ✅ Save the current active mint
+
+  const positionEl = document.getElementById('position');
+  if (positionEl && currentMint != mint) {
     positionEl.classList.remove('positive', 'negative');
     positionEl.textContent = '0.00 SOL (0.00%)';
   }
 
-  // If no valid token → stop everything
   if (!mint || quantity <= 0) {
     console.log('[pnlHandler] Clearing active token and stopping PnL updates');
     currentMint = null;
     currentPosition = null;
-
     if (pnlIntervalId) clearInterval(pnlIntervalId);
     pnlIntervalId = null;
     return;
@@ -32,7 +32,6 @@ export function setActiveToken(mint, entryPrice, quantity) {
   if (pnlIntervalId) clearInterval(pnlIntervalId);
   pnlIntervalId = setInterval(updateUnrealizedPnl, 250);
 }
-
 /**
  * Updates the unrealized PnL display for the current token.
  */
@@ -83,12 +82,9 @@ export async function recordBuy(mint, entryPrice, solSpent) {
     openPositions.push({ mint, entryPrice, quantity });
   }
 
-  console.log(
-    `Recorded buy: ${mint} – now ${openPositions.find(p => p.mint === mint).quantity.toFixed(6)} tokens @ ${openPositions.find(p => p.mint === mint).entryPrice.toFixed(6)}`
-  );
-
   // 4) Refresh Unrealized PnL (assumes you have this function)
-  setActiveToken(mint, entryPrice, quantity);
+  const updated = openPositions.find(p => p.mint === mint);
+  setActiveToken(mint, updated.entryPrice, updated.quantity);
   await updateUnrealizedPnl();
   localStorage.setItem('openPositions', JSON.stringify(openPositions)); // Save to localStorage
 }
@@ -122,27 +118,15 @@ export async function recordSell(mint, exitPrice, quantitySold = 0, quantityPerc
     return;
   }
 
-  // 1) Realized PnL on this slice
-  const costBasis = pos.entryPrice * sellQty;
-  const proceeds = exitPrice * sellQty;
-  const realizedPnl = proceeds - costBasis;
-  console.log(
-    `Realized PnL for ${sellQty.toFixed(6)} ${mint}: ${realizedPnl.toFixed(6)} SOL`
-  );
-
   // 2) Subtract from the position
   pos.quantity -= sellQty;
 
   // 3) Remove if fully sold
-  if (pos.quantity <= 1) {
+  if (parseFloat(pos.quantity.toFixed(8)) === 0) {
     openPositions.splice(idx, 1);
     console.log(`Position fully closed: ${mint}`);
     setActiveToken(null);
     console.log("[recordSell] openPositions after removal:", openPositions);
-  } else {
-    console.log(
-      `Position updated: ${mint} → ${pos.quantity.toFixed(6)} tokens remaining @ ${pos.entryPrice.toFixed(6)} SOL`
-    );
   }
 
   localStorage.setItem('openPositions', JSON.stringify(openPositions)); // Save to localStorage
@@ -161,8 +145,8 @@ export async function removePosition(mint) {
   // Refresh your PnL display
   await updateUnrealizedPnl();
 }
-export function loadPositions() {
-  clearPositions(); // Clear existing positions
+export async function loadPositions() {
+  clearPositions();
   const storedPositions = localStorage.getItem('openPositions');
   if (storedPositions) {
     try {
@@ -175,8 +159,17 @@ export function loadPositions() {
   } else {
     console.log('No positions found in localStorage.');
   }
-}
 
+  // ✅ Restore last viewed active token
+  const lastMint = localStorage.getItem('currentMint');
+  if (lastMint) {
+    const pos = openPositions.find(p => p.mint === lastMint);
+    if (pos) {
+      setActiveToken(pos.mint, pos.entryPrice, pos.quantity);
+      await updateUnrealizedPnl();
+    }
+  }
+}
 export function clearPositions() {
   if (pnlIntervalId) {
     clearInterval(pnlIntervalId);

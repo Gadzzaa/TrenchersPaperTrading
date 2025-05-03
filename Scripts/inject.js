@@ -41,19 +41,28 @@ window.addEventListener('message', async (event) => {
 });
 // Extract contract from image src
 function extractContractFromImage() {
-  const link = document.querySelector('a[href*="x.com/search?q="]');
-  if (!link) return null;
+  const links = document.querySelectorAll('a[href*="x.com/search?q="]');
 
-  try {
-    const url = new URL(link.href);
-    const contract = url.searchParams.get('q');
+  for (const link of links) {
+    const target = link.getAttribute('target');
+    const rel = link.getAttribute('rel');
 
-    // Validate it's a real contract-looking string
-    if (contract && /^[A-Za-z0-9]{32,}$/.test(contract)) {
-      return contract;
+    const hasCorrectTarget = target === '_blank';
+    const hasCorrectRel = rel?.split(' ').includes('noopener') && rel?.split(' ').includes('noreferrer');
+
+    if (!hasCorrectTarget || !hasCorrectRel) continue; // skip if attributes are missing
+
+    try {
+      const url = new URL(link.href);
+      const contract = url.searchParams.get('q');
+
+      // Validate it's a real contract-looking string
+      if (contract && /^[A-Za-z0-9]{32,}$/.test(contract)) {
+        return contract;
+      }
+    } catch (error) {
+      console.error('❌ Error parsing contract from link:', error);
     }
-  } catch (error) {
-    console.error('❌ Error parsing contract from link:', error);
   }
 
   return null;
@@ -265,6 +274,8 @@ function parseCompactNumber(txt) {
  * and returns the circulating supply as a Number.
  */
 function getSupply() {
+  return 1000000000; // TODO: Fix this
+  /*
   // 1. Grab all spans that style numeric values
   const els = document.querySelectorAll('span.text-textPrimary');
   // 2. Regex: digits (with optional decimals) ending in K, M, or B
@@ -280,6 +291,7 @@ function getSupply() {
       return supply;
     }
   }
+  */
 
   throw new Error('Supply element not found');
 }

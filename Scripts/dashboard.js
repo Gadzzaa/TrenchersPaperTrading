@@ -1,6 +1,5 @@
 // Importing Presets
-const defaultPreset = document.getElementById('preset1'); // Assuming P1 has id 'preset1'
-import { applyPreset, loadPresets, getActivePreset } from './presetManager.js'; // Importing Preset Functions
+import { loadPresets, getActivePreset, setActivePreset } from './presetManager.js'; // Importing Preset Functions
 
 import { showNotification } from './notificationSystem.js'; // Importing Notification Functions
 
@@ -49,23 +48,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+
   // 🔥 If still valid, continue loading dashboard
   console.log("[dashboard.js] Logged in as:", loggedInUsername);
   const accountNameButton = document.getElementById('accountNameBtn'); // Make sure button exists
   if (accountNameButton && loggedInUsername) {
     accountNameButton.innerText = loggedInUsername;
   }
-
-  await updateBalanceUI(); // Update balance on page load
   loadPresets(); // Load presets from localStorage
-  if (defaultPreset) {
-    defaultPreset.classList.add('activePreset');
+  if (getActivePreset() === null) {
+    console.warn("[dashboard.js] No active preset found. Applying default preset.");
+    setActivePreset('preset1'); // Set default preset if none is found
   }
-  applyPreset(getActivePreset()); // Load default preset on page load
-
+  await updateBalanceUI(); // Update balance on page load
+  currentContract = await requestCurrentContract();
+  setInterval(async () => {
+    loadPresets(); // Load presets from localStorage
+    console.log('Active preset: ' + getActivePreset());
+    setActivePreset(getActivePreset());
+    let solBalance = localStorage.getItem('solBalance');
+    let newContract = await requestCurrentContract();
+    if (currentContract !== newContract) {
+      currentContract = newContract;
+    }
+    updateBalanceUI(solBalance); // Update balance every 5 seconds
+  }, 1000);
   loadPositions();
   const storedPositions = localStorage.getItem('openPositions');
-  currentContract = await requestCurrentContract();
   if (storedPositions && currentContract) {
     const parsed = JSON.parse(storedPositions);
     if (Array.isArray(parsed) && parsed.length > 0) {
@@ -79,18 +88,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   }
-  setInterval(async () => {
-    let solBalance = localStorage.getItem('solBalance');
-    let newContract = await requestCurrentContract();
-    if (currentContract !== newContract) {
-      currentContract = newContract;
-      console.log('Current contract updated:', currentContract);
-    }
-    updateBalanceUI(solBalance); // Update balance every 5 seconds
-  }, 500);
 });
 actionButtons.forEach(button => {
   button.addEventListener('click', async () => {
+    if (window.editMode === true) {
+      return; // ❗ SAFEGUARD to prevent normal action
+    }
     showSpinner();
 
     const action = button.dataset.action;
