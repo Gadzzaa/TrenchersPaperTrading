@@ -1,5 +1,6 @@
 import { showSpinner, hideSpinner } from './spinner.js'; // 🔥 loading
 import { showNotification } from './notificationSystem.js'; // 🔥 notification
+import { resetAccount } from './dropdownManager.js'; // Importing Reset Account Functions
 
 export async function handleRegister() {
   const username = document.getElementById('username').value.trim();
@@ -33,6 +34,7 @@ export async function handleRegister() {
       showNotification('Account created successfully!', 'success');
       localStorage.setItem('loggedInUsername', username);
       localStorage.setItem('sessionToken', result.token);
+      resetAccount(100); // 🔥 Reset account
       showNotification('You can now attempt to login.', 'success');
       hideSpinner();
     } else {

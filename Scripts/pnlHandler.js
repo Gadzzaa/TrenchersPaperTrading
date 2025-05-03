@@ -1,30 +1,62 @@
 import { requestPrice } from './dashboard.js';
 const openPositions = [];
-export async function updateUnrealizedPnl() {
-  let totalCost = 0, totalValue = 0;
+let currentMint = null;
+let currentPosition = null;
+let pnlIntervalId = null;
 
-  for (const pos of openPositions) {
-    const { mint, entryPrice, quantity } = pos;
-    const currentPrice = await requestPrice(mint);
-    totalCost += entryPrice * quantity;
-    totalValue += currentPrice * quantity;
+
+export function setActiveToken(mint, entryPrice, quantity) {
+  const positionEl = document.getElementById('position');
+
+  // Always clear text when switching tokens
+  if (positionEl) {
+    positionEl.classList.remove('positive', 'negative');
+    positionEl.textContent = '0.00 SOL (0.00%)';
   }
 
-  const totalPnl = (totalValue - totalCost);
-  const pnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
+  // If no valid token → stop everything
+  if (!mint || quantity <= 0) {
+    console.log('[pnlHandler] Clearing active token and stopping PnL updates');
+    currentMint = null;
+    currentPosition = null;
 
-  // Update the DOM
-  const position = document.getElementById('position');
-  position.classList.remove('positive', 'negative');
-  position.textContent = `${totalPnl.toFixed(2)} SOL (${pnlPct.toFixed(2)}%)`;
-  if (totalPnl >= 0) {
-    position.classList.add('positive');
+    if (pnlIntervalId) clearInterval(pnlIntervalId);
+    pnlIntervalId = null;
+    return;
   }
-  else {
-    position.classList.add('negative');
-  }
+
+  currentMint = mint;
+  currentPosition = { mint, entryPrice, quantity };
+  console.log(`[pnlHandler] Active token set to ${mint} | Qty: ${quantity}`);
+
+  if (pnlIntervalId) clearInterval(pnlIntervalId);
+  pnlIntervalId = setInterval(updateUnrealizedPnl, 250);
 }
 
+/**
+ * Updates the unrealized PnL display for the current token.
+ */
+export async function updateUnrealizedPnl() {
+  if (!currentPosition || !currentMint) return;
+
+  const { entryPrice, quantity } = currentPosition;
+  try {
+    const currentPrice = await requestPrice(currentMint);
+    const totalCost = entryPrice * quantity;
+    const totalValue = currentPrice * quantity;
+    const totalPnl = totalValue - totalCost;
+    const pnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
+
+    const positionEl = document.getElementById('position');
+    if (!positionEl) return;
+
+    positionEl.classList.remove('positive', 'negative');
+    positionEl.textContent = `${totalPnl.toFixed(2)} SOL (${pnlPct.toFixed(2)}%)`;
+    positionEl.classList.add(totalPnl >= 0 ? 'positive' : 'negative');
+  } catch (err) {
+    console.error('[pnlHandler] Failed to update PnL:', err);
+  }
+}
 export async function recordBuy(mint, entryPrice, solSpent) {
   // 1) Validate inputs
   if (
@@ -56,6 +88,7 @@ export async function recordBuy(mint, entryPrice, solSpent) {
   );
 
   // 4) Refresh Unrealized PnL (assumes you have this function)
+  setActiveToken(mint, entryPrice, quantity);
   await updateUnrealizedPnl();
   localStorage.setItem('openPositions', JSON.stringify(openPositions)); // Save to localStorage
 }
@@ -101,15 +134,18 @@ export async function recordSell(mint, exitPrice, quantitySold = 0, quantityPerc
   pos.quantity -= sellQty;
 
   // 3) Remove if fully sold
-  if (pos.quantity <= 0) {
+  if (pos.quantity <= 1) {
     openPositions.splice(idx, 1);
     console.log(`Position fully closed: ${mint}`);
+    setActiveToken(null);
+    console.log("[recordSell] openPositions after removal:", openPositions);
   } else {
     console.log(
       `Position updated: ${mint} → ${pos.quantity.toFixed(6)} tokens remaining @ ${pos.entryPrice.toFixed(6)} SOL`
     );
   }
 
+  localStorage.setItem('openPositions', JSON.stringify(openPositions)); // Save to localStorage
   // 4) Refresh your PnL display
   await updateUnrealizedPnl();
 }
@@ -142,7 +178,15 @@ export function loadPositions() {
 }
 
 export function clearPositions() {
+  if (pnlIntervalId) {
+    clearInterval(pnlIntervalId);
+    pnlIntervalId = null;
+  }
+  currentMint = null;
+  currentPosition = null;
   openPositions.length = 0; // Clear the array
   console.log('All positions cleared.');
+  document.getElementById('position').classList.remove('positive', 'negative'); // Reset UI
   document.getElementById('position').textContent = '0.00 SOL (0.00%)'; // Reset UI
+  localStorage.removeItem('openPositions'); // Clear from localStorage
 }
