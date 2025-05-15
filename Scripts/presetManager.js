@@ -1,5 +1,5 @@
 const presetButtons = document.querySelectorAll('.presetsContainer button');
-let activePreset = 'preset1'; // Default preset
+let activePreset = null; // Default preset
 let presets = {
   preset1: {
     buys: {
@@ -61,17 +61,12 @@ let presets = {
 
 presetButtons.forEach(button => {
   button.addEventListener('click', () => {
-    presetButtons.forEach(btn => btn.classList.remove('activePreset'));
-    button.classList.add('activePreset');
-
-    activePreset = button.id;
-    applyPreset(activePreset);          // 🔥 apply the selected preset to buttons
-    console.log("Applying preset: " + activePreset);
+    setActivePreset(button.id);
   });
 });
 // Getters
 export function getActivePreset() {
-  return activePreset;
+  return localStorage.getItem('activePreset');
 }
 
 export function getPresets() {
@@ -81,6 +76,13 @@ export function getPresets() {
 // Setters
 export function setActivePreset(presetName) {
   activePreset = presetName;
+  presetButtons.forEach(btn => btn.classList.remove('activePreset'));
+  document.getElementById(presetName).classList.add('activePreset');
+  activePreset = presetName;
+  applyPreset(activePreset);          // 🔥 apply the selected preset to buttons
+  console.log("Applying preset: " + activePreset);
+  localStorage.setItem('activePreset', activePreset); // Save active preset to localStorage
+  console.log(`[setActivePreset] Active preset set to: ${activePreset}`);
 }
 
 export function setPresets(newPresets) {
@@ -97,7 +99,6 @@ export function loadPresets() {
   if (savedPresets !== null) {
     const parsed = JSON.parse(savedPresets);
 
-    console.log("[loadPresets] Parsed Presets from Storage:", parsed);
 
     // Only copy valid fields
     for (const presetName in parsed) {
@@ -117,7 +118,6 @@ export function loadPresets() {
 
         if (buy.amount !== "" && buy.amount !== null && buy.amount !== undefined) {
           presets[presetName].buys[buyId] = buy;
-          console.log(`[loadPresets] Loaded BUY ${buyId} for ${presetName}:`, buy);
         } else {
           console.warn(`[loadPresets] Blank BUY amount for ${buyId} in ${presetName}, skipping.`);
         }
@@ -134,7 +134,6 @@ export function loadPresets() {
 
         if (sell.amount !== "" && sell.amount !== null && sell.amount !== undefined) {
           presets[presetName].sells[sellId] = sell;
-          console.log(`[loadPresets] Loaded SELL ${sellId} for ${presetName}:`, sell);
         } else {
           console.warn(`[loadPresets] Blank SELL amount for ${sellId} in ${presetName}, skipping.`);
         }
@@ -163,7 +162,6 @@ export function applyPreset(presetName) {
       button.dataset.amount = buttonData.amount;
       button.dataset.symbol = buttonData.symbol;
       button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
-      console.log(`Updated ${buttonId}: Buy ${buttonData.amount}`);
     } else {
       console.warn(`Buy button ${buttonId} not found or data missing.`);
     }
@@ -178,7 +176,6 @@ export function applyPreset(presetName) {
       button.dataset.amount = buttonData.amount;
       button.dataset.symbol = buttonData.symbol;
       button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
-      console.log(`Updated ${buttonId}: Sell ${buttonData.amount}`);
     } else {
       console.warn(`Sell button ${buttonId} not found or data missing.`);
     }

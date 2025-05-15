@@ -1,6 +1,5 @@
 // Importing Presets
-const defaultPreset = document.getElementById('preset1'); // Assuming P1 has id 'preset1'
-import { applyPreset, loadPresets, getActivePreset } from './presetManager.js'; // Importing Preset Functions
+import { loadPresets, getActivePreset, setActivePreset } from './presetManager.js'; // Importing Preset Functions
 
 import { showNotification } from './notificationSystem.js'; // Importing Notification Functions
 
@@ -13,9 +12,11 @@ import { getPortfolio } from './portofolioHandler.js'; // Importing Balance Func
 import { buyToken } from './buyHandler.js'; // Importing Buy Functions
 import { sellByPercentage } from './sellHandler.js'; // Importing Sell Functions
 
-import { updateUnrealizedPnl, recordBuy, recordSell, loadPositions, removePosition } from './pnlHandler.js'; // Importing PnL Functions
+import { setActiveToken, recordBuy, recordSell, loadPositions, removePosition, clearPositions } from './pnlHandler.js'; // Importing PnL Functions
 
 const actionButtons = document.querySelectorAll('.buyButtons button, .sellButtons button');
+
+let currentContract = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const sessionToken = localStorage.getItem('sessionToken');
@@ -24,20 +25,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log("[dashboard.js] Session Token:", sessionToken);
 
   if (!sessionToken) {
-    console.warn("[dashboard.js] No session token found. Redirecting...");
-    window.location.href = 'account.html';
-    return;
-  }
+    clearPositions(); // Clear positions if no session token
+    const alreadyRedirected = window.location.search.includes('redirected=true');
+    if (alreadyRedirected) {
+      console.warn("[dashboard.js] Already redirected once, not looping.");
+      return;
+    }
 
-  // 🔥 Check if session is really valid
+    console.warn("[dashboard.js] No session token. Redirecting to account...");
+    window.location.href = 'account.html?redirected=true';
+    return;
+  }  // 🔥 Check if session is really valid
   const isSessionValid = await checkSession();
 
   if (!isSessionValid) {
+    clearPositions(); // Clear positions if session is invalid
     console.warn("[dashboard.js] Session token invalid. Redirecting...");
-    localStorage.removeItem('sessionToken'); // Clean it
-    window.location.href = 'account.html';
+    setTimeout(() => {
+      window.location.href = 'account.html';
+      localStorage.removeItem('sessionToken'); // Clean it
+    }, 1000);
     return;
   }
+
 
   // 🔥 If still valid, continue loading dashboard
   console.log("[dashboard.js] Logged in as:", loggedInUsername);
@@ -45,21 +55,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (accountNameButton && loggedInUsername) {
     accountNameButton.innerText = loggedInUsername;
   }
-
-  await updateBalanceUI(); // Update balance on page load
   loadPresets(); // Load presets from localStorage
-  if (defaultPreset) {
-    defaultPreset.classList.add('activePreset');
+  if (getActivePreset() === null) {
+    console.warn("[dashboard.js] No active preset found. Applying default preset.");
+    setActivePreset('preset1'); // Set default preset if none is found
   }
-  applyPreset(getActivePreset()); // Load default preset on page load
-
+  await updateBalanceUI(); // Update balance on page load
+  currentContract = await requestCurrentContract();
+  setInterval(async () => {
+    loadPresets(); // Load presets from localStorage
+    console.log('Active preset: ' + getActivePreset());
+    setActivePreset(getActivePreset());
+    let solBalance = localStorage.getItem('solBalance');
+    let newContract = await requestCurrentContract();
+    if (currentContract !== newContract) {
+      currentContract = newContract;
+    }
+    updateBalanceUI(solBalance); // Update balance every 5 seconds
+  }, 1000);
   loadPositions();
-  updateUnrealizedPnl();
-  // refresh periodically if you like:
-  setInterval(updateUnrealizedPnl, 250);
+  const storedPositions = localStorage.getItem('openPositions');
+  if (storedPositions && currentContract) {
+    const parsed = JSON.parse(storedPositions);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      window.openPositions = parsed;
+
+      const match = parsed.find(p => p.mint === currentContract && p.quantity > 0);
+      if (match) {
+        setActiveToken(match.mint, match.entryPrice, match.quantity);
+      } else {
+        console.warn(`[dashboard.js] Stored mint ${storedMint} not found or has 0 quantity.`);
+      }
+    }
+  }
 });
 actionButtons.forEach(button => {
   button.addEventListener('click', async () => {
+    if (window.editMode === true) {
+      return; // ❗ SAFEGUARD to prevent normal action
+    }
     showSpinner();
 
     const action = button.dataset.action;
@@ -72,7 +106,7 @@ actionButtons.forEach(button => {
       hideSpinner();
       return;
     }
-    const tokenMint = await requestCurrentContract();
+    const tokenMint = currentContract;
     if (!tokenMint) {
       showNotification('❌ No contract loaded.', 'error');
       hideSpinner();
@@ -190,15 +224,23 @@ function requestCurrentContract() {
     }, '*');
   });
 }
-export async function updateBalanceUI() {
+export async function updateBalanceUI(balance) {
   const solBalance = document.getElementById('balance');
-  const result = await getPortfolio(); // must await
-  if (result) {
-    solBalance.innerText = parseFloat(result.solBalance).toFixed(2);
-    triggerPulse('balance');
+  if (!balance) {
+    const result = await getPortfolio(); // must await
+    if (result) {
+      solBalance.innerText = parseFloat(result.solBalance).toFixed(2);
+      localStorage.setItem('solBalance', parseFloat(result.solBalance).toFixed(2));
+      triggerPulse('balance');
+    } else {
+      console.error('Failed to fetch balance');
+    }
   } else {
-    console.error('Failed to fetch balance');
+    if (solBalance.innerText !== balance) {
+      solBalance.innerText = balance;
+    }
   }
+
 }
 
 function triggerPulse(elementId) {
