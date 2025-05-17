@@ -68,7 +68,7 @@ function extractContractFromImage() {
   return null;
 }
 function extractSymbol() {
-  const xpath = '/html/body/div[1]/div[3]/div/div/div/div/div[1]/div[1]/div/div[1]/div[2]/div/div[1]/div[2]/div[1]/span[1]'
+  const xpath = '/html/body/div[1]/div[3]/div/div/div/div/div[1]/div[1]/div/div[1]/div[2]/div/div/div/div[1]/div[2]/div[1]/span[1]'
   const symbolElement = getElementByXPath(xpath);
   if (!symbolElement) return null;
   try {
