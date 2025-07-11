@@ -1,0 +1,243 @@
+html {
+  --background: #1e1e2e;
+  --footerbg: #181825;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --text: #cdd6f4;
+  --active: #89b4fa;
+  --surface: #45475a;
+  margin: 0;
+  padding: 0;
+}
+
+#solanaLogo {
+  width: 12px;
+  height: 12px;
+  margin: auto;
+}
+
+.hidden {
+  opacity: 0.5;
+}
+
+#Container {
+  width: 350px;
+  height: 200px;
+  background-color: var(--background);
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+#Move {
+  color: var(--text);
+  opacity: 0.5;
+  cursor: grab;
+  margin: auto;
+  margin-top: 5px;
+  font-size: 12px;
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+  text-align: center;
+  display: inline-block;
+  overflow: hidden;
+}
+
+#Header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#Presets {
+  max-width: 120px;
+  max-height: 20px;
+  margin: 10px auto 0 10px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+#editIcon {
+  width: 10px;
+  height: 10px;
+}
+
+.preset {
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+  width: 12px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+  padding: 0;
+}
+
+#editIcon {
+  width: 9px !important;
+  height: 8px !important;
+}
+
+.activePreset {
+  color: var(--active);
+}
+
+#RightHeader {
+  max-width: 100px;
+  max-height: 20px;
+  display: flex;
+  flex-direction: row;
+  margin: 10px 10px 0 auto;
+  justify-content: space-between;
+  gap: 25px;
+  vertical-align: center;
+}
+
+#Balance {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+#balanceValue {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+#Close {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  margin: auto;
+}
+
+.separator {
+  border: 0.25px solid var(--surface);
+}
+
+#separatorDiv {
+  display: flex;
+  flex-direction: row;
+}
+
+#presetsSeparator {
+  width: 110px;
+  margin: 1px auto 0 5px;
+}
+#balanceSeparator {
+  width: 65px;
+  margin: 1px 35px 0 auto;
+}
+
+#Content {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 10px;
+  gap: 15px;
+  padding: 0;
+}
+
+#Buys,
+#Sells {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  gap: 7px;
+}
+#buyText,
+#sellText {
+  margin: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+#buyButtons,
+#sellButtons {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.buyButton,
+.sellButton {
+  width: 80px;
+  height: 30px;
+  background: transparent;
+  border-radius: 10px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.buyButton {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.sellButton {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+#footerSeparator {
+  border: 0.75px solid var(--surface);
+  margin: 0;
+  padding: 0;
+}
+
+#footerInfoSep {
+  border: 0.25px solid var(--surface);
+  height: 75%;
+  margin: 0;
+  padding: 0;
+  align-self: center;
+}
+
+#Footer {
+  height: 30px;
+  background-color: var(--footerbg);
+  font-size: 10px;
+  font-style: normal;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 15px;
+  padding: 0 30px;
+}
+
+.footerInfo {
+  display: flex;
+  flex-direction: row;
+  color: var(--text);
+  text-align: center;
+  gap: 4px;
+  padding: 0;
+}
+
+#boughtText {
+  color: var(--green);
+}
+
+#soldText {
+  color: var(--red);
+}
+
+#holdText {
+  color: var(--text);
+}
