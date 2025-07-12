@@ -21,6 +21,8 @@ html {
   --radius-lg: 0.75rem; /* 12px */
   --radius-xl: 1rem; /* 16px */
 
+  --anim-time: 0.3s;
+
   margin: 0;
   padding: 0;
 }
@@ -82,7 +84,8 @@ html {
   height: 10px;
 }
 
-.preset {
+.preset,
+#editPresets {
   font-size: 10px;
   font-style: normal;
   font-weight: 500;
@@ -93,11 +96,13 @@ html {
   color: var(--text);
   text-align: center;
   padding: 0;
+  cursor: pointer;
 }
 
 #editIcon {
   width: 9px !important;
   height: 8px !important;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .activePreset {
@@ -119,6 +124,7 @@ html {
   flex-direction: row;
   align-items: center;
   gap: var(--spacing-sm);
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #balanceValue {
@@ -136,6 +142,7 @@ html {
   cursor: pointer;
   margin: auto;
   position: relative;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #closeMark {
@@ -146,6 +153,7 @@ html {
   font-size: var(--spacing-md);
   /* opacity: 0.5;    Base Opacity  */
   opacity: 0;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .separator {
@@ -208,6 +216,10 @@ html {
   border-radius: var(--radius-lg);
   border-width: 1px;
   border-style: solid;
+  cursor: pointer;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .buyButton {
@@ -271,38 +283,56 @@ html {
 
 /* Animations and events */
 
-#Close:hover #closeMark {
-  animation: closeMarkIn 0.25s ease-in-out forwards;
+#editPresets:hover #editIcon {
+  transform: translateY(-2px);
+  color: var(--active);
 }
 
-#closeMark {
-  animation: closeMarkOut 0.25s ease-in-out forwards;
+#Close:hover #closeMark {
+  opacity: 0.5;
 }
 
 #Close:active #closeMark {
   transform: translateX(-50%) scale(0.8);
-  transition: transform 0.1s ease-in-out;
 }
 
 #Close:active {
-  opacity: 0.95;
-  transition: opacity 0.1s ease-in-out;
+  opacity: 0.9;
 }
 
-@keyframes closeMarkIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 0.5;
-  }
+.preset:active {
+  transform: scale(0.95);
 }
 
-@keyframes closeMarkOut {
-  from {
-    opacity: 0.5;
-  }
-  to {
-    opacity: 0;
-  }
+.preset:hover {
+  text-shadow: 0 0 6px var(--text);
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.preset {
+  text-shadow: none;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.buyButton:hover {
+  background: var(--green);
+  color: var(--background);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(166, 227, 161, 0.3);
+}
+
+.buyButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(166, 227, 161, 0.2);
+}
+.sellButton:hover {
+  background: var(--red);
+  color: var(--background);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 139, 168, 0.3);
+}
+
+.sellButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(243, 139, 168, 0.2);
 }
