@@ -135,6 +135,17 @@ html {
   border: none;
   cursor: pointer;
   margin: auto;
+  position: relative;
+}
+
+#closeMark {
+  position: absolute;
+  top: -1%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  font-size: var(--spacing-md);
+  /* opacity: 0.5;    Base Opacity  */
+  opacity: 0;
 }
 
 .separator {
@@ -256,4 +267,42 @@ html {
 
 #holdText {
   color: var(--text);
+}
+
+/* Animations and events */
+
+#Close:hover #closeMark {
+  animation: closeMarkIn 0.25s ease-in-out forwards;
+}
+
+#closeMark {
+  animation: closeMarkOut 0.25s ease-in-out forwards;
+}
+
+#Close:active #closeMark {
+  transform: translateX(-50%) scale(0.8);
+  transition: transform 0.1s ease-in-out;
+}
+
+#Close:active {
+  opacity: 0.95;
+  transition: opacity 0.1s ease-in-out;
+}
+
+@keyframes closeMarkIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+@keyframes closeMarkOut {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0;
+  }
 }
