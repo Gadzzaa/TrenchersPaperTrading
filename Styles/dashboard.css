@@ -1,4 +1,5 @@
-html {
+html,
+body {
   --background: #1e1e2e;
   --footerbg: #181825;
   --green: #a6e3a1;
@@ -39,11 +40,13 @@ html {
 
 #Container {
   width: 350px;
-  height: 200px;
+  height: 240px;
   background-color: var(--background);
   font-family: "Poppins", sans-serif;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
 }
 
 #Move {
@@ -86,7 +89,7 @@ html {
 
 .preset,
 #editPresets {
-  font-size: 10px;
+  font-size: var(--spacing-md);
   font-style: normal;
   font-weight: 500;
   width: 12px;
@@ -168,7 +171,7 @@ html {
 #presetsSeparator {
   width: 110px;
   height: 0;
-  margin: 0 auto 0 var(--spacing-sm);
+  margin: 0 auto 0 var(--spacing-md);
 }
 #balanceSeparator {
   width: 65px;
@@ -246,7 +249,7 @@ html {
   align-self: center;
 }
 
-#Footer {
+#footerData {
   height: 30px;
   background-color: var(--footerbg);
   font-size: var(--spacing-md);
@@ -284,8 +287,12 @@ html {
 /* Animations and events */
 
 #editPresets:hover #editIcon {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   color: var(--active);
+}
+
+#editPresets:active #editIcon {
+  transform: translateY(0);
 }
 
 #Close:hover #closeMark {
