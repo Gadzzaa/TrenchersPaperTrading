@@ -7,13 +7,13 @@ import { checkSession, getPortfolio, buyToken, sellByPercentage } from './API.js
 
 import { setActiveToken, recordBuy, recordSell, loadPositions, removePosition, clearPositions } from './pnlHandler.js'; // Importing PnL Functions
 
-const actionButtons = document.querySelectorAll('.buyButtons button, .sellButtons button');
-
 let currentContract = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const actionButtons = document.querySelectorAll('.buyButton button, .sellButton button');
+
   const sessionToken = localStorage.getItem('sessionToken');
-  const loggedInUsername = localStorage.getItem('loggedInUsername');
+  const username = localStorage.getItem('username');
 
   console.log("[dashboard.js] Session Token:", sessionToken);
 
@@ -43,10 +43,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   // 🔥 If still valid, continue loading dashboard
-  console.log("[dashboard.js] Logged in as:", loggedInUsername);
+  console.log("[dashboard.js] Logged in as:", username);
   const accountNameButton = document.getElementById('accountNameBtn'); // Make sure button exists
-  if (accountNameButton && loggedInUsername) {
-    accountNameButton.innerText = loggedInUsername;
+  if (accountNameButton && username) {
+    accountNameButton.innerText = username;
   }
   loadPresets(); // Load presets from localStorage
   if (getActivePreset() === null) {

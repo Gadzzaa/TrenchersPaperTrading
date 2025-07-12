@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   signOutBtn.addEventListener('click', () => {
-    localStorage.removeItem('loggedInUsername');
+    localStorage.removeItem('username');
     localStorage.removeItem('sessionToken');
     clearPositions(); // Clear positions
     window.location.href = 'account.html';

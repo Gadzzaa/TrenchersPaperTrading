@@ -1,8 +1,5 @@
-import { getPortfolio } from './portofolioHandler.js';
-import { showNotification } from './notificationSystem.js';
-import { showSpinner, hideSpinner } from './spinner.js';
+import { showNotification,showSpinner, hideSpinner } from './utils.js';
 import { updateBalanceUI } from './dashboard.js';
-import { resetAccount } from './dropdownManager.js'; // Importing Reset Account Functions
 
 // SessionChecker.js
 export async function checkSession() {
@@ -15,10 +12,7 @@ export async function checkSession() {
 
     const response = await fetch('http://localhost:3000/api/check-session', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${sessionToken}`,
-        'Content-Type': 'application/json'
-      }
+      headers: getAuthHeaders() 
     });
 
     if (!response.ok) {
@@ -46,10 +40,7 @@ export async function buyToken(tokenMint, solAmount, tokenPrice, slippage = 2, f
 
     const response = await fetch('http://localhost:3000/api/buy', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionToken}`
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         tokenMint,
         solAmount,
@@ -134,10 +125,7 @@ async function sellToken(tokenMint, tokenAmount, tokenPrice, slippage = 2, fee =
 
     const response = await fetch('http://localhost:3000/api/sell', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionToken}`
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         tokenMint,
         tokenAmount,
@@ -170,10 +158,10 @@ async function sellToken(tokenMint, tokenAmount, tokenPrice, slippage = 2, fee =
 // PortfolioHandler.js
 export async function getPortfolio() {
   try {
-    const username = localStorage.getItem('loggedInUsername');
+    const username = localStorage.getItem('username');
     const sessionToken = localStorage.getItem('sessionToken');
     if (!username) {
-      throw new Error('No loggedInUsername found in localStorage');
+      throw new Error('No username found in localStorage');
     }
     if (!sessionToken) {
       throw new Error('No sessionToken found. Please log in again.');
@@ -181,10 +169,7 @@ export async function getPortfolio() {
 
     const response = await fetch(`http://localhost:3000/api/portfolio/${encodeURIComponent(username)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionToken}`
-      }
+      headers: getAuthHeaders()
     });
 
     if (!response.ok) {
@@ -206,11 +191,11 @@ export async function getPortfolio() {
 // ResetHandler.js
 export async function resetAccount(accountDropdown, input) {
   try {
-    const loggedInUsername = localStorage.getItem('loggedInUsername');
+    const username = localStorage.getItem('username');
     let resp, data;
 
     // RESET
-    resp = await fetch(`http://localhost:3000/api/reset/:${loggedInUsername}`, {
+    resp = await fetch(`http://localhost:3000/api/reset/:${username}`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -247,7 +232,7 @@ export async function resetAccount(accountDropdown, input) {
 
 
 // LoginHandler.js
-export async function handleLogin(username, password, rememberMe) {
+export async function login(username, password) {
 
   if (!username || !password) {
     showNotification('Please fill in both fields.', 'error');
@@ -272,12 +257,10 @@ export async function handleLogin(username, password, rememberMe) {
 
     if (response.ok) {
       showNotification('Login Successful', 'success');
-      localStorage.setItem('loggedInUsername', username);
+      localStorage.setItem('username', username);
       localStorage.setItem('sessionToken', result.token);
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-        hideSpinner();
-      }, 1000);
+      // TODO: enable dashboard access
+       hideSpinner();
     } else {
       showNotification(result.message || 'Login Failed', 'error');
       hideSpinner();
@@ -288,15 +271,10 @@ export async function handleLogin(username, password, rememberMe) {
     showNotification('Server Error', 'error');
     console.error('Login error:', error);
   }
-  if (rememberMe) {
-    localStorage.setItem('rememberedUsername', username);
-  } else {
-    localStorage.removeItem('rememberedUsername');
-  }
 }
 
 // RegisterHandler.js
-export async function handleRegister(username, password) {
+export async function register(username, password) {
 
   if (!username || !password) {
     showNotification('Please fill in both fields.', 'error');
@@ -320,10 +298,10 @@ export async function handleRegister(username, password) {
 
     if (response.ok) {
       showNotification('Account created successfully!', 'success');
-      localStorage.setItem('loggedInUsername', username);
+      localStorage.setItem('username', username);
       localStorage.setItem('sessionToken', result.token);
       resetAccount(100); // 🔥 Reset account
-      showNotification('You can now attempt to login.', 'success');
+      // TODO: enable dashboard access
       hideSpinner();
     } else {
       showNotification(result.message || 'Registration failed.', 'error');
