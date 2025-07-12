@@ -177,7 +177,13 @@ function makeDraggable(target, handle, iframe) {
     localStorage.setItem("draggableLeft", target.style.left);
     localStorage.setItem("draggableTop", target.style.top);
   };
-
+  const resetPosition = () => {
+    target.style.left = "100px";
+    target.style.top = "100px";
+    localStorage.setItem("draggableLeft", "100px");
+    localStorage.setItem("draggableTop", "100px");
+  };
+  handle.addEventListener("dblclick", resetPosition);
   handle.addEventListener("pointerdown", startDrag);
 
   dragOverlay.addEventListener("pointermove", onDrag, { passive: true });
