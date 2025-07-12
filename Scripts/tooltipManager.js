@@ -1,4 +1,3 @@
-// Tooltip Manager
 class TooltipManager {
   constructor() {
     this.tooltip = document.getElementById("tooltip");

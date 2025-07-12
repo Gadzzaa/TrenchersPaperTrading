@@ -5,7 +5,6 @@ const buyButtons = document.querySelectorAll('.buyButtons button');
 const sellButtons = document.querySelectorAll('.sellButtons button');
 window.editMode = false;
 
-
 editModeToggle.addEventListener('click', () => {
   window.editMode = !window.editMode;
   if (window.editMode) {

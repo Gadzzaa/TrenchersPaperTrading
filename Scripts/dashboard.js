@@ -1,16 +1,9 @@
 // Importing Presets
 import { loadPresets, getActivePreset, setActivePreset } from './presetManager.js'; // Importing Preset Functions
 
-import { showNotification } from './notificationSystem.js'; // Importing Notification Functions
+import { showNotification, showSpinner, hideSpinner} from './utils.js'; // Importing Notification Functions
 
-import { checkSession } from './sessionChecker.js'; // Importing Session Functions
-
-import { showSpinner, hideSpinner } from './spinner.js'; // Importing Spinner Functions
-
-import { getPortfolio } from './portofolioHandler.js'; // Importing Balance Functions
-
-import { buyToken } from './buyHandler.js'; // Importing Buy Functions
-import { sellByPercentage } from './sellHandler.js'; // Importing Sell Functions
+import { checkSession, getPortfolio, buyToken, sellByPercentage } from './API.js'; // Importing Session Functions
 
 import { setActiveToken, recordBuy, recordSell, loadPositions, removePosition, clearPositions } from './pnlHandler.js'; // Importing PnL Functions
 

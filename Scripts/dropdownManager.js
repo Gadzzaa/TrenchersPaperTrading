@@ -73,54 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-export async function resetAccount(input) {
-  try {
-    const loggedInUsername = localStorage.getItem('loggedInUsername');
-    let resp, data;
 
-    // RESET
-    resp = await fetch(`http://localhost:3000/api/reset/:${loggedInUsername}`, {
-      method: 'GET',
-      headers: getAuthHeaders()
-    });
-    data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Reset failed');
-    // SET BALANCE
-    const amount = input;
-    if (isNaN(amount) || amount < 1) {
-      throw new Error('Invalid amount—must be a number ≥ 1');
-    }
-    resp = await fetch('http://localhost:3000/api/set-balance', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ amount })
-    });
-    data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Set balance failed');
-    clearPositions(); // Clear positions
-    // Refresh your UI
-    await updateBalanceUI();
-    if (dropdownOpen) {
-      accountDropdown.style.animation = 'dropdownCollapse 0.3s ease forwards';
-      setTimeout(() => {
-        accountDropdown.style.opacity = '0';
-        accountDropdown.style.pointerEvents = 'none';
-      }, 300);
-    }
-    dropdownOpen = false;
-  } catch (err) {
-    console.error('Manage balance error:', err);
-  } finally {
-    hideSpinner();
-  }
-}
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('sessionToken');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  };
-}
 
 

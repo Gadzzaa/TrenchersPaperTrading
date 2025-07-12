@@ -1,3 +1,7 @@
+// Constants
+const spinnerOverlay = document.getElementById('spinnerOverlay');
+const spinnerText = document.getElementById('spinnerText');
+let dotInterval;
 const notificationPopup = document.getElementById('notificationPopup');
 const notificationText = document.getElementById('notificationText');
 const notificationInner = document.getElementById('notificationInner');
@@ -8,7 +12,34 @@ let popTimeout2;
 let glowTimeout1;
 let glowTimeout2;
 
-// Generic Notification System
+// Spinner.js
+export function showSpinner() {
+  spinnerOverlay.style.opacity = '1';
+  spinnerOverlay.style.pointerEvents = 'auto';
+  startSpinnerDots();
+}
+
+export function hideSpinner() {
+  spinnerOverlay.style.opacity = '0';
+  spinnerOverlay.style.pointerEvents = 'none';
+  stopSpinnerDots();
+}
+
+function startSpinnerDots() {
+  let dots = '';
+  dotInterval = setInterval(() => {
+    dots = dots.length < 3 ? dots + '.' : '';
+    spinnerText.textContent = `Processing${dots}`;
+  }, 400); // Every 400ms, add a dot
+}
+
+function stopSpinnerDots() {
+  clearInterval(dotInterval);
+  spinnerText.textContent = 'Processing...'; // Reset text
+}
+
+
+// NotificationSystem.js
 export function showNotification(message, type) {
   // Clear old animations first if any
   clearTimeout(slideOutTimeout);
