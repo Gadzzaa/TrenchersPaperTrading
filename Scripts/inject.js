@@ -136,20 +136,48 @@ function makeDraggable(target, handle, iframe) {
 
   const onDrag = (e) => {
     if (!isDragging) return;
-    target.style.left = `${e.clientX - offsetX}px`;
-    target.style.top = `${e.clientY - offsetY}px`;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const targetRect = target.getBoundingClientRect();
+
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+
+    // Clamp within bounds
+    const clampedLeft = Math.min(
+      Math.max(0, newLeft),
+      viewportWidth - targetRect.width,
+    );
+    const clampedTop = Math.min(
+      Math.max(0, newTop),
+      viewportHeight - targetRect.height,
+    );
+
+    target.style.left = `${clampedLeft}px`;
+    target.style.top = `${clampedTop}px`;
   };
 
-  const endDrag = (e) => {
+  const endDrag = () => {
     if (!isDragging) return;
     isDragging = false;
+
     document.body.style.userSelect = "";
     target.style.opacity = "1";
     target.style.transform = "scale(1)";
+    handle.style.width = "12px";
+    handle.style.height = "8px";
+    handle.style.left = "174.5px";
+    handle.style.top = "6px";
 
     dragOverlay.style.display = "none";
     if (iframe) iframe.style.pointerEvents = "auto";
+
+    // Save position
+    localStorage.setItem("draggableLeft", target.style.left);
+    localStorage.setItem("draggableTop", target.style.top);
   };
+
   handle.addEventListener("pointerdown", startDrag);
 
   dragOverlay.addEventListener("pointermove", onDrag, { passive: true });
@@ -183,6 +211,17 @@ function removeApp() {
 }
 
 function injectApp() {
+  const isWithinBounds = (left, top, width, height) => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    return (
+      parseInt(left) + width <= vw &&
+      parseInt(top) + height <= vh &&
+      parseInt(left) >= 0 &&
+      parseInt(top) >= 0
+    );
+  };
+
   const appContainer = document.createElement("div");
   appContainer.id = "TrenchersPaperTrading";
   Object.assign(appContainer.style, {
@@ -200,6 +239,18 @@ function injectApp() {
     opacity: "0",
     transition: "opacity 0.3s ease",
   });
+
+  const savedLeft = localStorage.getItem("draggableLeft");
+  const savedTop = localStorage.getItem("draggableTop");
+
+  if (
+    savedLeft &&
+    savedTop &&
+    isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
+  ) {
+    appContainer.style.left = savedLeft;
+    appContainer.style.top = savedTop;
+  }
 
   const appIframe = document.createElement("iframe");
   appIframe.src = chrome.runtime.getURL("dashboard.html");
