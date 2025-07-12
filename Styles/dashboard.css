@@ -9,18 +9,28 @@ body {
   --surface: #45475a;
 
   /* Standardized spacing scale */
-  --spacing-xs: 0.25rem; /* 4px */
-  --spacing-sm: 0.5rem; /* 8px */
-  --spacing-md: 0.75rem; /* 12px */
-  --spacing-lg: 1rem; /* 16px */
-  --spacing-xl: 1.25rem; /* 20px */
-  --spacing-2xl: 1.5rem; /* 24px */
+  --spacing-xs: 0.25rem;
+  /* 4px */
+  --spacing-sm: 0.5rem;
+  /* 8px */
+  --spacing-md: 0.75rem;
+  /* 12px */
+  --spacing-lg: 1rem;
+  /* 16px */
+  --spacing-xl: 1.25rem;
+  /* 20px */
+  --spacing-2xl: 1.5rem;
+  /* 24px */
 
   /* Standardized border radius */
-  --radius-sm: 0.25rem; /* 4px */
-  --radius-md: 0.5rem; /* 8px */
-  --radius-lg: 0.75rem; /* 12px */
-  --radius-xl: 1rem; /* 16px */
+  --radius-sm: 0.25rem;
+  /* 4px */
+  --radius-md: 0.5rem;
+  /* 8px */
+  --radius-lg: 0.75rem;
+  /* 12px */
+  --radius-xl: 1rem;
+  /* 16px */
 
   --anim-time: 0.3s;
 
@@ -36,6 +46,14 @@ body {
 
 .hidden {
   opacity: 0.5;
+}
+
+.positive {
+  color: var(--green);
+}
+
+.negative {
+  color: var(--red);
 }
 
 #Container {
@@ -173,6 +191,7 @@ body {
   height: 0;
   margin: 0 auto 0 var(--spacing-md);
 }
+
 #balanceSeparator {
   width: 65px;
   height: 0;
@@ -195,6 +214,7 @@ body {
   padding: 0;
   gap: var(--spacing-sm);
 }
+
 #buyText,
 #sellText {
   margin: 0;
@@ -259,8 +279,7 @@ body {
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  gap: var(--spacing-lg);
-  padding: 0 32px;
+  padding: 0 var(--spacing-lg);
 }
 
 .footerInfo {
@@ -332,6 +351,7 @@ body {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(166, 227, 161, 0.2);
 }
+
 .sellButton:hover {
   background: var(--red);
   color: var(--background);
@@ -412,6 +432,7 @@ body {
     opacity: 0;
     transform: translateX(-50%) translateY(5px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);

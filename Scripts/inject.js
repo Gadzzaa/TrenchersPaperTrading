@@ -47,7 +47,7 @@ window.addEventListener("message", async (event) => {
     );
   }
 });
-// Extract contract from image src
+
 function extractContractFromImage() {
   const links = document.querySelectorAll('a[href*="x.com/search?q="]');
 
@@ -77,6 +77,7 @@ function extractContractFromImage() {
 
   return null;
 }
+
 function extractSymbol() {
   const xpath =
     "/html/body/div[1]/div[3]/div/div/div/div/div[1]/div[1]/div/div[1]/div[2]/div/div/div/div[1]/div[2]/div[1]/span[1]";
@@ -91,6 +92,7 @@ function extractSymbol() {
     console.error("❌ Error parsing symbol from element:", error);
   }
 }
+
 function getElementByXPath(xpath, context = document) {
   const result = document.evaluate(
     xpath,
@@ -212,7 +214,6 @@ function removeApp() {
   const appContainer = document.getElementById("TrenchersPaperTrading");
   if (appContainer) {
     appContainer.remove();
-    console.log("✅ App removed cleanly");
   }
 }
 
@@ -291,8 +292,6 @@ function injectApp() {
 }
 
 function monitorRouteChanges() {
-  console.log("🚀 Starting router monitoring...");
-
   const observer = new MutationObserver(() => {
     if (location.pathname !== lastPathname) {
       lastPathname = location.pathname;
@@ -414,11 +413,7 @@ async function getPrice() {
     const marketCapUsd = getMarketCapFromTitle();
     const solUsdPrice = localStorage.getItem("solUsdPrice");
     const tokenPriceUsd = marketCapUsd / tokenSupply;
-    console.log(
-      "Finished getting price:",
-      (tokenPriceUsd / solUsdPrice).toFixed(9),
-      solUsdPrice,
-    );
+
     return (tokenPriceUsd / solUsdPrice).toFixed(9);
   } catch (error) {
     console.error("Error fetching price:", error);
