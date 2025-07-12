@@ -42,20 +42,6 @@ let presets = {
       SellButton4: { amount: "100", symbol: "%" },
     },
   },
-  preset4: {
-    buys: {
-      BuyButton1: { amount: "1", symbol: "SOL" },
-      BuyButton2: { amount: "2.5", symbol: "SOL" },
-      BuyButton3: { amount: "5", symbol: "SOL" },
-      BuyButton4: { amount: "10", symbol: "SOL" },
-    },
-    sells: {
-      SellButton1: { amount: "10", symbol: "%" },
-      SellButton2: { amount: "25", symbol: "%" },
-      SellButton3: { amount: "50", symbol: "%" },
-      SellButton4: { amount: "100", symbol: "%" },
-    },
-  },
 };
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -7,9 +7,9 @@ import {
 import { showNotification } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const editModeToggle = document.getElementById("editModeToggle");
-  const buyButtons = document.querySelectorAll(".buyButton button");
-  const sellButtons = document.querySelectorAll(".sellButton button");
+  const editModeToggle = document.getElementById("editPresets");
+  const buyButtons = document.querySelectorAll("#buyButtons .buyButton");
+  const sellButtons = document.querySelectorAll("#sellButtons .sellButton");
   window.editMode = false;
 
   editModeToggle.addEventListener("click", () => {

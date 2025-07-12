@@ -42,6 +42,8 @@ function stopSpinnerDots() {
 
 // NotificationSystem.js
 export function showNotification(message, type) {
+  console.log("Test notification, CHANGE THIS!!!! ");
+  /*
   // Clear old animations first if any
   clearTimeout(slideOutTimeout);
   clearTimeout(popTimeout1);
@@ -100,6 +102,7 @@ export function showNotification(message, type) {
     notificationPopup.style.opacity = "0";
     notificationPopup.style.transform = "translateX(-50%) translateY(10px)";
   }, 3000);
+  */
 }
 
 // Request from iframe.js

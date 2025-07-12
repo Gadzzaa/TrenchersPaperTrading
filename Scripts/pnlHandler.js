@@ -1,4 +1,4 @@
-import { requestPrice } from "./dashboard.js";
+import { requestPrice } from "./utils.js";
 const openPositions = [];
 let currentMint = null;
 let currentPosition = null;
@@ -159,7 +159,7 @@ export async function loadPositions() {
   }
 }
 export function clearPositions(global = true) {
-  const positionEl = document.getElementById("position");
+  const positionEl = document.getElementById("pnlText");
   if (positionEl == null) {
     console.error("[pnlHandler.js]: position element not found");
     return;

@@ -23,9 +23,7 @@
     {
       "resources": [
         "account.html",
-        "dashboard.html",
-        "Styles/index.css",
-        "Styles/account.css"
+        "dashboard.html"
       ],
       "matches": ["<all_urls>"]
     }

@@ -28,9 +28,20 @@ import {
   requestPrice,
 } from "./utils.js";
 
+// LOCAL ONLY:
+import { login, register } from "./API.js";
+
+import CONFIG, { USE_LOCAL } from "../config.js";
+
 let currentContract = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // PROD ONLY:
+  if (USE_LOCAL) {
+    //register("TestingUser", "Parola");
+    login("TestingUser", "Parola");
+  }
+
   const sessionToken = localStorage.getItem("sessionToken");
   const username = localStorage.getItem("username");
 
@@ -75,7 +86,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 1000);
 
   const actionButtons = document.querySelectorAll(
-    ".buyButton button, .sellButton button",
+    "#buyButtons .buyButton, #sellButtons .sellButton",
   );
   for (const button of actionButtons) {
     button.addEventListener("click", handleActionButtonClick(button));
