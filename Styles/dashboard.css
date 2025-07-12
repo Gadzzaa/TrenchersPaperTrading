@@ -6,13 +6,28 @@ html {
   --text: #cdd6f4;
   --active: #89b4fa;
   --surface: #45475a;
+
+  /* Standardized spacing scale */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 0.75rem; /* 12px */
+  --spacing-lg: 1rem; /* 16px */
+  --spacing-xl: 1.25rem; /* 20px */
+  --spacing-2xl: 1.5rem; /* 24px */
+
+  /* Standardized border radius */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+
   margin: 0;
   padding: 0;
 }
 
 #solanaLogo {
-  width: 12px;
-  height: 12px;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
   margin: auto;
 }
 
@@ -34,11 +49,11 @@ html {
   opacity: 0.5;
   cursor: grab;
   margin: auto;
-  margin-top: 5px;
-  font-size: 12px;
-  width: 12px;
-  height: 12px;
-  line-height: 12px;
+  margin-top: var(--spacing-xs);
+  font-size: var(--spacing-md);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  line-height: var(--spacing-md);
   text-align: center;
   display: inline-block;
   overflow: hidden;
@@ -54,7 +69,7 @@ html {
 #Presets {
   max-width: 120px;
   max-height: 20px;
-  margin: 10px auto 0 10px;
+  margin: var(--spacing-lg) auto 0 var(--spacing-lg);
   display: flex;
   justify-content: space-between;
   flex-direction: row;
@@ -94,28 +109,27 @@ html {
   max-height: 20px;
   display: flex;
   flex-direction: row;
-  margin: 10px 10px 0 auto;
+  margin: var(--spacing-lg) var(--spacing-lg) 0 auto;
   justify-content: space-between;
-  gap: 25px;
-  vertical-align: center;
+  gap: var(--spacing-xl);
 }
 
 #Balance {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 5px;
+  gap: var(--spacing-sm);
 }
 
 #balanceValue {
-  font-size: 10px;
+  font-size: var(--spacing-md);
   font-weight: 400;
   color: var(--text);
 }
 
 #Close {
-  width: 12px;
-  height: 12px;
+  width: var(--spacing-md);
+  height: var(--spacing-md);
   border-radius: 50%;
   background: var(--red);
   border: none;
@@ -134,18 +148,20 @@ html {
 
 #presetsSeparator {
   width: 110px;
-  margin: 1px auto 0 5px;
+  height: 0;
+  margin: 0 auto 0 var(--spacing-sm);
 }
 #balanceSeparator {
   width: 65px;
-  margin: 1px 35px 0 auto;
+  height: 0;
+  margin: 0 42px 0 auto;
 }
 
 #Content {
   display: flex;
   flex-direction: column;
-  margin: 15px 10px;
-  gap: 15px;
+  margin: var(--spacing-lg) var(--spacing-lg);
+  gap: var(--spacing-lg);
   padding: 0;
 }
 
@@ -155,12 +171,12 @@ html {
   flex-direction: column;
   margin: 0;
   padding: 0;
-  gap: 7px;
+  gap: var(--spacing-sm);
 }
 #buyText,
 #sellText {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--spacing-md);
   font-style: normal;
   color: var(--text);
   opacity: 0.75;
@@ -170,7 +186,7 @@ html {
 #sellButtons {
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .buyButton,
@@ -178,7 +194,7 @@ html {
   width: 80px;
   height: 30px;
   background: transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   border-width: 1px;
   border-style: solid;
 }
@@ -210,15 +226,15 @@ html {
 #Footer {
   height: 30px;
   background-color: var(--footerbg);
-  font-size: 10px;
+  font-size: var(--spacing-md);
   font-style: normal;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  gap: 15px;
-  padding: 0 30px;
+  gap: var(--spacing-lg);
+  padding: 0 32px;
 }
 
 .footerInfo {
@@ -226,7 +242,7 @@ html {
   flex-direction: row;
   color: var(--text);
   text-align: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
   padding: 0;
 }
 
