@@ -1,8 +1,4 @@
-import {
-  loadPresets,
-  getActivePreset,
-  setActivePreset,
-} from "./presetManager.js";
+import { applyPreset, getActivePreset } from "./presetManager.js";
 
 import { showNotification, showSpinner, hideSpinner } from "./utils.js";
 
@@ -63,21 +59,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  loadPresets(); // TODO: Redo the whole preset system
   currentPreset = getActivePreset();
-  if (currentPreset === null) {
-    console.warn(
-      "[dashboard.js] No active preset found. Applying default preset.",
-    );
-    setActivePreset("preset1");
-  }
+  if (currentPreset === null) applyPreset("preset1");
+  else applyPreset(currentPreset);
+
   currentContract = await requestCurrentContract();
+
   setInterval(async () => {
-    loadPresets();
+    const pendingPresets = localStorage.getItem("pendingPresets");
+    if (pendingPresets) {
+      applyPreset(currentPreset);
+      localStorage.setItem("pendingPresets", false);
+    }
+
     const newPreset = getActivePreset();
     if (currentPreset !== newPreset) {
+      applyPreset(currentPreset);
       currentPreset = newPreset;
-      setActivePreset(currentPreset);
     }
 
     const newContract = await requestCurrentContract();
