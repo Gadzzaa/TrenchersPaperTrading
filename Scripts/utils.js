@@ -1,16 +1,23 @@
 // Constants
-const spinnerOverlay = document.getElementById("spinnerOverlay");
-const spinnerText = document.getElementById("spinnerText");
+let spinnerOverlay;
+let spinnerText;
+let notificationPopup;
+let notificationText;
+let notificationInner;
 let dotInterval;
-const notificationPopup = document.getElementById("notificationPopup");
-const notificationText = document.getElementById("notificationText");
-const notificationInner = document.getElementById("notificationInner");
-
 let slideOutTimeout;
 let popTimeout1;
 let popTimeout2;
 let glowTimeout1;
 let glowTimeout2;
+
+document.addEventListener("DOMContentLoaded", () => {
+  spinnerOverlay = document.getElementById("spinnerOverlay");
+  spinnerText = document.getElementById("spinnerText");
+  notificationPopup = document.getElementById("notificationPopup");
+  notificationText = document.getElementById("notificationText");
+  notificationInner = document.getElementById("notificationInner");
+});
 
 // Spinner.js
 export function showSpinner() {

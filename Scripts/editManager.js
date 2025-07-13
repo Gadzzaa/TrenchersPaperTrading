@@ -34,8 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const presets = getPresets();
       button.dataset.amount = newValue;
       let amount = button.dataset.amount;
-      let symbol = button.dataset.symbol;
-      button.textContent = `${amount} ${symbol}`;
+      button.textContent = `${amount}`;
       if (presets[activePreset] && presets[activePreset].buys[button.id]) {
         presets[activePreset].buys[button.id].amount = newValue;
         setPresets(presets); // update the presets object

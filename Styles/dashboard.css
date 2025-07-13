@@ -38,10 +38,10 @@ body {
   padding: 0;
 }
 
-#solanaLogo {
-  width: var(--spacing-md);
-  height: var(--spacing-md);
-  margin: auto;
+.movableObjects {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-origin: center center;
 }
 
 .hidden {
@@ -54,6 +54,12 @@ body {
 
 .negative {
   color: var(--red);
+}
+
+#solanaLogo {
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  margin: auto;
 }
 
 #Container {

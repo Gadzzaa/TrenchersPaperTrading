@@ -2,50 +2,50 @@ let activePreset = null;
 let presets = {
   preset1: {
     buys: {
-      BuyButton1: { amount: "0.1", symbol: "SOL" },
-      BuyButton2: { amount: "0.25", symbol: "SOL" },
-      BuyButton3: { amount: "0.5", symbol: "SOL" },
-      BuyButton4: { amount: "1", symbol: "SOL" },
+      buy1: { amount: "0.1", symbol: "SOL" },
+      buy2: { amount: "0.25", symbol: "SOL" },
+      buy3: { amount: "0.5", symbol: "SOL" },
+      buy4: { amount: "1", symbol: "SOL" },
     },
     sells: {
-      SellButton1: { amount: "10", symbol: "%" },
-      SellButton2: { amount: "25", symbol: "%" },
-      SellButton3: { amount: "50", symbol: "%" },
-      SellButton4: { amount: "100", symbol: "%" },
+      sell1: { amount: "10", symbol: "%" },
+      sell2: { amount: "25", symbol: "%" },
+      sell3: { amount: "50", symbol: "%" },
+      sell4: { amount: "100", symbol: "%" },
     },
   },
   preset2: {
     buys: {
-      BuyButton1: { amount: "0.25", symbol: "SOL" },
-      BuyButton2: { amount: "0.5", symbol: "SOL" },
-      BuyButton3: { amount: "0.75", symbol: "SOL" },
-      BuyButton4: { amount: "1", symbol: "SOL" },
+      buy1: { amount: "0.25", symbol: "SOL" },
+      buy2: { amount: "0.5", symbol: "SOL" },
+      buy3: { amount: "0.75", symbol: "SOL" },
+      buy4: { amount: "1", symbol: "SOL" },
     },
     sells: {
-      SellButton1: { amount: "10", symbol: "%" },
-      SellButton2: { amount: "25", symbol: "%" },
-      SellButton3: { amount: "50", symbol: "%" },
-      SellButton4: { amount: "100", symbol: "%" },
+      sell1: { amount: "10", symbol: "%" },
+      sell2: { amount: "25", symbol: "%" },
+      sell3: { amount: "50", symbol: "%" },
+      sell4: { amount: "100", symbol: "%" },
     },
   },
   preset3: {
     buys: {
-      BuyButton1: { amount: "0.5", symbol: "SOL" },
-      BuyButton2: { amount: "0.75", symbol: "SOL" },
-      BuyButton3: { amount: "1", symbol: "SOL" },
-      BuyButton4: { amount: "1.25", symbol: "SOL" },
+      buy1: { amount: "0.5", symbol: "SOL" },
+      buy2: { amount: "0.75", symbol: "SOL" },
+      buy3: { amount: "1", symbol: "SOL" },
+      buy4: { amount: "1.25", symbol: "SOL" },
     },
     sells: {
-      SellButton1: { amount: "10", symbol: "%" },
-      SellButton2: { amount: "25", symbol: "%" },
-      SellButton3: { amount: "50", symbol: "%" },
-      SellButton4: { amount: "100", symbol: "%" },
+      sell1: { amount: "10", symbol: "%" },
+      sell2: { amount: "25", symbol: "%" },
+      sell3: { amount: "50", symbol: "%" },
+      sell4: { amount: "100", symbol: "%" },
     },
   },
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  const presetButtons = document.querySelectorAll(".presetsContainer button");
+  const presetButtons = document.querySelectorAll("#Presets .preset");
   presetButtons.forEach((button) => {
     button.addEventListener("click", () => {
       setActivePreset(button.id);
@@ -61,13 +61,13 @@ export function getPresets() {
 }
 
 export function setActivePreset(presetName) {
-  const presetButtons = document.querySelectorAll(".presetsContainer button");
-  presetID = document.getElementById(presetName);
+  const presetButtons = document.querySelectorAll("#Presets .preset");
+  let presetID = document.getElementById(presetName);
 
   presetButtons.forEach((btn) => btn.classList.remove("activePreset"));
   presetID.classList.add("activePreset");
 
-  activePreset = presetID;
+  activePreset = presetID.id;
   localStorage.setItem("activePreset", activePreset);
   applyPreset(activePreset);
 }
@@ -80,7 +80,7 @@ export function savePresets() {
 }
 
 export function loadPresets() {
-  const savedPresets = localStorage.getItem("presets");
+  let savedPresets = localStorage.getItem("presets");
   if (!savedPresets)
     console.warn("[loadPresets] No presets found in localStorage.");
 

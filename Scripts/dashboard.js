@@ -34,10 +34,12 @@ import { login, register } from "./API.js";
 import CONFIG, { USE_LOCAL } from "../config.js";
 
 let currentContract = null;
+let currentPreset = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   // PROD ONLY:
   if (USE_LOCAL) {
+    //localStorage.clear();
     //register("TestingUser", "Parola");
     login("TestingUser", "Parola");
   }
@@ -46,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const username = localStorage.getItem("username");
 
   if (!sessionToken) {
+    console.warn("Session token not found.");
     clearPositions();
     // TODO: Lock dashboard until session is valid
     return;
@@ -53,6 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const isSessionValid = await checkSession();
   if (!isSessionValid) {
+    console.warn("Session token is invalid.");
     clearPositions();
     localStorage.removeItem("sessionToken");
     // TODO: Lock dashboard until session is valid
@@ -60,13 +64,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   loadPresets(); // TODO: Redo the whole preset system
-  if (getActivePreset() === null) {
+  currentPreset = getActivePreset();
+  if (currentPreset === null) {
     console.warn(
       "[dashboard.js] No active preset found. Applying default preset.",
     );
     setActivePreset("preset1");
   }
-  await updateBalanceUI();
   currentContract = await requestCurrentContract();
   setInterval(async () => {
     loadPresets();

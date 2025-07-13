@@ -7,7 +7,7 @@ let pnlIntervalId = null;
 export function setActiveToken(mint, entryPrice, quantity) {
   localStorage.setItem("currentMint", mint);
 
-  const positionEl = document.getElementById("position");
+  const positionEl = document.getElementById("pnlText");
   if (positionEl && currentMint != mint) {
     positionEl.classList.remove("positive", "negative");
     positionEl.textContent = "0.00 SOL (0.00%)";
@@ -40,7 +40,7 @@ export async function updateUnrealizedPnl() {
     const totalPnl = totalValue - totalCost;
     const pnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
 
-    const positionEl = document.getElementById("position");
+    const positionEl = document.getElementById("pnlText");
     if (!positionEl) return;
 
     positionEl.classList.remove("positive", "negative");

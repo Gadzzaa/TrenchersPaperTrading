@@ -21,11 +21,7 @@
           <button data-tooltip="Enter edit mode" id="editPresets">
             <i id="editIcon" class="fa-regular fa-pen-to-square"></i>
           </button>
-          <button
-            data-tooltip="Select preset 1"
-            class="preset activePreset"
-            id="preset1"
-          >
+          <button data-tooltip="Select preset 1" class="preset" id="preset1">
             P1
           </button>
           <button data-tooltip="Select preset 2" class="preset" id="preset2">
@@ -52,7 +48,7 @@
       </div>
 
       <div id="Content">
-        <div id="Buys">
+        <div id="Buys" class="movableObjects">
           <p id="buyText">Buy</p>
           <div id="buyButtons" class="button-row">
             <button
@@ -85,7 +81,7 @@
             ></button>
           </div>
         </div>
-        <div id="Sells" class="hidden">
+        <div id="Sells" class="hidden movableObjects">
           <p id="sellText">Sell (%)</p>
           <div id="sellButtons" class="button-row">
             <button
