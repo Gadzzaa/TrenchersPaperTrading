@@ -65,15 +65,17 @@ export function setPresets(newPresets) {
   localStorage.setItem("pendingPresets", true);
 }
 
-export function getActivePreset() {
-  return localStorage.getItem("activePreset");
+export function getUsingPreset() {
+  return localStorage.getItem("usingPreset");
 }
 
 export function applyPreset(presetName) {
-  const oldPresetUI = document.getElementById(getActivePreset());
+  const oldPresetUI = document.querySelector(".activePreset");
   const newPresetUI = document.getElementById(presetName);
 
-  oldPresetUI.classList.remove("activePreset");
+  if (oldPresetUI) {
+    oldPresetUI.classList.remove("activePreset");
+  }
   newPresetUI.classList.add("activePreset");
 
   if (!JSON.parse(getPresets()) || !JSON.parse(getPresets())[presetName])
@@ -107,5 +109,6 @@ export function applyPreset(presetName) {
     }
   }
 
-  localStorage.setItem("activePreset", newPresetUI.id);
+  console.log(`Applied preset: ${presetName}`);
+  localStorage.setItem("usingPreset", newPresetUI.id);
 }

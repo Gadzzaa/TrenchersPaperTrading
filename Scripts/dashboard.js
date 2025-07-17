@@ -1,4 +1,4 @@
-import { applyPreset, getActivePreset } from "./presetManager.js";
+import { applyPreset, getUsingPreset } from "./presetManager.js";
 
 import { showNotification, showSpinner, hideSpinner } from "./utils.js";
 
@@ -59,22 +59,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  currentPreset = getActivePreset();
-  if (currentPreset === null) applyPreset("preset1");
-  else applyPreset(currentPreset);
+  currentPreset = getUsingPreset();
+  if (currentPreset == null || currentPreset === "undefined") {
+    applyPreset("preset1");
+  } else applyPreset(currentPreset);
 
   currentContract = await requestCurrentContract();
 
   setInterval(async () => {
+    currentPreset = document.querySelector(".activePreset")?.id;
+
     const pendingPresets = localStorage.getItem("pendingPresets");
     if (pendingPresets) {
       applyPreset(currentPreset);
       localStorage.setItem("pendingPresets", false);
     }
 
-    const newPreset = getActivePreset();
+    const newPreset = getUsingPreset();
     if (currentPreset !== newPreset) {
-      applyPreset(currentPreset);
+      applyPreset(newPreset);
       currentPreset = newPreset;
     }
 

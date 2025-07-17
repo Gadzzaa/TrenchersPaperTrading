@@ -1,4 +1,4 @@
-import { getActivePreset, getPresets, setPresets } from "./presetManager.js";
+import { getPresets, setPresets } from "./presetManager.js";
 import { showNotification } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
       }
       amount = parseFloat(amount).toFixed(2);
-      const activePreset = getActivePreset();
+      const activePreset = document.querySelector(".activePreset")?.id;
       const presets = getPresets();
       button.dataset.amount = amount;
       button.textContent = `${amount}`;
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       amount = parseInt(amount);
-      const activePreset = getActivePreset();
+      const activePreset = document.querySelector(".activePreset")?.id;
       const presets = getPresets();
       button.dataset.amount = amount;
       button.textContent = `${amount} %`;
