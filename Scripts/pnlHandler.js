@@ -5,6 +5,7 @@ let currentPosition = null;
 let pnlIntervalId = null;
 
 export function setActiveToken(mint, entryPrice, quantity) {
+  // TODO: Remake inside dashboard when page is loaded
   localStorage.setItem("currentMint", mint);
 
   const positionEl = document.getElementById("pnlText");
@@ -30,28 +31,37 @@ export function setActiveToken(mint, entryPrice, quantity) {
 }
 
 export async function updateUnrealizedPnl() {
-  if (!currentPosition || !currentMint) return;
-
   try {
-    const { entryPrice, quantity } = currentPosition;
-    const currentPrice = await requestPrice(currentMint);
-    const totalCost = entryPrice * quantity;
-    const totalValue = currentPrice * quantity;
-    const totalPnl = totalValue - totalCost;
-    const pnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
-
     const positionEl = document.getElementById("pnlText");
+    if (!currentPosition || !currentMint) return;
     if (!positionEl) return;
 
+    const { entryPrice, quantity } = currentPosition;
+    const currentPrice = await requestPrice(currentMint);
+    const entryValue = entryPrice * quantity; // totalCost
+    const value = currentPrice * quantity; // totalValue
+    const pnl = value - entryValue;
+    const pnlProcent = value > 0 ? (pnl / value) * 100 : 0;
+
     positionEl.classList.remove("positive", "negative");
-    positionEl.textContent = `${totalPnl.toFixed(2)} SOL (${pnlPct.toFixed(2)}%)`;
-    positionEl.classList.add(totalPnl >= 0 ? "positive" : "negative");
+    positionEl.textContent = `${pnl.toFixed(2)} SOL (${pnlProcent.toFixed(2)}%)`;
+    positionEl.classList.add(pnl >= 0 ? "positive" : "negative");
   } catch (err) {
-    console.error("[pnlHandler] Failed to update PnL:", err);
+    throw new Error("Failed to update PnL: " + err);
   }
 }
 export async function recordBuy(mint, entryPrice, solSpent) {
-  if (typeof mint !== "string") {
+  console.log(
+    "recordBuy called with:" +
+      typeof mint +
+      typeof entryPrice +
+      typeof solSpent,
+  );
+  if (
+    typeof mint !== "string" ||
+    typeof entryPrice != "number" ||
+    typeof solSpent != "number"
+  ) {
     console.error("recordBuy: invalid arguments", {
       mint,
       entryPrice,
@@ -64,39 +74,34 @@ export async function recordBuy(mint, entryPrice, solSpent) {
 
   const idx = openPositions.findIndex((p) => p.mint === mint);
   if (idx >= 0) {
-    // Accumulate into existing: compute new weighted-entry
-    const existing = openPositions[idx];
-    const totalQty = existing.quantity + quantity;
-    const totalCost =
-      existing.entryPrice * existing.quantity + entryPrice * quantity;
-    existing.quantity = totalQty;
-    existing.entryPrice = totalCost / totalQty;
+    const pos = openPositions[idx];
+    const existingCost = pos.entryPrice * pos.quantity;
+    const cost = entryPrice * quantity;
+    const totalQty = pos.quantity + quantity;
+    const totalCost = existingCost + cost;
+    pos.quantity = totalQty;
+    pos.entryPrice = totalCost / totalQty;
+    setActiveToken(mint, pos.entryPrice, pos.quantity);
   } else {
-    // New position
     openPositions.push({ mint, entryPrice, quantity });
+    setActiveToken(mint, entryPrice, quantity);
   }
 
-  const updated = openPositions.find((p) => p.mint === mint);
-  setActiveToken(mint, updated.entryPrice, updated.quantity);
-  await updateUnrealizedPnl();
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
+
+  document.getElementById("Sells").classList.remove("hidden");
 }
 
-export async function recordSell(
-  mint,
-  exitPrice,
-  quantitySold = 0,
-  quantityPercent = 0,
-) {
+export async function recordSell(mint, exitPrice, quantityPercent) {
   if (
     typeof mint !== "string" ||
     typeof exitPrice !== "number" ||
+    typeof quantityPercent !== "number" ||
     exitPrice <= 0
   ) {
     console.error("recordSell: invalid arguments", {
       mint,
       exitPrice,
-      quantitySold,
       quantityPercent,
     });
     return;
@@ -109,13 +114,8 @@ export async function recordSell(
   }
 
   const pos = openPositions[idx];
-  let sellQty;
 
-  if (quantityPercent === 100) {
-    sellQty = pos.quantity;
-  } else {
-    sellQty = quantitySold;
-  }
+  let sellQty = (quantityPercent / 100) * pos.quantity;
 
   if (sellQty <= 0) {
     console.warn(`recordSell: nothing to sell for ${mint}`);
@@ -124,26 +124,15 @@ export async function recordSell(
 
   pos.quantity -= sellQty;
 
-  if (parseFloat(pos.quantity.toFixed(8)) === 0) {
-    openPositions.splice(idx, 1);
+  const sellsTab = document.getElementById("Sells");
+  if (parseFloat(pos.quantity.toFixed(9)) === 0) {
     setActiveToken(null);
-  } else {
-    const updated = openPositions.find((p) => p.mint === mint);
-    setActiveToken(mint, updated.entryPrice, updated.quantity);
-  }
-  await updateUnrealizedPnl();
+    sellsTab.classList.add("hidden");
+  } else setActiveToken(mint, pos.entryPrice, pos.quantity);
+
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
 }
-export async function removePosition(mint) {
-  const idx = openPositions.findIndex((p) => p.mint === mint);
-  if (idx >= 0) {
-    openPositions.splice(idx, 1);
-  } else {
-    console.warn(`Position not found: ${mint}`);
-  }
 
-  await updateUnrealizedPnl();
-}
 export async function loadPositions() {
   clearPositions(false);
   const storedPositions = localStorage.getItem("openPositions");
@@ -158,6 +147,7 @@ export async function loadPositions() {
     console.log("No positions found in localStorage.");
   }
 }
+
 export function clearPositions(global = true) {
   const positionEl = document.getElementById("pnlText");
   if (positionEl == null) {

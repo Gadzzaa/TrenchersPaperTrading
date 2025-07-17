@@ -14,7 +14,6 @@ import {
   recordBuy,
   recordSell,
   loadPositions,
-  removePosition,
   clearPositions,
 } from "./pnlHandler.js";
 
@@ -42,6 +41,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const sessionToken = localStorage.getItem("sessionToken");
   const username = localStorage.getItem("username");
+
+  const sellsTab = document.getElementById("Sells");
+
+  const observer = new MutationObserver(() => {
+    if (sellsTab.classList.contains("hidden")) sellsTab.disabled = true;
+    else sellsTab.disabled = false;
+  });
+
+  observer.observe(sellsTab, { attributes: true, attributeFilter: ["class"] });
 
   if (!sessionToken) {
     console.warn("Session token not found.");
@@ -106,38 +114,39 @@ function handleActionButtonClick(button) {
 
       const tokenMint = currentContract;
       const action = button.dataset.action;
-      const solSpent = parseFloat(button.dataset.amount);
+      const dataAmount = parseFloat(button.dataset.amount);
+      const price = parseFloat(await requestPrice());
       const symbol = await requestSymbol();
-      const price = await requestPrice();
 
       if (price == null) throw new Error("Token price is not an integer.");
       if (!tokenMint) throw new Error("No contract loaded.");
       if (!action) throw new Error("No action specified inside the button.");
-      if (!solSpent) throw new Error("No amount specified inside the button.");
+      if (!dataAmount)
+        throw new Error("No amount specified inside the button.");
       if (!symbol) throw new Error("No symbol found on the website.");
 
       if (action === "buy") {
-        const result = await buyToken(tokenMint, solSpent, price);
+        const result = await buyToken(tokenMint, dataAmount, price);
         if (!result) throw new Error("Failed to buy token.");
+        const tokensReceived = parseFloat(result.tokensReceived).toFixed(2);
+        if (tokensReceived <= 0)
+          throw new Error("Received 0 tokens, check your balance or price.");
         showNotification(
-          `✅ You bought ${parseFloat(result.tokensReceived).toFixed(2)} ${symbol}!`,
+          `✅ You bought ${tokensReceived} ${symbol}!`,
           "success",
         );
-        await recordBuy(tokenMint, parseFloat(price), solSpent);
+        await recordBuy(tokenMint, price, dataAmount);
       }
       if (action === "sell") {
-        const result = await sellByPercentage(tokenMint, solSpent, price);
+        const result = await sellByPercentage(tokenMint, dataAmount, price);
         if (!result) throw new Error("Failed to sell token.");
+        const tokensSold = parseFloat(result.tokensSold).toFixed(2);
+        const solReceived = parseFloat(result.solReceived).toFixed(2);
         showNotification(
-          `✅ You sold ${parseFloat(result.tokensSold).toFixed(2)} ${symbol} for ${parseFloat(result.solReceived).toFixed(2)} SOL!`,
+          `✅ You sold ${tokensSold} ${symbol} for ${solReceived} SOL!`,
           "success",
         );
-        await recordSell(
-          tokenMint,
-          parseFloat(price),
-          result.tokensSold,
-          solSpent,
-        );
+        await recordSell(tokenMint, price, dataAmount);
       }
     } catch (error) {
       showNotification("❌ " + error, "error");
