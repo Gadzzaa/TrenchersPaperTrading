@@ -1,42 +1,23 @@
 import { requestPrice } from "./utils.js";
 const openPositions = [];
-let currentMint = null;
 let currentPosition = null;
 let pnlIntervalId = null;
 
 export function setActiveToken(mint, entryPrice, quantity) {
-  // TODO: Remake inside dashboard when page is loaded
-  localStorage.setItem("currentMint", mint);
+  if (pnlIntervalId) clearInterval(pnlIntervalId);
 
-  const positionEl = document.getElementById("pnlText");
-  if (positionEl && currentMint != mint) {
-    positionEl.classList.remove("positive", "negative");
-    positionEl.textContent = "0.00 SOL (0.00%)";
-  }
-
-  // If mint is invalid or quantity is zero, reset the active token and stop PNL updates
-  if (!mint || quantity <= 0) {
-    currentMint = null;
-    currentPosition = null;
-    if (pnlIntervalId) clearInterval(pnlIntervalId);
-    pnlIntervalId = null;
-    return;
-  }
-
-  currentMint = mint;
   currentPosition = { mint, entryPrice, quantity };
 
-  if (pnlIntervalId) clearInterval(pnlIntervalId);
   pnlIntervalId = setInterval(updateUnrealizedPnl, 250);
 }
 
 export async function updateUnrealizedPnl() {
   try {
     const positionEl = document.getElementById("pnlText");
-    if (!currentPosition || !currentMint) return;
+    if (!currentPosition) return;
     if (!positionEl) return;
 
-    const { entryPrice, quantity } = currentPosition;
+    const { currentMint, entryPrice, quantity } = currentPosition;
     const currentPrice = await requestPrice(currentMint);
     const entryValue = entryPrice * quantity; // totalCost
     const value = currentPrice * quantity; // totalValue
@@ -126,9 +107,9 @@ export async function recordSell(mint, exitPrice, quantityPercent) {
 
   const sellsTab = document.getElementById("Sells");
   if (parseFloat(pos.quantity.toFixed(9)) === 0) {
-    setActiveToken(null);
     sellsTab.classList.add("hidden");
-  } else setActiveToken(mint, pos.entryPrice, pos.quantity);
+  }
+  setActiveToken(mint, pos.entryPrice, pos.quantity);
 
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
 }
@@ -158,7 +139,6 @@ export function clearPositions(global = true) {
     clearInterval(pnlIntervalId);
     pnlIntervalId = null;
   }
-  currentMint = null;
   currentPosition = null;
   openPositions.length = 0;
   positionEl.classList.remove("positive", "negative");

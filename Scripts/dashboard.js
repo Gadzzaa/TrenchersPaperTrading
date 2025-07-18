@@ -42,15 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const sessionToken = localStorage.getItem("sessionToken");
   const username = localStorage.getItem("username");
 
-  const sellsTab = document.getElementById("Sells");
-
-  const observer = new MutationObserver(() => {
-    if (sellsTab.classList.contains("hidden")) sellsTab.disabled = true;
-    else sellsTab.disabled = false;
-  });
-
-  observer.observe(sellsTab, { attributes: true, attributeFilter: ["class"] });
-
   if (!sessionToken) {
     console.warn("Session token not found.");
     clearPositions();
@@ -73,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   } else applyPreset(currentPreset);
 
   currentContract = await requestCurrentContract();
+  searchPosition(currentContract);
 
   setInterval(async () => {
     currentPreset = document.querySelector(".activePreset")?.id;
@@ -167,9 +159,7 @@ function searchPosition(currentContract) {
     if (Array.isArray(parsed) && parsed.length > 0) {
       window.openPositions = parsed;
 
-      const match = parsed.find(
-        (p) => p.mint === currentContract && p.quantity > 0,
-      );
+      const match = parsed.find((p) => p.mint === currentContract);
       if (match) {
         setActiveToken(match.mint, match.entryPrice, match.quantity);
       } else {
