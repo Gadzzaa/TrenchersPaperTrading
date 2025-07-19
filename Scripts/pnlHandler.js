@@ -1,43 +1,66 @@
 import { requestPrice } from "./utils.js";
 const openPositions = [];
-let currentPosition = null;
+let currentMint = null;
 let pnlIntervalId = null;
 
-export function setActiveToken(mint, entryPrice, quantity) {
+export function setActiveToken(mint) {
   if (pnlIntervalId) clearInterval(pnlIntervalId);
 
-  currentPosition = { mint, entryPrice, quantity };
+  currentMint = mint;
+  const idx = openPositions.findIndex((p) => p.mint === mint);
+  if (idx < 0) {
+    console.warn("No position found for mint:", mint);
+    return;
+  }
+  const pos = openPositions[idx];
+  const quantity = pos.quantity;
+  if (quantity <= 0) document.getElementById("Sells").classList.add("hidden");
+  else document.getElementById("Sells").classList.remove("hidden");
 
-  pnlIntervalId = setInterval(updateUnrealizedPnl, 250);
+  pnlIntervalId = setInterval(updateTotalPnl, 250);
 }
 
-export async function updateUnrealizedPnl() {
+export async function updateTotalPnl() {
   try {
+    const boughtText = document.getElementById("boughtText");
+    const soldText = document.getElementById("soldText");
+    const holdText = document.getElementById("holdText");
     const positionEl = document.getElementById("pnlText");
-    if (!currentPosition) return;
-    if (!positionEl) return;
+    if (!currentMint) throw new Error("No active token set");
+    if (!boughtText) throw new Error("Bought text element not found");
+    if (!soldText) throw new Error("Sold text element not found");
+    if (!holdText) throw new Error("Hold text element not found");
+    if (!positionEl) throw new Error("Position element not found");
+    if (!openPositions || !Array.isArray(openPositions))
+      throw new Error("Open positions not found or invalid");
+    const idx = openPositions.findIndex((p) => p.mint === currentMint);
+    if (idx < 0)
+      throw new Error("No position found for current mint: " + currentMint);
+    const pos = openPositions[idx];
+    const entryPrice = pos.entryPrice;
+    const quantity = pos.quantity;
+    const realizedPnl = pos.realizedPnl;
+    const totalSpent = pos.totalSpent;
+    const totalSold = pos.totalSold;
 
-    const { currentMint, entryPrice, quantity } = currentPosition;
     const currentPrice = await requestPrice(currentMint);
-    const entryValue = entryPrice * quantity; // totalCost
-    const value = currentPrice * quantity; // totalValue
+    const entryValue = entryPrice * quantity;
+    const value = currentPrice * quantity;
     const pnl = value - entryValue;
-    const pnlProcent = value > 0 ? (pnl / value) * 100 : 0;
+    const totalPnl = realizedPnl + pnl;
+    const pnlProcent = totalSpent > 0 ? (totalPnl / totalSpent) * 100 : 0;
 
     positionEl.classList.remove("positive", "negative");
-    positionEl.textContent = `${pnl.toFixed(2)} SOL (${pnlProcent.toFixed(2)}%)`;
-    positionEl.classList.add(pnl >= 0 ? "positive" : "negative");
+    positionEl.textContent = `${totalPnl.toFixed(2)} SOL (${pnlProcent.toFixed(2)}%)`;
+    positionEl.classList.add(totalPnl >= 0 ? "positive" : "negative");
+    boughtText.textContent = `${totalSpent.toFixed(2)}`;
+    soldText.textContent = `${totalSold.toFixed(2)}`;
+    holdText.textContent = `${value.toFixed(2)}`;
   } catch (err) {
     throw new Error("Failed to update PnL: " + err);
   }
 }
 export async function recordBuy(mint, entryPrice, solSpent) {
-  console.log(
-    "recordBuy called with:" +
-      typeof mint +
-      typeof entryPrice +
-      typeof solSpent,
-  );
   if (
     typeof mint !== "string" ||
     typeof entryPrice != "number" ||
@@ -62,12 +85,18 @@ export async function recordBuy(mint, entryPrice, solSpent) {
     const totalCost = existingCost + cost;
     pos.quantity = totalQty;
     pos.entryPrice = totalCost / totalQty;
-    setActiveToken(mint, pos.entryPrice, pos.quantity);
+    pos.totalSpent += solSpent;
   } else {
-    openPositions.push({ mint, entryPrice, quantity });
-    setActiveToken(mint, entryPrice, quantity);
+    openPositions.push({
+      mint,
+      entryPrice,
+      quantity,
+      realizedPnl: 0,
+      totalSpent: solSpent,
+      totalSold: 0,
+    });
+    setActiveToken(mint);
   }
-
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
 
   document.getElementById("Sells").classList.remove("hidden");
@@ -103,13 +132,19 @@ export async function recordSell(mint, exitPrice, quantityPercent) {
     return;
   }
 
+  const averageEntryPrice = pos.entryPrice;
+  const soldValue = exitPrice * sellQty;
+  const entryValue = averageEntryPrice * sellQty;
+  const sellPnl = soldValue - entryValue;
+
+  pos.realizedPnl += sellPnl;
   pos.quantity -= sellQty;
+  pos.totalSold += soldValue;
 
   const sellsTab = document.getElementById("Sells");
   if (parseFloat(pos.quantity.toFixed(9)) === 0) {
     sellsTab.classList.add("hidden");
   }
-  setActiveToken(mint, pos.entryPrice, pos.quantity);
 
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
 }
@@ -139,7 +174,7 @@ export function clearPositions(global = true) {
     clearInterval(pnlIntervalId);
     pnlIntervalId = null;
   }
-  currentPosition = null;
+  currentMint = null;
   openPositions.length = 0;
   positionEl.classList.remove("positive", "negative");
   positionEl.textContent = "0.00 SOL (0.00%)";

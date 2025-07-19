@@ -161,7 +161,7 @@ function searchPosition(currentContract) {
 
       const match = parsed.find((p) => p.mint === currentContract);
       if (match) {
-        setActiveToken(match.mint, match.entryPrice, match.quantity);
+        setActiveToken(match.mint);
       } else {
         console.warn(
           `[dashboard.js] Stored mint ${currentContract} not found or has 0 quantity.`,
