@@ -46,6 +46,9 @@ window.addEventListener("message", async (event) => {
       "*",
     );
   }
+  if (type === "SHOW_NOTIFICATION" && event.data?.message) {
+    showNotification(event.data.message);
+  }
 });
 
 function extractContractFromImage() {
@@ -236,11 +239,10 @@ function injectApp() {
     top: "100px",
     left: "100px",
     width: "350px",
-    height: "240px",
+    height: "285px",
     zIndex: "99999",
     background: "transparent",
     borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
     overflow: "hidden",
     userSelect: "none",
     opacity: "0",
@@ -263,13 +265,66 @@ function injectApp() {
   appIframe.src = chrome.runtime.getURL("dashboard.html");
   Object.assign(appIframe.style, {
     width: "100%",
-    height: "100%",
+    height: "240px",
     border: "none",
     borderRadius: "12px",
+    zIndex: "2",
   });
 
   appContainer.appendChild(appIframe);
   document.body.appendChild(appContainer);
+
+  const style = document.createElement("style");
+  style.textContent = `
+
+  #TrenchersPaperTrading {
+    --background: #1e1e2e;
+    --footerbg: #181825;
+    --green: #a6e3a1;
+    --red: #f38ba8;
+    --text: #cdd6f4;
+    --active: #89b4fa;
+    --surface: #45475a;
+  }
+
+
+  .notification {
+    position: absolute;
+    transform: translateY(-100%);
+    top: 240px;
+    width: 350px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: var(--background, #222);
+    color: var(--text, #fff);
+    padding: 16px 32px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    font-family: "Poppins", sans-serif;
+    font-size: 0.75rem;
+    text-align: center;
+    z-index: -1;
+    transition:
+      transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s;
+    pointer-events: none;
+    opacity: 0.97;
+  }
+  
+  .show {
+    transform: translateY(-5px); /* Slide down below container */
+    opacity: 1;
+  }
+
+  `;
+  document.head.appendChild(style);
+
+  const notification = document.createElement("div");
+  notification.id = "notification";
+  notification.className = "notification";
+  appContainer.appendChild(notification);
 
   const moveHandle = document.createElement("div");
   Object.assign(moveHandle.style, {
@@ -289,6 +344,19 @@ function injectApp() {
   setTimeout(() => {
     appContainer.style.opacity = "1";
   }, 50);
+}
+
+function showNotification(message) {
+  const notification = document.getElementById("notification");
+  if (!notification) return;
+
+  notification.textContent = message;
+  notification.classList.add("show");
+
+  clearTimeout(notification._hideTimeout);
+  notification._hideTimeout = setTimeout(() => {
+    notification.classList.remove("show");
+  }, 3000); // Slightly increased visibility duration
 }
 
 function monitorRouteChanges() {
