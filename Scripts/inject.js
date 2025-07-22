@@ -290,6 +290,7 @@ function injectApp() {
 
   .notification {
     position: absolute;
+    will-change: transform, opacity;
     transform: translateY(-100%);
     top: 240px;
     width: 350px;
@@ -317,13 +318,36 @@ function injectApp() {
     transform: translateY(-5px); /* Slide down below container */
     opacity: 1;
   }
-
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  .notification span.pop {
+    display: inline-block;
+    transform-origin: center;
+    animation: pop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
   `;
   document.head.appendChild(style);
 
   const notification = document.createElement("div");
   notification.id = "notification";
   notification.className = "notification";
+
+  // Create span for text
+  const notifText = document.createElement("span");
+  notifText.id = "notifText";
+  notification.appendChild(notifText);
+
   appContainer.appendChild(notification);
 
   const moveHandle = document.createElement("div");
@@ -348,15 +372,22 @@ function injectApp() {
 
 function showNotification(message) {
   const notification = document.getElementById("notification");
-  if (!notification) return;
-
-  notification.textContent = message;
-  notification.classList.add("show");
+  const notifText = document.getElementById("notifText");
+  if (!notification || !notifText) return;
 
   clearTimeout(notification._hideTimeout);
+
+  // Update text and trigger pop animation
+  notifText.textContent = message;
+  if (notification.classList.contains("show")) {
+    notifText.classList.remove("pop");
+    void notifText.offsetWidth; // Force reflow to restart animation
+    notifText.classList.add("pop");
+  } else notification.classList.add("show");
+
   notification._hideTimeout = setTimeout(() => {
     notification.classList.remove("show");
-  }, 3000); // Slightly increased visibility duration
+  }, 2000);
 }
 
 function monitorRouteChanges() {
