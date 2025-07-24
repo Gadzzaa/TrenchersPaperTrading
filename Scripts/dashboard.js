@@ -32,76 +32,79 @@ let currentContract = null;
 let currentPreset = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // PROD ONLY:
-  if (USE_LOCAL) {
-    //localStorage.clear();
-    //register("TestingUser", "Parola");
-    login("TestingUser", "Parola");
-  }
-
-  const sessionToken = localStorage.getItem("sessionToken");
-  const username = localStorage.getItem("username");
-
-  if (!sessionToken) {
-    console.warn("Session token not found.");
-    clearPositions();
-    // TODO: Lock dashboard until session is valid
-    return;
-  }
-
-  const isSessionValid = await checkSession();
-  if (!isSessionValid) {
-    console.warn("Session token is invalid.");
-    clearPositions();
-    localStorage.removeItem("sessionToken");
-    // TODO: Lock dashboard until session is valid
-    return;
-  }
-
-  currentPreset = getUsingPreset();
-  if (currentPreset == null || currentPreset === "undefined") {
-    applyPreset("preset1");
-  } else applyPreset(currentPreset);
-
-  currentContract = await requestCurrentContract();
-  searchPosition(currentContract);
-
-  setInterval(async () => {
-    currentPreset = document.querySelector(".activePreset")?.id;
-
-    const pendingPresets = localStorage.getItem("pendingPresets");
-    if (pendingPresets) {
-      applyPreset(currentPreset);
-      localStorage.setItem("pendingPresets", false);
+  try {
+    // PROD ONLY:
+    if (USE_LOCAL) {
+      //localStorage.clear();
+      //register("TestingUser", "Parola");
+      login("TestingUser", "Parola");
     }
 
-    const newPreset = getUsingPreset();
-    if (currentPreset !== newPreset) {
-      applyPreset(newPreset);
-      currentPreset = newPreset;
+    const sessionToken = localStorage.getItem("sessionToken");
+    const username = localStorage.getItem("username");
+
+    if (!sessionToken) {
+      clearPositions();
+      // TODO: Lock dashboard until session is valid
+      throw new error("Session token not found.");
     }
 
-    const newContract = await requestCurrentContract();
-    if (currentContract !== newContract) {
-      currentContract = newContract;
-      searchPosition(currentContract);
+    const isSessionValid = await checkSession();
+    if (!isSessionValid) {
+      clearPositions();
+      localStorage.removeItem("sessionToken");
+      // TODO: Lock dashboard until session is valid
+      throw new Error("Session token is invalid.");
     }
 
-    await updateBalanceUI();
-  }, 1000);
+    currentPreset = getUsingPreset();
+    if (currentPreset == null || currentPreset === "undefined") {
+      applyPreset("preset1");
+    } else applyPreset(currentPreset);
 
-  const actionButtons = document.querySelectorAll(
-    "#buyButtons .buyButton, #sellButtons .sellButton",
-  );
-  for (const button of actionButtons) {
-    button.addEventListener("click", handleActionButtonClick(button));
+    currentContract = await requestCurrentContract();
+    searchPosition(currentContract);
+
+    setInterval(async () => {
+      currentPreset = document.querySelector(".activePreset")?.id;
+
+      const pendingPresets = localStorage.getItem("pendingPresets");
+      if (pendingPresets) {
+        applyPreset(currentPreset);
+        localStorage.setItem("pendingPresets", false);
+      }
+
+      const newPreset = getUsingPreset();
+      if (currentPreset !== newPreset) {
+        applyPreset(newPreset);
+        currentPreset = newPreset;
+      }
+
+      const newContract = await requestCurrentContract();
+      if (currentContract !== newContract) {
+        currentContract = newContract;
+        searchPosition(currentContract);
+      }
+
+      await updateBalanceUI();
+    }, 1000);
+
+    const actionButtons = document.querySelectorAll(
+      "#buyButtons .buyButton, #sellButtons .sellButton",
+    );
+    for (const button of actionButtons) {
+      button.addEventListener("click", handleActionButtonClick(button));
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification("[dashboard.js] " + message, "error");
   }
 });
+
 function handleActionButtonClick(button) {
   return async () => {
     try {
       if (window.editMode === true) return;
-      showSpinner();
       button.disabled = true;
 
       const tokenMint = currentContract;
@@ -110,19 +113,18 @@ function handleActionButtonClick(button) {
       const price = parseFloat(await requestPrice());
       const symbol = await requestSymbol();
 
-      if (price == null) throw new Error("Token price is not an integer.");
-      if (!tokenMint) throw new Error("No contract loaded.");
+      if (!tokenMint) throw new Error("No CA loaded.");
       if (!action) throw new Error("No action specified inside the button.");
       if (!dataAmount)
         throw new Error("No amount specified inside the button.");
-      if (!symbol) throw new Error("No symbol found on the website.");
+      if (!price) throw new Error("Token price not found.");
+      if (!symbol) throw new Error("Symbol not found.");
 
       if (action === "buy") {
         const result = await buyToken(tokenMint, dataAmount, price);
-        if (!result) throw new Error("Failed to buy token.");
+        if (!result?.success)
+          throw new Error(result.error || "Unknown error occurred.");
         const tokensReceived = parseFloat(result.tokensReceived).toFixed(2);
-        if (tokensReceived <= 0)
-          throw new Error("Received 0 tokens, check your balance or price.");
         showNotification(
           `✅ You bought ${tokensReceived} ${symbol}!`,
           "success",
@@ -131,7 +133,8 @@ function handleActionButtonClick(button) {
       }
       if (action === "sell") {
         const result = await sellByPercentage(tokenMint, dataAmount, price);
-        if (!result) throw new Error("Failed to sell token.");
+        if (!result?.success)
+          throw new Error(result.error || "Unknown error occurred.");
         const tokensSold = parseFloat(result.tokensSold).toFixed(2);
         const solReceived = parseFloat(result.solReceived).toFixed(2);
         showNotification(
@@ -141,11 +144,9 @@ function handleActionButtonClick(button) {
         await recordSell(tokenMint, price, dataAmount);
       }
     } catch (error) {
-      showNotification("❌ " + error, "error");
-      console.error("Error:", error);
+      showNotification(error, "error");
     } finally {
       await updateBalanceUI(true);
-      hideSpinner();
       button.disabled = false;
     }
   };
@@ -153,21 +154,20 @@ function handleActionButtonClick(button) {
 
 function searchPosition(currentContract) {
   loadPositions();
-  const storedPositions = localStorage.getItem("openPositions");
-  if (storedPositions && currentContract) {
-    const parsed = JSON.parse(storedPositions);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      window.openPositions = parsed;
+  if (!currentContract) throw new Error("No current contract found.");
 
-      const match = parsed.find((p) => p.mint === currentContract);
-      if (match) {
-        setActiveToken(match.mint);
-      } else {
-        console.warn(
-          `[dashboard.js] Stored mint ${currentContract} not found or has 0 quantity.`,
-        );
-      }
-    }
+  const storedPositions = localStorage.getItem("openPositions");
+  if (!storedPositions) throw new Error("No positions found in local storage.");
+
+  const parsed = JSON.parse(storedPositions);
+  if (!Array.isArray(parsed) || parsed.length < 1)
+    throw new Error("Parsing positions failed.");
+
+  window.openPositions = parsed;
+
+  const match = parsed.find((p) => p.mint === currentContract);
+  if (match) {
+    setActiveToken(match.mint);
   }
 }
 
@@ -187,12 +187,12 @@ export async function updateBalanceUI(force = false) {
   }
 
   const result = await getPortfolio();
-  if (result && result.solBalance) {
-    const balance = parseFloat(result.solBalance).toFixed(2);
-    solBalance.innerText = balance;
-    localStorage.setItem("cachedSolBalance", balance);
-    localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
-  } else {
-    console.error("Failed to fetch balance");
+  if (!result?.solBalance) {
+    showNotification(result.error || "Failed to fetch balance.", "error");
+    return;
   }
+  const balance = parseFloat(result.solBalance).toFixed(2);
+  solBalance.innerText = balance;
+  localStorage.setItem("cachedSolBalance", balance);
+  localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
 }

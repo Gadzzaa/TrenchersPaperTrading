@@ -1,13 +1,19 @@
+// TODO: Redo the whole script once account page is ready
+
 import { login, register, checkSession } from "./API.js";
 import { showNotification } from "./utils.js";
 
 window.addEventListener("DOMContentLoaded", async () => {
   console.log("[account.js] Loaded account.js file");
+  let username = document.getElementById("username");
+  let password = document.getElementById("password");
 
-  document.getElementById("loginButton").addEventListener("click", handleLogin);
+  document
+    .getElementById("loginButton")
+    .addEventListener("click", login(username, password));
   document
     .getElementById("registerButton")
-    .addEventListener("click", handleRegister);
+    .addEventListener("click", register(username, password));
 
   const sessionToken = localStorage.getItem("sessionToken");
   const rememberedUsername = localStorage.getItem("rememberedUsername");

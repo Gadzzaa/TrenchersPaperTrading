@@ -1,43 +1,38 @@
 import { showNotification, showSpinner, hideSpinner } from "./utils.js";
 import { updateBalanceUI } from "./dashboard.js";
-import CONFIG from "../config.js";
+import CONFIG, { USE_LOCAL } from "../config.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
+const maxAttempts = 3;
 
 // SessionChecker.js
 export async function checkSession() {
-  const sessionToken = localStorage.getItem("sessionToken");
-  if (!sessionToken) {
-    console.warn("⚠️ No session token found.");
-    return false;
-  }
+  try {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(API_BASE_URL + "/api/check-session", {
+          method: "GET",
+          headers: getAuthHeaders(),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    try {
-      const response = await fetch(API_BASE_URL + "/api/check-session", {
-        method: "GET",
-        headers: getAuthHeaders(),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
 
-      if (!response.ok) {
-        console.error(
-          "❌ Server responded with error status:",
-          response.status,
-        );
-        return false;
-      }
+        const data = await response.json();
+        if (!data) throw new Error("No data received from server");
 
-      const data = await response.json();
-      return data.valid === true;
-    } catch (error) {
-      if (attempt === 1) {
-        console.error("❌ Failed to check session after retry:", error);
-        return false;
+        return data.valid === true;
+      } catch (error) {
+        if (attempt === maxAttempts)
+          throw new Error("Failed to check session: " + error);
       }
     }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(USE_LOCAL ? "[API.js] " + message : message, "error");
   }
   return false;
 }
@@ -50,40 +45,50 @@ export async function buyToken(
   slippage = 2,
   fee = 0.1,
 ) {
-  const payload = {
-    tokenMint,
-    solAmount,
-    tokenPrice,
-    slippage,
-    fee,
-  };
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    try {
-      const response = await fetch(API_BASE_URL + "/api/buy", {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
+  try {
+    const payload = {
+      tokenMint,
+      solAmount,
+      tokenPrice,
+      slippage,
+      fee,
+    };
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(API_BASE_URL + "/api/buy", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
 
-      const result = await response.json();
+        clearTimeout(timeout);
 
-      if (response.ok && result.success) {
+        const result = await response.json();
+        if (!result?.success)
+          throw new Error(result.error || "Unknown error occured.");
+        if (result?.tokensReceived <= 0)
+          throw new Error("Received 0 tokens, check your balance or price.");
+
         return {
+          success: true,
           tokensReceived: result.tokensReceived,
           solSpent: result.solSpent,
           fees: result.fees,
         };
-      } else throw new Error(result.error || "Buy failed");
-    } catch (error) {
-      if (attempt === 1) {
-        console.error("❌ Buy failed after retry:", error);
-        return null;
+      } catch (error) {
+        if (attempt === maxAttempts)
+          throw new Error("Buy failed with error: " + error.message);
       }
     }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const errMsg = USE_LOCAL ? "[API.js] " + message : message;
+    return { error: errMsg };
   }
 }
 
@@ -91,40 +96,174 @@ export async function buyToken(
 export async function sellByPercentage(tokenMint, percentage, price) {
   try {
     const portfolio = await getPortfolio();
-    if (!portfolio || !portfolio.tokens) {
-      throw new Error("Portfolio data invalid.");
-    }
+    if (!portfolio?.tokens)
+      throw new Error(portfolio.error || "No tokens found in portfolio.");
 
     const totalAmount = portfolio.tokens[tokenMint];
-    if (!totalAmount) {
-      showNotification("❌ No tokens found for this mint.", "error");
-      return;
-    }
+    if (!totalAmount) throw new Error("No tokens found for this mint.");
 
     const amountToSell = parseFloat(
       (totalAmount * (percentage / 100)).toFixed(9),
     );
 
-    if (amountToSell <= 0) {
-      showNotification("❌ No tokens to sell.", "error");
-      return;
-    }
+    if (amountToSell <= 0) throw new Error("No tokens to sell.");
 
     const result = await sellToken(tokenMint, amountToSell, price);
-
-    if (result) {
-      showNotification(
-        `✅ Sold ${result.tokensSold.toFixed(2)} tokens for ${result.solReceived.toFixed(2)} SOL!`,
-        "success",
-      );
-      return result;
-    } else showNotification("❌ Sell failed.", "error");
+    return result;
   } catch (error) {
-    console.error("❌ Error during sell by percentage:", error.message);
-    showNotification("❌ Server error during selling.", "error");
+    const message = error instanceof Error ? error.message : String(error);
+    const errMsg = USE_LOCAL ? "[API.js] " + message : message;
+    return { error: errMsg };
   }
 }
 
+// PortfolioHandler.js
+export async function getPortfolio() {
+  try {
+    const username = localStorage.getItem("username");
+    if (!username) throw new Error("No loggedInUsername found in localStorage");
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(
+          API_BASE_URL + `/api/portfolio/${encodeURIComponent(username)}`,
+          {
+            method: "GET",
+            headers: getAuthHeaders(),
+            signal: controller.signal,
+          },
+        );
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
+
+        clearTimeout(timeout);
+
+        const data = await response.json();
+        if (!data) throw new Error("No data received from server");
+
+        return data;
+      } catch (error) {
+        if (attempt === maxAttempts)
+          throw new Error("Failed to fetch portfolio: " + error.message);
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { error: USE_LOCAL ? "[API.js] " + message : message };
+  }
+  return null;
+}
+
+// ResetHandler.js
+export async function resetAccount(amount) {
+  try {
+    const username = localStorage.getItem("username");
+    if (!username)
+      throw new Error("No logged in username found in localStorage");
+
+    if (isNaN(amount) || amount < 1)
+      throw new Error("Invalid amount — must be a number ≥ 1");
+
+    await resetUserData(username);
+    await setUserBalance(amount);
+
+    clearPositions();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(USE_LOCAL ? `[API.js] ${message}` : message, "error");
+  }
+}
+
+// LoginHandler.js
+export async function login(username, password) {
+  try {
+    if (!username || !password)
+      throw new Error("Username and password are required.");
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(API_BASE_URL + "/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+          signal: controller.signal,
+        });
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
+
+        clearTimeout(timeout);
+
+        const result = await response.json();
+        if (!result?.token)
+          throw new Error("No token received from server: " + result.error);
+
+        localStorage.setItem("username", username);
+        localStorage.setItem("sessionToken", result.token);
+        // TODO: enable dashboard access
+        break;
+      } catch (error) {
+        if (attempt === 1)
+          throw new Error("Login failed with error: " + error.message);
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(USE_LOCAL ? "[API.js] " + message : message, "error");
+  }
+}
+
+// RegisterHandler.js
+export async function register(username, password) {
+  try {
+    if (!username || !password)
+      throw new Error("Username and password are required.");
+    if (password.length < 6)
+      throw new Error("Password must be at least 6 characters.");
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(
+          "http://localhost:3000/api/create-account",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+            signal: controller.signal,
+          },
+        );
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
+
+        const result = await response.json();
+        if (!result?.token)
+          throw new Error("No token received from server: " + result.error);
+
+        localStorage.setItem("username", username);
+        localStorage.setItem("sessionToken", result.token);
+        resetAccount(100);
+        // TODO: enable dashboard access
+        break;
+      } catch (error) {
+        if (attempt === 1)
+          throw new Error("Registration failed with error: " + error.message);
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(USE_LOCAL ? "[API.js] " + message : message, "error");
+  }
+}
+
+// BACKEND FUNCTIONS
 async function sellToken(
   tokenMint,
   tokenAmount,
@@ -132,11 +271,6 @@ async function sellToken(
   slippage = 2,
   fee = 0.1,
 ) {
-  const sessionToken = localStorage.getItem("sessionToken");
-  if (!sessionToken) {
-    throw new Error("No sessionToken found. Please log in again.");
-  }
-
   const payload = {
     tokenMint,
     tokenAmount,
@@ -144,8 +278,7 @@ async function sellToken(
     slippage,
     fee,
   };
-
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     try {
@@ -155,206 +288,84 @@ async function sellToken(
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
+      if (!response?.ok) {
+        return {
+          error: "Server responded with status " + response.status,
+        };
+      }
       clearTimeout(timeout);
 
       const result = await response.json();
-
-      if (response.ok && result.success) {
+      if (!result?.success) {
         return {
-          solReceived: result.solReceived,
-          tokensSold: result.tokensSold,
-          fees: result.fees,
+          error: result.error || "Unknown error occured.",
         };
-      } else throw new Error(result.error || "Sell operation failed");
-    } catch (error) {
-      if (attempt === 1) {
-        console.error("❌ Failed to sell token after retry:", error);
-        showNotification(
-          "❌ Failed to sell token after retry. Please try again later.",
-          "error",
-        );
-        return;
       }
-      showNotification(`❌ Sell failed. Retrying... ${error.message}`, "error");
+
+      return {
+        success: true,
+        solReceived: result.solReceived,
+        tokensSold: result.tokensSold,
+        fees: result.fees,
+      };
+    } catch (error) {
+      if (attempt === maxAttempts) return { error: error.message }; // Simplified since it will pass through sellByPercentage
     }
   }
 }
 
-// PortfolioHandler.js
-export async function getPortfolio() {
-  const username = localStorage.getItem("username");
-  const sessionToken = localStorage.getItem("sessionToken");
-  if (!username) {
-    throw new Error("No loggedInUsername found in localStorage");
-  }
-  if (!sessionToken) {
-    throw new Error("No sessionToken found. Please log in again.");
-  }
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+async function resetUserData(username) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       const response = await fetch(
-        API_BASE_URL + `/api/portfolio/${encodeURIComponent(username)}`,
+        `http://localhost:3000/api/reset/:${username}`,
         {
           method: "GET",
           headers: getAuthHeaders(),
           signal: controller.signal,
         },
       );
-      clearTimeout(timeout);
-
-      if (!response.ok) {
+      if (!response?.ok)
         throw new Error(`Server responded with status ${response.status}`);
-      }
+
+      clearTimeout(timeout);
 
       const data = await response.json();
-
-      return data;
+      if (!data) throw new Error("No data received from server");
     } catch (error) {
-      if (attempt === 1) {
-        console.error("❌ Failed to fetch portfolio after retry:", error);
-        return null;
-      }
-      console.warn("Fetching portfolio failed. Retrying...", error);
+      if (attempt === maxAttempts)
+        throw new Error("Failed to reset user data: " + error.message);
     }
-  }
-  return null;
-}
-
-// ResetHandler.js
-export async function resetAccount(accountDropdown, input) {
-  try {
-    const username = localStorage.getItem("username");
-    let resp, data;
-
-    // RESET
-    resp = await fetch(`http://localhost:3000/api/reset/:${username}`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
-    data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || "Reset failed");
-    // SET BALANCE
-    const amount = input;
-    if (isNaN(amount) || amount < 1) {
-      throw new Error("Invalid amount—must be a number ≥ 1");
-    }
-    resp = await fetch("http://localhost:3000/api/set-balance", {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ amount }),
-    });
-    data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || "Set balance failed");
-    clearPositions(); // Clear positions
-    // Refresh your UI
-    await updateBalanceUI();
-    if (accountDropdown) {
-      accountDropdown.style.animation = "dropdownCollapse 0.3s ease forwards";
-      setTimeout(() => {
-        accountDropdown.style.opacity = "0";
-        accountDropdown.style.pointerEvents = "none";
-      }, 300);
-    }
-  } catch (err) {
-    console.error("Manage balance error:", err);
-  } finally {
-    hideSpinner();
   }
 }
 
-// LoginHandler.js
-export async function login(username, password) {
-  if (!username || !password) {
-    showNotification("Please fill in both fields.", "error");
-    return;
-  }
-
-  await new Promise((resolve) => setTimeout(resolve, 600)); // 600ms small delay
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+async function setUserBalance(amount) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const response = await fetch(API_BASE_URL + "/api/login", {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch("http://localhost:3000/api/set-balance", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ amount }),
         signal: controller.signal,
       });
+      if (!response?.ok)
+        throw new Error(`Server responded with status ${response.status}`);
+
       clearTimeout(timeout);
 
-      const result = await response.json();
-      if (response.ok) {
-        if (!result.token)
-          throw new Error("Invalid token received. Please try again.");
-        showNotification("Login Successful", "success");
-        localStorage.setItem("username", username);
-        localStorage.setItem("sessionToken", result.token);
-        // TODO: enable dashboard access
-        break;
-      } else throw new Error(result.error || "Login failed");
+      const data = await response.json();
+      if (!data) throw new Error("No data received from server");
     } catch (error) {
-      if (attempt === 1) {
-        console.error("Login failed after retry:", error);
-        showNotification("Login failed after retry: " + error, "error");
-        return;
-      }
-      showNotification("Login failed. Retrying...", "error");
-    }
-  }
-}
-
-// RegisterHandler.js
-export async function register(username, password) {
-  if (!username || !password) {
-    showNotification("Please fill in both fields.", "error");
-    return;
-  }
-  if (password.length < 6) {
-    showNotification("Password must be at least 6 characters.", "error");
-    return;
-  }
-
-  await new Promise((resolve) => setTimeout(resolve, 600)); // 600ms small delay
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    try {
-      const response = await fetch("http://localhost:3000/api/create-account", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        showNotification("Account created successfully!", "success");
-        localStorage.setItem("username", username);
-        localStorage.setItem("sessionToken", result.token);
-        resetAccount(100); // 🔥 Reset account
-        // TODO: enable dashboard access
-        break;
-      } else throw new Error(result.error || "Registration failed.");
-    } catch (error) {
-      if (attempt === 1) {
-        console.error("❌ Failed to register after retry:", error);
-        showNotification(
-          "Failed to register after retry. Please try again later.",
-          "error",
+      if (attempt === maxAttempts)
+        throw new Error(
+          "Failed to set user balance: " +
+            error.message +
+            "\n Please try again.",
         );
-        return;
-      }
-      showNotification(
-        "Registration failed. Retrying... " + error.message,
-        "error",
-      );
-      console.warn("Registration failed. Retrying...", error);
     }
   }
 }
