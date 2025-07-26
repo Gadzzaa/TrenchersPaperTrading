@@ -24,6 +24,33 @@ document.addEventListener("DOMContentLoaded", () => {
   notificationInner = document.getElementById("notificationInner");
 });
 
+export function disableAllTradeButtons(allButtons) {
+  allButtons.forEach((btn) => {
+    btn.disabled = true;
+    btn.classList.add("hidden");
+  });
+}
+
+export function enableAllTradeButtons(allButtons) {
+  allButtons.forEach((btn) => {
+    btn.disabled = false;
+    btn.classList.remove("hidden");
+    const originalText = btn.getAttribute("data-original-label");
+    if (originalText) btn.innerHTML = originalText;
+  });
+}
+
+export function showButtonLoading(button) {
+  const original = button.innerHTML;
+  button.setAttribute("data-original-label", original);
+
+  button.innerHTML = `
+    <div class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+  `;
+}
+
 // Spinner.js
 export function showSpinner() {
   if (!spinnerOverlay || !spinnerText) return;
@@ -81,12 +108,12 @@ export function showNotification(message, type) {
 
 function safePlay(audio) {
   const now = Date.now();
-  if (now - lastPlay > 500) {
-    lastPlay = now;
-    audio.play().catch((e) => {
-      throw new Error(`${type} sound failed:`, e);
-    });
-  }
+  //  if (now - lastPlay > 50) {
+  lastPlay = now;
+  audio.play().catch((e) => {
+    throw new Error(`${type} sound failed:`, e);
+  });
+  // }
 }
 
 // Request from inject.js

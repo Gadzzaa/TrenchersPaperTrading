@@ -21,6 +21,9 @@ import {
   requestCurrentContract,
   requestSymbol,
   requestPrice,
+  disableAllTradeButtons,
+  enableAllTradeButtons,
+  showButtonLoading,
 } from "./utils.js";
 
 // LOCAL ONLY:
@@ -100,9 +103,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function handleActionButtonClick(button) {
   return async () => {
+    const actionButtons = document.querySelectorAll(
+      "#buyButtons .buyButton, #sellButtons .sellButton",
+    );
+
     try {
-      if (window.editMode === true) return;
-      button.disabled = true;
+      if (window.editMode) return;
+      disableAllTradeButtons(actionButtons);
+      showButtonLoading(button);
 
       const tokenMint = currentContract;
       const action = button.dataset.action;
@@ -121,11 +129,14 @@ function handleActionButtonClick(button) {
         const result = await buyToken(tokenMint, dataAmount, price);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
+        let solSpent =
+          parseFloat(result.solSpent) - parseFloat(result.fees.protocol);
+        solSpent = parseFloat(solSpent.toFixed(2));
         showNotification(
-          `You bought ${dataAmount} SOL worth of ${symbol}!`,
+          `You bought ${solSpent} SOL worth of ${symbol}!`,
           "success",
         );
-        await recordBuy(tokenMint, price, dataAmount);
+        await recordBuy(tokenMint, price, solSpent);
       }
       if (action === "sell") {
         const result = await sellByPercentage(tokenMint, dataAmount, price);
@@ -136,13 +147,14 @@ function handleActionButtonClick(button) {
           `You sold ${symbol} for ${solReceived} SOL!`,
           "success",
         );
-        await recordSell(tokenMint, parseFloat(solReceived), dataAmount);
+        await recordSell(tokenMint, parseFloat(solReceived), dataAmount); // account for fees
+        //await recordSell(tokenMint, price, dataAmount);
       }
     } catch (error) {
       showNotification(error, "error");
     } finally {
       await updateBalanceUI(true);
-      button.disabled = false;
+      enableAllTradeButtons(actionButtons);
     }
   };
 }
