@@ -295,16 +295,16 @@ function injectApp() {
     top: 240px;
     width: 350px;
     box-sizing: border-box;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
     background: var(--background, #222);
     color: var(--text, #fff);
     padding: 16px 32px;
     border-radius: 0 0 12px 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     font-family: "Poppins", sans-serif;
-    font-size: 0.75rem;
+    font-size: clamp(0.5rem, 2.5vw, 0.85rem);
     text-align: center;
     z-index: -1;
     transition:
@@ -318,6 +318,7 @@ function injectApp() {
     transform: translateY(-5px); /* Slide down below container */
     opacity: 1;
   }
+
   @keyframes pop {
     0% {
       transform: scale(1);

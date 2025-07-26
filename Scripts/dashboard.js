@@ -62,9 +62,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       applyPreset("preset1");
     } else applyPreset(currentPreset);
 
-    currentContract = await requestCurrentContract();
-    searchPosition(currentContract);
-
     setInterval(async () => {
       currentPreset = document.querySelector(".activePreset")?.id;
 
@@ -124,9 +121,8 @@ function handleActionButtonClick(button) {
         const result = await buyToken(tokenMint, dataAmount, price);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
-        const tokensReceived = parseFloat(result.tokensReceived).toFixed(2);
         showNotification(
-          `✅ You bought ${tokensReceived} ${symbol}!`,
+          `You bought ${dataAmount} SOL worth of ${symbol}!`,
           "success",
         );
         await recordBuy(tokenMint, price, dataAmount);
@@ -135,13 +131,12 @@ function handleActionButtonClick(button) {
         const result = await sellByPercentage(tokenMint, dataAmount, price);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
-        const tokensSold = parseFloat(result.tokensSold).toFixed(2);
         const solReceived = parseFloat(result.solReceived).toFixed(2);
         showNotification(
-          `✅ You sold ${tokensSold} ${symbol} for ${solReceived} SOL!`,
+          `You sold ${symbol} for ${solReceived} SOL!`,
           "success",
         );
-        await recordSell(tokenMint, price, dataAmount);
+        await recordSell(tokenMint, parseFloat(solReceived), dataAmount);
       }
     } catch (error) {
       showNotification(error, "error");
@@ -157,7 +152,10 @@ function searchPosition(currentContract) {
   if (!currentContract) throw new Error("No current contract found.");
 
   const storedPositions = localStorage.getItem("openPositions");
-  if (!storedPositions) throw new Error("No positions found in local storage.");
+  if (!storedPositions) {
+    console.warn("No open positions found in localStorage.");
+    return;
+  }
 
   const parsed = JSON.parse(storedPositions);
   if (!Array.isArray(parsed) || parsed.length < 1)

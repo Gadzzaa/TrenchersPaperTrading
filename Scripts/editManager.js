@@ -8,12 +8,20 @@ document.addEventListener("DOMContentLoaded", () => {
   window.editMode = false;
 
   editModeToggle.addEventListener("click", () => {
-    window.editMode = !window.editMode;
+    const body = document.body;
+
     if (window.editMode) {
-      //TODO: Change color when edit mode is active
+      body.classList.add("edit-mode-exit");
+
+      // Wait for animation to finish
+      setTimeout(() => {
+        body.classList.remove("edit-mode", "edit-mode-exit");
+      }, 400);
     } else {
-      //TODO: Revert
+      body.classList.add("edit-mode");
     }
+
+    window.editMode = !window.editMode;
   });
 
   buyButtons.forEach((button) => {

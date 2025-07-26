@@ -23,7 +23,8 @@
     {
       "resources": [
         "account.html",
-        "dashboard.html"
+        "dashboard.html",
+        "Sounds/*.wav"
       ],
       "matches": ["<all_urls>"]
     }

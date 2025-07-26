@@ -102,44 +102,28 @@ export async function recordBuy(mint, entryPrice, solSpent) {
   document.getElementById("Sells").classList.remove("hidden");
 }
 
-export async function recordSell(mint, exitPrice, quantityPercent) {
-  if (
-    typeof mint !== "string" ||
-    typeof exitPrice !== "number" ||
-    typeof quantityPercent !== "number" ||
-    exitPrice <= 0
-  ) {
-    console.error("recordSell: invalid arguments", {
-      mint,
-      exitPrice,
-      quantityPercent,
-    });
-    return;
-  }
+export async function recordSell(mint, exitValue, quantityPercent) {
+  if (!mint) throw new Error("Mint is required for recordSell");
+  if (!exitValue) throw new Error("Exit value is required for recordSell");
+  if (!quantityPercent)
+    throw new Error("Quantity percent is required for recordSell");
 
   const idx = openPositions.findIndex((p) => p.mint === mint);
-  if (idx < 0) {
-    console.warn(`recordSell: no position found for ${mint}`);
-    return;
-  }
+  if (idx < 0) throw new Error(`No position found for mint: ${mint}`);
 
   const pos = openPositions[idx];
 
   let sellQty = (quantityPercent / 100) * pos.quantity;
 
-  if (sellQty <= 0) {
-    console.warn(`recordSell: nothing to sell for ${mint}`);
-    return;
-  }
+  if (sellQty <= 0) throw new Error(`Nothing to sell for ${mint}`);
 
   const averageEntryPrice = pos.entryPrice;
-  const soldValue = exitPrice * sellQty;
   const entryValue = averageEntryPrice * sellQty;
-  const sellPnl = soldValue - entryValue;
+  const sellPnl = exitValue - entryValue;
 
   pos.realizedPnl += sellPnl;
   pos.quantity -= sellQty;
-  pos.totalSold += soldValue;
+  pos.totalSold += exitValue;
 
   const sellsTab = document.getElementById("Sells");
   if (parseFloat(pos.quantity.toFixed(9)) === 0) {

@@ -10,6 +10,11 @@ let popTimeout1;
 let popTimeout2;
 let glowTimeout1;
 let glowTimeout2;
+let lastPlay = 0;
+const successSound = new Audio(chrome.runtime.getURL("Sounds/success.wav"));
+const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
+successSound.volume = 0.4;
+failSound.volume = 0.4;
 
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
@@ -61,9 +66,30 @@ export function showNotification(message, type) {
     },
     "*",
   );
+  switch (type) {
+    case "success":
+      safePlay(successSound);
+      break;
+    case "error":
+      safePlay(failSound);
+      break;
+    case "info":
+      // No sound for info
+      break;
+  }
 }
 
-// Request from iframe.js
+function safePlay(audio) {
+  const now = Date.now();
+  if (now - lastPlay > 500) {
+    lastPlay = now;
+    audio.play().catch((e) => {
+      throw new Error(`${type} sound failed:`, e);
+    });
+  }
+}
+
+// Request from inject.js
 export function requestSymbol() {
   return new Promise((resolve) => {
     const requestId = "get-symbol-" + Date.now();

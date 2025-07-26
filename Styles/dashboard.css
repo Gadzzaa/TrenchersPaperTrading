@@ -38,6 +38,47 @@ body {
   padding: 0;
 }
 
+body.edit-mode #Container {
+  box-shadow: 0 0 10px 2px var(--active);
+  animation: glowPulse 1.2s ease-in-out infinite alternate;
+}
+
+body.edit-mode::before {
+  content: "EDIT MODE";
+  position: fixed;
+  top: -40px;
+  left: 52%;
+  transform: translateX(-52%);
+  background-color: var(--active);
+  color: var(--background);
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 6px;
+  z-index: 10000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  font-family: "Poppins", sans-serif;
+  animation: slideDown 0.4s ease-out forwards;
+}
+
+body.edit-mode::after {
+  content: "";
+  position: fixed;
+  bottom: 40px;
+  right: 6px;
+  width: 12px;
+  height: 12px;
+  background-color: var(--active);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--active);
+  animation: pulseDot 1.2s infinite ease-in-out;
+  z-index: 9999;
+}
+
+body.edit-mode-exit::before {
+  animation: slideUp 0.4s ease-in forwards;
+}
+
 .movableObjects {
   will-change: transform;
   backface-visibility: hidden;
@@ -473,5 +514,48 @@ body {
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    top: -40px;
+    opacity: 0;
+  }
+  100% {
+    top: 20px;
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    top: 20px;
+    opacity: 1;
+  }
+  100% {
+    top: -40px;
+    opacity: 0;
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 8px 2px var(--active);
+  }
+  100% {
+    box-shadow: 0 0 16px 4px var(--active);
+  }
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
