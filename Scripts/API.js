@@ -3,6 +3,8 @@ import { updateBalanceUI } from "./dashboard.js";
 import CONFIG, { USE_LOCAL } from "../config.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
 const maxAttempts = 3;
+const slippagePercentage = 0;
+const feeAmount = 0;
 
 // SessionChecker.js
 export async function checkSession() {
@@ -42,8 +44,8 @@ export async function buyToken(
   tokenMint,
   solAmount,
   tokenPrice,
-  slippage = 2,
-  fee = 0.1,
+  slippage = slippagePercentage,
+  fee = feeAmount,
 ) {
   try {
     const payload = {
@@ -63,14 +65,14 @@ export async function buyToken(
           body: JSON.stringify(payload),
           signal: controller.signal,
         });
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
+        const result = await response.json();
 
         clearTimeout(timeout);
 
-        const result = await response.json();
-        if (!result?.success)
-          throw new Error(result.error || "Unknown error occured.");
+        if (!response?.ok) {
+          console.error("Server error occured: " + result.error);
+          throw new Error(`Server responded with status ${response.status}`);
+        }
         if (result?.tokensReceived <= 0)
           throw new Error("Received 0 tokens, check your balance or price.");
 
@@ -204,6 +206,7 @@ export async function login(username, password) {
 
         localStorage.setItem("username", username);
         localStorage.setItem("sessionToken", result.token);
+        showNotification("Logged in successfully!", "success");
         // TODO: enable dashboard access
         break;
       } catch (error) {
@@ -268,8 +271,8 @@ async function sellToken(
   tokenMint,
   tokenAmount,
   tokenPrice,
-  slippage = 2,
-  fee = 0.1,
+  slippage = slippagePercentage,
+  fee = feeAmount,
 ) {
   const payload = {
     tokenMint,

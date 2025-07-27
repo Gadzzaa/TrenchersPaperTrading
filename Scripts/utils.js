@@ -83,7 +83,7 @@ function safePlay(audio) {
   //  if (now - lastPlay > 50) {
   lastPlay = now;
   audio.play().catch((e) => {
-    throw new Error(`${type} sound failed:`, e);
+    throw new Error(`${audio} sound failed:`, e);
   });
   // }
 }
