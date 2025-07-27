@@ -1,6 +1,6 @@
 import { applyPreset, getUsingPreset } from "./presetManager.js";
 
-import { showNotification, showSpinner, hideSpinner } from "./utils.js";
+import { showNotification } from "./utils.js";
 
 import {
   checkSession,

@@ -1,4 +1,4 @@
-import { showNotification, showSpinner, hideSpinner } from "./utils.js";
+import { showNotification } from "./utils.js";
 import { updateBalanceUI } from "./dashboard.js";
 import CONFIG, { USE_LOCAL } from "../config.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;

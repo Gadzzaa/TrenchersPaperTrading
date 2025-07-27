@@ -15,8 +15,6 @@ export function setActiveToken(mint) {
   }
   const pos = openPositions[idx];
   const quantity = pos.quantity;
-  if (quantity <= 0) document.getElementById("Sells").classList.add("hidden");
-  else document.getElementById("Sells").classList.remove("hidden");
 
   pnlIntervalId = setInterval(updateTotalPnl, 250);
 }
@@ -27,11 +25,13 @@ export async function updateTotalPnl() {
     const soldText = document.getElementById("soldText");
     const holdText = document.getElementById("holdText");
     const positionEl = document.getElementById("pnlText");
+    const sellsTab = document.getElementById("Sells");
     if (!currentMint) throw new Error("No active token set");
     if (!boughtText) throw new Error("Bought text element not found");
     if (!soldText) throw new Error("Sold text element not found");
     if (!holdText) throw new Error("Hold text element not found");
     if (!positionEl) throw new Error("Position element not found");
+    if (!sellsTab) throw new Error("Sells tab element not found");
     if (!openPositions || !Array.isArray(openPositions))
       throw new Error("Open positions not found or invalid");
     const idx = openPositions.findIndex((p) => p.mint === currentMint);
@@ -43,6 +43,10 @@ export async function updateTotalPnl() {
     const realizedPnl = pos.realizedPnl;
     const totalSpent = pos.totalSpent;
     const totalSold = pos.totalSold;
+
+    if (Number(parseFloat(quantity).toFixed(9)) <= 0)
+      sellsTab.classList.add("hidden");
+    else sellsTab.classList.remove("hidden");
 
     const currentPrice = await requestPrice(currentMint);
     const entryValue = entryPrice * quantity;
@@ -70,9 +74,6 @@ export async function recordBuy(mint, entryPrice, solSpent) {
   if (!entryPrice) throw new Error("Entry price is required for recordBuy");
   if (!solSpent) throw new Error("SOL spent is required for recordBuy");
 
-  const sellsTab = document.getElementById("Sells");
-  if (!sellsTab) throw new Error("Sells tab element not found");
-
   const quantity = solSpent / entryPrice;
 
   const idx = openPositions.findIndex((p) => p.mint === mint);
@@ -97,8 +98,6 @@ export async function recordBuy(mint, entryPrice, solSpent) {
     setActiveToken(mint);
   }
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
-
-  sellsTab.classList.remove("hidden");
 }
 
 export async function recordSell(mint, exitValue, quantityPercent) {
@@ -123,13 +122,6 @@ export async function recordSell(mint, exitValue, quantityPercent) {
   pos.realizedPnl += sellPnl;
   pos.quantity -= sellQty;
   pos.totalSold += exitValue;
-
-  const sellsTab = document.getElementById("Sells");
-  if (!sellsTab) throw new Error("Sells tab element not found");
-
-  if (parseFloat(pos.quantity.toFixed(9)) === 0) {
-    sellsTab.classList.add("hidden");
-  }
 
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
 }
