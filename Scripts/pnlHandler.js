@@ -1,4 +1,5 @@
-import { requestPrice } from "./utils.js";
+import { requestPrice, showNotification } from "./utils.js";
+import { USE_LOCAL } from "../config.js";
 const openPositions = [];
 let currentMint = null;
 let pnlIntervalId = null;
@@ -56,23 +57,21 @@ export async function updateTotalPnl() {
     boughtText.textContent = `${totalSpent.toFixed(2)}`;
     soldText.textContent = `${totalSold.toFixed(2)}`;
     holdText.textContent = `${value.toFixed(2)}`;
-  } catch (err) {
-    throw new Error("Failed to update PnL: " + err);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(
+      USE_LOCAL ? "[pnlHandler.js]" + message : message,
+      "error",
+    );
   }
 }
 export async function recordBuy(mint, entryPrice, solSpent) {
-  if (
-    typeof mint !== "string" ||
-    typeof entryPrice != "number" ||
-    typeof solSpent != "number"
-  ) {
-    console.error("recordBuy: invalid arguments", {
-      mint,
-      entryPrice,
-      solSpent,
-    });
-    return;
-  }
+  if (!mint) throw new Error("Mint is required for recordBuy");
+  if (!entryPrice) throw new Error("Entry price is required for recordBuy");
+  if (!solSpent) throw new Error("SOL spent is required for recordBuy");
+
+  const sellsTab = document.getElementById("Sells");
+  if (!sellsTab) throw new Error("Sells tab element not found");
 
   const quantity = solSpent / entryPrice;
 
@@ -99,7 +98,7 @@ export async function recordBuy(mint, entryPrice, solSpent) {
   }
   localStorage.setItem("openPositions", JSON.stringify(openPositions));
 
-  document.getElementById("Sells").classList.remove("hidden");
+  sellsTab.classList.remove("hidden");
 }
 
 export async function recordSell(mint, exitValue, quantityPercent) {
@@ -126,6 +125,8 @@ export async function recordSell(mint, exitValue, quantityPercent) {
   pos.totalSold += exitValue;
 
   const sellsTab = document.getElementById("Sells");
+  if (!sellsTab) throw new Error("Sells tab element not found");
+
   if (parseFloat(pos.quantity.toFixed(9)) === 0) {
     sellsTab.classList.add("hidden");
   }
@@ -136,24 +137,16 @@ export async function recordSell(mint, exitValue, quantityPercent) {
 export async function loadPositions() {
   clearPositions(false);
   const storedPositions = localStorage.getItem("openPositions");
-  if (storedPositions) {
-    try {
-      const parsedPositions = JSON.parse(storedPositions);
-      openPositions.push(...parsedPositions);
-    } catch (error) {
-      console.error("Error parsing positions from localStorage:", error);
-    }
-  } else {
-    console.log("No positions found in localStorage.");
-  }
+  if (!storedPositions) throw new Error("No positions found in localStorage");
+
+  const parsedPositions = JSON.parse(storedPositions);
+  openPositions.push(...parsedPositions);
 }
 
 export function clearPositions(global = true) {
   const positionEl = document.getElementById("pnlText");
-  if (positionEl == null) {
-    console.error("[pnlHandler.js]: position element not found");
-    return;
-  }
+  if (positionEl == null)
+    throw new Error("[pnlHandler.js]: position element not found");
   if (pnlIntervalId) {
     clearInterval(pnlIntervalId);
     pnlIntervalId = null;

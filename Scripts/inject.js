@@ -6,9 +6,14 @@ let lastFullPath = location.pathname;
 let lastContract = null;
 
 // 🚀 Start the app
-monitorRouteChanges();
-getSolPrice();
-setInterval(getSolPrice, 60 * 60 * 500);
+try {
+  monitorRouteChanges();
+  getSolPrice();
+  setInterval(getSolPrice, 60 * 60 * 500);
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error("❌ Error initializing TrenchersPaperTrading:", message);
+}
 
 window.addEventListener("message", async (event) => {
   const { type, requestId } = event.data;
@@ -216,7 +221,7 @@ function handleRouteChange() {
 function removeApp() {
   const appContainer = document.getElementById("TrenchersPaperTrading");
   if (appContainer) {
-    appContainer.remove();
+    appContainer.remove(); // TODO: When outside /meme, hide the app instead of removing it.
   }
 }
 
@@ -516,7 +521,7 @@ async function getPrice() {
 
     return (tokenPriceUsd / solUsdPrice).toFixed(9);
   } catch (error) {
-    console.error("Error fetching price:", error);
+    console.error("❌ Error fetching price:", error);
     return null;
   }
 }

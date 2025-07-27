@@ -51,34 +51,6 @@ export function showButtonLoading(button) {
   `;
 }
 
-// Spinner.js
-export function showSpinner() {
-  if (!spinnerOverlay || !spinnerText) return;
-  spinnerOverlay.style.opacity = "1";
-  spinnerOverlay.style.pointerEvents = "auto";
-  startSpinnerDots();
-}
-
-export function hideSpinner() {
-  if (!spinnerOverlay || !spinnerText) return;
-  spinnerOverlay.style.opacity = "0";
-  spinnerOverlay.style.pointerEvents = "none";
-  stopSpinnerDots();
-}
-
-function startSpinnerDots() {
-  let dots = "";
-  dotInterval = setInterval(() => {
-    dots = dots.length < 3 ? dots + "." : "";
-    spinnerText.textContent = `Processing${dots}`;
-  }, 500);
-}
-
-function stopSpinnerDots() {
-  clearInterval(dotInterval);
-  spinnerText.textContent = "Processing...";
-}
-
 // NotificationSystem.js
 export function showNotification(message, type) {
   const typeClasses = {
@@ -116,7 +88,7 @@ function safePlay(audio) {
   // }
 }
 
-// Request from inject.js
+// Requests from inject.js
 export function requestSymbol() {
   return new Promise((resolve) => {
     const requestId = "get-symbol-" + Date.now();

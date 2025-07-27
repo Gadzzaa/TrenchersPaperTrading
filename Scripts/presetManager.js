@@ -43,13 +43,25 @@ let defaultPresets = {
   },
 };
 
+import { showNotification } from "./utils.js";
+import { USE_LOCAL } from "../config.js";
+
 document.addEventListener("DOMContentLoaded", () => {
-  const presetButtons = document.querySelectorAll("#Presets .preset");
-  presetButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      applyPreset(button.id);
+  try {
+    const presetButtons = document.querySelectorAll("#Presets .preset");
+    if (!presetButtons) throw new Error("Preset buttons not found");
+    presetButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        applyPreset(button.id);
+      });
     });
-  });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : string(error);
+    showNotification(
+      USE_LOCAL ? "[pnlHandler.js] " + message : message,
+      "error",
+    );
+  }
 });
 
 function loadDefault() {
@@ -73,6 +85,9 @@ export function applyPreset(presetName) {
   const oldPresetUI = document.querySelector(".activePreset");
   const newPresetUI = document.getElementById(presetName);
 
+  if (!newPresetUI)
+    throw new Error(`Preset UI with id ${presetName} not found`);
+
   if (oldPresetUI) {
     oldPresetUI.classList.remove("activePreset");
   }
@@ -80,35 +95,31 @@ export function applyPreset(presetName) {
 
   if (!JSON.parse(getPresets()) || !JSON.parse(getPresets())[presetName])
     loadDefault();
+
   const allPresetsData = JSON.parse(getPresets());
   const presetData = allPresetsData[presetName];
+  if (!allPresetsData || !presetData) throw new Error("No presets data found");
 
   for (const buttonId in presetData.buys) {
     const buttonData = presetData.buys[buttonId];
     const button = document.getElementById(buttonId);
+    if (!button || !buttonData)
+      throw new Error(`Button ${buttonId} not found or data missing`);
 
-    if (button && buttonData) {
-      button.dataset.amount = buttonData.amount;
-      button.dataset.symbol = buttonData.symbol;
-      button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
-    } else {
-      console.warn(`Buy button ${buttonId} not found or data missing.`);
-    }
+    button.dataset.amount = buttonData.amount;
+    button.dataset.symbol = buttonData.symbol;
+    button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
   }
 
   for (const buttonId in presetData.sells) {
     const buttonData = presetData.sells[buttonId];
     const button = document.getElementById(buttonId);
+    if (!button || !buttonData)
+      throw new Error(`Button ${buttonId} not found or data missing`);
 
-    if (button && buttonData) {
-      button.dataset.amount = buttonData.amount;
-      button.dataset.symbol = buttonData.symbol;
-      button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
-    } else {
-      console.warn(`Sell button ${buttonId} not found or data missing.`);
-    }
+    button.dataset.amount = buttonData.amount;
+    button.dataset.symbol = buttonData.symbol;
+    button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
   }
-
-  console.log(`Applied preset: ${presetName}`);
   localStorage.setItem("usingPreset", newPresetUI.id);
 }
