@@ -1,7 +1,7 @@
 
 # Trenchers Paper Trading 🧠💸
 
-![Logo](./Images/logo.png)
+![Logo](./Images/logo.webp)
 
 **Trenchers Paper Trading** is a Chrome extension designed for paper trading memecoins on [Axiom](https://axiom.trade). Practice your trading strategies without risking real SOL — perfect for beginners and degen explorers.
 
@@ -33,7 +33,7 @@ git clone https://github.com/Gadzzaa/TrenchersPaperTrading.git
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots -- OUTDATED
 ![Login UI](./Screenshots/img1.png)
 
 ![Trading UI](./Screenshots/img2.png)
@@ -42,12 +42,23 @@ git clone https://github.com/Gadzzaa/TrenchersPaperTrading.git
 
 ## 🔌 Backend Requirement
 
-> ⚠️ Requires [TPTServer](https://github.com/Gadzzaa/TPTServer) to be running.
-- Without the backend, account system, portfolio tracking, and trades will not work.
+> ⚠️ This app requires a backend server to function properly.
+
+You must have **one** of the following backend services running for core features to work:
+
+- [**TPTServer**](https://github.com/Gadzzaa/TPTServer) – Local or self-hosted backend
+- **AWS EC2 Server** – Hosted production backend (automatic if deployed environment is configured)
+
+### 🔒 Required for:
+- Account login and registration
+- Portfolio tracking
+- Token buying/selling (simulated trades)
+
+Without a backend connection, the app will run in a read-only mode.
 
 ---
 
-## 🎥 Demo Video
+## 🎥 Demo Video -- Outdated
 
 A full walkthrough of the extension and backend in action:  
 📽️ `Trailer` *(https://youtu.be/snUPfnYgfkY?si=M-MhE1YhrxjvOb4e)*
