@@ -1,185 +1,151 @@
-import { requestPrice } from './dashboard.js';
+import { requestPrice, showNotification } from "./utils.js";
+import { USE_LOCAL } from "../config.js";
 const openPositions = [];
 let currentMint = null;
-let currentPosition = null;
 let pnlIntervalId = null;
 
-
-export function setActiveToken(mint, entryPrice, quantity) {
-
-
-  localStorage.setItem('currentMint', mint); // ✅ Save the current active mint
-
-  const positionEl = document.getElementById('position');
-  if (positionEl && currentMint != mint) {
-    positionEl.classList.remove('positive', 'negative');
-    positionEl.textContent = '0.00 SOL (0.00%)';
-  }
-
-  if (!mint || quantity <= 0) {
-    console.log('[pnlHandler] Clearing active token and stopping PnL updates');
-    currentMint = null;
-    currentPosition = null;
-    if (pnlIntervalId) clearInterval(pnlIntervalId);
-    pnlIntervalId = null;
-    return;
-  }
+export function setActiveToken(mint) {
+  if (pnlIntervalId) clearInterval(pnlIntervalId);
 
   currentMint = mint;
-  currentPosition = { mint, entryPrice, quantity };
-  console.log(`[pnlHandler] Active token set to ${mint} | Qty: ${quantity}`);
+  const idx = openPositions.findIndex((p) => p.mint === mint);
+  if (idx < 0) {
+    console.warn("No position found for mint:", mint);
+    return;
+  }
+  const pos = openPositions[idx];
+  const quantity = pos.quantity;
 
-  if (pnlIntervalId) clearInterval(pnlIntervalId);
-  pnlIntervalId = setInterval(updateUnrealizedPnl, 250);
+  pnlIntervalId = setInterval(updateTotalPnl, 250);
 }
-/**
- * Updates the unrealized PnL display for the current token.
- */
-export async function updateUnrealizedPnl() {
-  if (!currentPosition || !currentMint) return;
 
-  const { entryPrice, quantity } = currentPosition;
+export async function updateTotalPnl() {
   try {
+    const boughtText = document.getElementById("boughtText");
+    const soldText = document.getElementById("soldText");
+    const holdText = document.getElementById("holdText");
+    const positionEl = document.getElementById("pnlText");
+    const sellsTab = document.getElementById("Sells");
+    if (!currentMint) throw new Error("No active token set");
+    if (!boughtText) throw new Error("Bought text element not found");
+    if (!soldText) throw new Error("Sold text element not found");
+    if (!holdText) throw new Error("Hold text element not found");
+    if (!positionEl) throw new Error("Position element not found");
+    if (!sellsTab) throw new Error("Sells tab element not found");
+    if (!openPositions || !Array.isArray(openPositions))
+      throw new Error("Open positions not found or invalid");
+    const idx = openPositions.findIndex((p) => p.mint === currentMint);
+    if (idx < 0)
+      throw new Error("No position found for current mint: " + currentMint);
+    const pos = openPositions[idx];
+    const entryPrice = pos.entryPrice;
+    const quantity = pos.quantity;
+    const realizedPnl = pos.realizedPnl;
+    const totalSpent = pos.totalSpent;
+    const totalSold = pos.totalSold;
+
+    if (Number(parseFloat(quantity).toFixed(9)) <= 0)
+      sellsTab.classList.add("hidden");
+    else sellsTab.classList.remove("hidden");
+
     const currentPrice = await requestPrice(currentMint);
-    const totalCost = entryPrice * quantity;
-    const totalValue = currentPrice * quantity;
-    const totalPnl = totalValue - totalCost;
-    const pnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
+    const entryValue = entryPrice * quantity;
+    const value = currentPrice * quantity;
+    const pnl = value - entryValue;
+    const totalPnl = realizedPnl + pnl;
+    const pnlProcent = totalSpent > 0 ? (totalPnl / totalSpent) * 100 : 0;
 
-    const positionEl = document.getElementById('position');
-    if (!positionEl) return;
-
-    positionEl.classList.remove('positive', 'negative');
-    positionEl.textContent = `${totalPnl.toFixed(2)} SOL (${pnlPct.toFixed(2)}%)`;
-    positionEl.classList.add(totalPnl >= 0 ? 'positive' : 'negative');
-  } catch (err) {
-    console.error('[pnlHandler] Failed to update PnL:', err);
+    positionEl.classList.remove("positive", "negative");
+    positionEl.textContent = `${totalPnl.toFixed(2)} SOL (${pnlProcent.toFixed(2)}%)`;
+    positionEl.classList.add(totalPnl >= 0 ? "positive" : "negative");
+    boughtText.textContent = `${totalSpent.toFixed(2)}`;
+    soldText.textContent = `${totalSold.toFixed(2)}`;
+    holdText.textContent = `${value.toFixed(2)}`;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(
+      USE_LOCAL ? "[pnlHandler.js]" + message : message,
+      "error",
+    );
   }
 }
 export async function recordBuy(mint, entryPrice, solSpent) {
-  // 1) Validate inputs
-  if (
-    typeof mint !== 'string'
-  ) {
-    console.error('recordBuy: invalid arguments', { mint, entryPrice, solSpent });
-    return;
-  }
+  if (!mint) throw new Error("Mint is required for recordBuy");
+  if (!entryPrice) throw new Error("Entry price is required for recordBuy");
+  if (!solSpent) throw new Error("SOL spent is required for recordBuy");
 
-  // 2) Derive how many tokens that bought
   const quantity = solSpent / entryPrice;
 
-  // 3) Find existing position
-  const idx = openPositions.findIndex(p => p.mint === mint);
+  const idx = openPositions.findIndex((p) => p.mint === mint);
   if (idx >= 0) {
-    // Accumulate into existing: compute new weighted-entry
-    const existing = openPositions[idx];
-    const totalQty = existing.quantity + quantity;
-    const totalCost = existing.entryPrice * existing.quantity + entryPrice * quantity;
-    existing.quantity = totalQty;
-    existing.entryPrice = totalCost / totalQty;
+    const pos = openPositions[idx];
+    const existingCost = pos.entryPrice * pos.quantity;
+    const cost = entryPrice * quantity;
+    const totalQty = pos.quantity + quantity;
+    const totalCost = existingCost + cost;
+    pos.quantity = totalQty;
+    pos.entryPrice = totalCost / totalQty;
+    pos.totalSpent += solSpent;
   } else {
-    // New position
-    openPositions.push({ mint, entryPrice, quantity });
+    openPositions.push({
+      mint,
+      entryPrice,
+      quantity,
+      realizedPnl: 0,
+      totalSpent: solSpent,
+      totalSold: 0,
+    });
+    setActiveToken(mint);
   }
-
-  // 4) Refresh Unrealized PnL (assumes you have this function)
-  const updated = openPositions.find(p => p.mint === mint);
-  setActiveToken(mint, updated.entryPrice, updated.quantity);
-  await updateUnrealizedPnl();
-  localStorage.setItem('openPositions', JSON.stringify(openPositions)); // Save to localStorage
+  localStorage.setItem("openPositions", JSON.stringify(openPositions));
 }
 
+export async function recordSell(mint, exitValue, quantityPercent) {
+  if (!mint) throw new Error("Mint is required for recordSell");
+  if (!exitValue) throw new Error("Exit value is required for recordSell");
+  if (!quantityPercent)
+    throw new Error("Quantity percent is required for recordSell");
 
-export async function recordSell(mint, exitPrice, quantitySold = 0, quantityPercent = 0) {
-  if (typeof mint !== 'string' || typeof exitPrice !== 'number' || exitPrice <= 0) {
-    console.error('recordSell: invalid arguments', { mint, exitPrice, quantitySold, quantityPercent });
-    return;
-  }
-
-  const idx = openPositions.findIndex(p => p.mint === mint);
-  if (idx < 0) {
-    console.warn(`recordSell: no position found for ${mint}`);
-    return;
-  }
+  const idx = openPositions.findIndex((p) => p.mint === mint);
+  if (idx < 0) throw new Error(`No position found for mint: ${mint}`);
 
   const pos = openPositions[idx];
-  let sellQty;
 
-  // If percent=100, fully close
-  if (quantityPercent === 100) {
-    sellQty = pos.quantity;
-  } else {
-    // otherwise use quantitySold
-    sellQty = Math.min(quantitySold, pos.quantity);
-  }
+  let sellQty = (quantityPercent / 100) * pos.quantity;
 
-  if (sellQty <= 0) {
-    console.warn(`recordSell: nothing to sell for ${mint}`);
-    return;
-  }
+  if (sellQty <= 0) throw new Error(`Nothing to sell for ${mint}`);
 
-  // 2) Subtract from the position
+  const averageEntryPrice = pos.entryPrice;
+  const entryValue = averageEntryPrice * sellQty;
+  const sellPnl = exitValue - entryValue;
+
+  pos.realizedPnl += sellPnl;
   pos.quantity -= sellQty;
+  pos.totalSold += exitValue;
 
-  // 3) Remove if fully sold
-  if (parseFloat(pos.quantity.toFixed(8)) === 0) {
-    openPositions.splice(idx, 1);
-    console.log(`Position fully closed: ${mint}`);
-    setActiveToken(null);
-    console.log("[recordSell] openPositions after removal:", openPositions);
-  }
-
-  localStorage.setItem('openPositions', JSON.stringify(openPositions)); // Save to localStorage
-  // 4) Refresh your PnL display
-  await updateUnrealizedPnl();
+  localStorage.setItem("openPositions", JSON.stringify(openPositions));
 }
-export async function removePosition(mint) {
-  const idx = openPositions.findIndex(p => p.mint === mint);
-  if (idx >= 0) {
-    openPositions.splice(idx, 1);
-    console.log(`Position removed: ${mint}`);
-  } else {
-    console.warn(`Position not found: ${mint}`);
-  }
 
-  // Refresh your PnL display
-  await updateUnrealizedPnl();
-}
 export async function loadPositions() {
-  clearPositions();
-  const storedPositions = localStorage.getItem('openPositions');
-  if (storedPositions) {
-    try {
-      const parsedPositions = JSON.parse(storedPositions);
-      openPositions.push(...parsedPositions);
-      console.log('Loaded positions from localStorage:', openPositions);
-    } catch (error) {
-      console.error('Error parsing positions from localStorage:', error);
-    }
-  } else {
-    console.log('No positions found in localStorage.');
-  }
+  clearPositions(false);
+  const storedPositions = localStorage.getItem("openPositions");
+  if (!storedPositions) throw new Error("No positions found in localStorage");
 
-  // ✅ Restore last viewed active token
-  const lastMint = localStorage.getItem('currentMint');
-  if (lastMint) {
-    const pos = openPositions.find(p => p.mint === lastMint);
-    if (pos) {
-      setActiveToken(pos.mint, pos.entryPrice, pos.quantity);
-      await updateUnrealizedPnl();
-    }
-  }
+  const parsedPositions = JSON.parse(storedPositions);
+  openPositions.push(...parsedPositions);
 }
-export function clearPositions() {
+
+export function clearPositions(global = true) {
+  const positionEl = document.getElementById("pnlText");
+  if (positionEl == null)
+    throw new Error("[pnlHandler.js]: position element not found");
   if (pnlIntervalId) {
     clearInterval(pnlIntervalId);
     pnlIntervalId = null;
   }
   currentMint = null;
-  currentPosition = null;
-  openPositions.length = 0; // Clear the array
-  console.log('All positions cleared.');
-  document.getElementById('position').classList.remove('positive', 'negative'); // Reset UI
-  document.getElementById('position').textContent = '0.00 SOL (0.00%)'; // Reset UI
-  localStorage.removeItem('openPositions'); // Clear from localStorage
+  openPositions.length = 0;
+  positionEl.classList.remove("positive", "negative");
+  positionEl.textContent = "0.00 SOL (0.00%)";
+  if (global) localStorage.removeItem("openPositions");
 }

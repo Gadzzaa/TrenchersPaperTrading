@@ -1,119 +1,173 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trenchers Paper Trading</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="Styles/dashboard.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Trenchers Paper Trading</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="Styles/index.css">
-</head>
-
-<body>
-  <div class="container">
-
-    <div class="spinnerOverlay" id="spinnerOverlay">
-      <div class="spinnerBlock">
-        <div class="spinner movableObjects"></div>
-        <p class="spinnerText" id="spinnerText">Processing...</p>
+  <body>
+    <div id="Container">
+      <div id="Header">
+        <div id="Presets">
+          <button data-tooltip="Enter edit mode" id="editPresets">
+            <i id="editIcon" class="fa-regular fa-pen-to-square"></i>
+          </button>
+          <button data-tooltip="Select preset 1" class="preset" id="preset1">
+            P1
+          </button>
+          <button data-tooltip="Select preset 2" class="preset" id="preset2">
+            P2
+          </button>
+          <button data-tooltip="Select preset 3" class="preset" id="preset3">
+            P3
+          </button>
+        </div>
+        <i data-tooltip="Drag to move" id="Move" class="fa-solid fa-grip"></i>
+        <div id="RightHeader">
+          <div data-tooltip="Current balance" id="Balance">
+            <img src="Images/solana-sol-logo.webp" id="solanaLogo" />
+            <p id="balanceValue">100.00</p>
+          </div>
+          <button data-tooltip="Close app" id="Close">
+            <i id="closeMark" class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
-    </div>
-    <!-- Header -->
-    <div class="topBar">
-      <button id="OptionsMenu" class="optionsButton">⚙️</button>
-      <h1 id="titleContainer">TrenchersPT</h1>
-      <div id="moveHandle" class="moveIcon">
-        <i class="fas fa-arrows-up-down-left-right"></i>
+      <div id="separatorDiv">
+        <hr id="presetsSeparator" class="separator" />
+        <hr id="balanceSeparator" class="separator" />
       </div>
-    </div>
 
-    <div id="mainContent">
-      <!-- New container under TopBar -->
-      <div class="accountPresetsContainer movableObjects">
-        <div class="accountDropdownWrapper">
-          <button class="accountNameButton" id="accountNameBtn">Account Name</button>
-          <div class="accountDropdown">
-            <button id="signOutBtn">Sign Out</button>
-            <button id="resetAccBtn">Reset Account</button>
+      <div id="Content">
+        <div id="Buys" class="movableObjects">
+          <p id="buyText">Buy</p>
+          <div id="buyButtons" class="button-row">
+            <button
+              class="buyButton"
+              id="buy1"
+              data-action="buy"
+              data-amount="0.1"
+              data-tooltip="Buy 0.1 SOL worth"
+            ></button>
+            <button
+              class="buyButton"
+              id="buy2"
+              data-action="buy"
+              data-amount="0.25"
+              data-tooltip="Buy 0.25 SOL worth"
+            ></button>
+            <button
+              class="buyButton"
+              id="buy3"
+              data-action="buy"
+              data-amount="0.75"
+              data-tooltip="Buy 0.75 SOL worth"
+            ></button>
+            <button
+              class="buyButton"
+              id="buy4"
+              data-action="buy"
+              data-amount="1"
+              data-tooltip="Buy 1 SOL worth"
+            ></button>
           </div>
         </div>
-        <div class="presetsContainer">
-          <button id="preset1">P1</button>
-          <button id="preset2">P2</button>
-          <button id="preset3">P3</button>
-          <button id="preset4">P4</button>
+        <div id="Sells" class="hidden movableObjects">
+          <p id="sellText">Sell (%)</p>
+          <div id="sellButtons" class="button-row">
+            <button
+              class="sellButton"
+              id="sell1"
+              data-action="sell"
+              data-amount="10"
+              data-tooltip="Sell 10% of holdings"
+            ></button>
+            <button
+              class="sellButton"
+              id="sell2"
+              data-action="sell"
+              data-amount="25"
+              data-tooltip="Sell 25% of holdings"
+            ></button>
+            <button
+              class="sellButton"
+              id="sell3"
+              data-action="sell"
+              data-amount="30"
+              data-tooltip="Sell 30% of holdings"
+            ></button>
+            <button
+              class="sellButton"
+              id="sell4"
+              data-action="sell"
+              data-amount="100"
+              data-tooltip="Sell all holdings"
+            ></button>
+          </div>
         </div>
       </div>
-
-      <!-- Info -->
-      <div class="infoContainer">
-        <div class="infoItem">
-          <div class="infoLabel">Balance</div>
-          <div class="infoValue" id="balance">0</div>
-        </div>
-        <div class="infoItem">
-          <div class="infoLabel">PNL</div>
-          <div class="infoValue" id="position">0</div>
-        </div>
-      </div>
-
-      <!-- Buy -->
-      <div class="buyContainer">
-        <div class="sectionTitleBox">
-          <h2>Buy</h2>
-        </div>
-        <button id="editModeToggle" class="editModeButton">✏️</button>
-        <div class="buyButtons movableObjects">
-          <button id="BuyButton1" data-action="buy" data-amount="1" data-symbol="SOL"></button>
-          <button id="BuyButton2" data-action="buy" data-amount="2" data-symbol="SOL"></button>
-          <button id="BuyButton3" data-action="buy" data-amount="3" data-symbol="SOL"></button>
-          <button id="BuyButton4" data-action="buy" data-amount="4" data-symbol="SOL"></button>
-        </div>
-      </div>
-
-      <hr class="sectionDivider2">
-
-      <!-- Sell -->
-      <div class="sellContainer">
-        <div class="sectionTitleBox">
-          <h2>Sell</h2>
-        </div>
-        <div class="sellButtons movableObjects">
-          <button id="SellButton1" data-action="sell" data-amount="10" data-symbol="%"></button>
-          <button id="SellButton2" data-action="sell" data-amount="25" data-symbol="%"></button>
-          <button id="SellButton3" data-action="sell" data-amount="50" data-symbol="%"></button>
-          <button id="SellButton4" data-action="sell" data-amount="100" data-symbol="%"></button>
+      <div id="Footer">
+        <hr id="footerSeparator" />
+        <div id="footerData" class="movableObjects">
+          <div
+            data-tooltip="Total bought this session"
+            class="footerInfo"
+            id="boughtInfo"
+          >
+            <img src="Images/solana-sol-logo.webp" id="solanaLogo" />
+            <p class="footerText" id="boughtText">0.0</p>
+          </div>
+          <hr id="footerInfoSep" />
+          <div
+            data-tooltip="Total sold this session"
+            class="footerInfo"
+            id="soldInfo"
+          >
+            <img src="Images/solana-sol-logo.webp" id="solanaLogo" />
+            <p class="footerText" id="soldText">0.0</p>
+          </div>
+          <hr id="footerInfoSep" />
+          <div
+            data-tooltip="Currently holding"
+            class="footerInfo"
+            id="holdInfo"
+          >
+            <img src="Images/solana-sol-logo.webp" id="solanaLogo" />
+            <p class="footerText" id="holdText">0.0</p>
+          </div>
+          <hr id="footerInfoSep" />
+          <div data-tooltip="Profit & Loss" class="footerInfo" id="pnlInfo">
+            <img src="Images/solana-sol-logo.webp" id="solanaLogo" />
+            <p class="footerText" id="pnlText">+0.0 (0.00%)</p>
+          </div>
         </div>
       </div>
-
     </div>
 
-    <!-- Footer -->
-    <div class="footerContainer">
-      <hr class="sectionDivider">
-      <a href="https://github.com/Gadzzaa/TrenchersPaperTrading" target="_blank">
-        <img class="githubLogo" src="Images/github-mark.png" alt="GitHub Logo" />
-      </a>
-      <p>Version 1.0 &copy; 2025</p>
-    </div>
+    <!-- Tooltip container -->
+    <div id="tooltip" class="tooltip"></div>
+    <div id="notification" class="notification"></div>
 
-  </div>
-  <div id="notificationPopup" class="notificationPopup movableObjects">
-    <div id="notificationInner">
-      <span id="notificationText"></span>
+    <!-- Login Blocker -->
+    <div id="loginBlocker">
+      <div id="loginMessage">Please log in to trade</div>
     </div>
-  </div>
-</body>
-<script type="module" src="Scripts/dropdownManager.js" defer></script>
-<script type="module" src="Scripts/editManager.js" defer></script>
-<script type="module" src="Scripts/notificationSystem.js" defer></script>
-<script type="module" src="Scripts/presetManager.js" defer></script>
-<script type="module" src="Scripts/spinner.js" defer></script>
-<script type="module" src="Scripts/portofolioHandler.js" defer></script>
-<script type="module" src="Scripts/buyHandler.js" defer></script>
-<script type="module" src="Scripts/sellHandler.js" defer></script>
-<script type="module" src="Scripts/sessionChecker.js" defer></script>
-<script type="module" src="Scripts/pnlHandler.js" defer></script>
-<script type="module" src="Scripts/dashboard.js" defer></script>
+  </body>
 
+  <script type="module" src="Scripts/tooltipManager.js" defer></script>
+  <script type="module" src="Scripts/editManager.js" defer></script>
+  <script type="module" src="Scripts/presetManager.js" defer></script>
+  <script type="module" src="Scripts/pnlHandler.js" defer></script>
+  <script type="module" src="Scripts/utils.js" defer></script>
+  <script type="module" src="Scripts/API.js" defer></script>
+  <script type="module" src="Scripts/dashboard.js"></script>
 </html>

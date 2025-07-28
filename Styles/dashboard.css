@@ -1,0 +1,627 @@
+html,
+body {
+  --background: #1e1e2e;
+  --footerbg: #181825;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --text: #cdd6f4;
+  --active: #89b4fa;
+  --surface: #45475a;
+
+  /* Standardized spacing scale */
+  --spacing-xs: 0.25rem;
+  /* 4px */
+  --spacing-sm: 0.5rem;
+  /* 8px */
+  --spacing-md: 0.75rem;
+  /* 12px */
+  --spacing-lg: 1rem;
+  /* 16px */
+  --spacing-xl: 1.25rem;
+  /* 20px */
+  --spacing-2xl: 1.5rem;
+  /* 24px */
+
+  /* Standardized border radius */
+  --radius-sm: 0.25rem;
+  /* 4px */
+  --radius-md: 0.5rem;
+  /* 8px */
+  --radius-lg: 0.75rem;
+  /* 12px */
+  --radius-xl: 1rem;
+  /* 16px */
+
+  --anim-time: 0.3s;
+
+  margin: 0;
+  padding: 0;
+}
+
+body.edit-mode #Container {
+  box-shadow: 0 0 10px 2px var(--active);
+  animation: glowPulse 1.2s ease-in-out infinite alternate;
+}
+
+body.edit-mode::before {
+  content: "EDIT MODE";
+  position: fixed;
+  top: -40px;
+  left: 52%;
+  transform: translateX(-52%);
+  background-color: var(--active);
+  color: var(--background);
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 6px;
+  z-index: 10000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  font-family: "Poppins", sans-serif;
+  animation: slideDown 0.4s ease-out forwards;
+}
+
+body.edit-mode::after {
+  content: "";
+  position: fixed;
+  bottom: 40px;
+  right: 6px;
+  width: 12px;
+  height: 12px;
+  background-color: var(--active);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--active);
+  animation: pulseDot 1.2s infinite ease-in-out;
+  z-index: 9999;
+}
+
+body.edit-mode-exit::before {
+  animation: slideUp 0.4s ease-in forwards;
+}
+
+.movableObjects {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-origin: center center;
+}
+
+.hidden {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.positive {
+  color: var(--green);
+}
+
+.negative {
+  color: var(--red);
+}
+
+#solanaLogo {
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  margin: auto;
+}
+
+#Container {
+  width: 350px;
+  height: 240px;
+  background-color: var(--background);
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  z-index: 1;
+}
+
+#Move {
+  color: var(--text);
+  opacity: 0.5;
+  cursor: grab;
+  margin: auto;
+  margin-top: var(--spacing-xs);
+  font-size: var(--spacing-md);
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  line-height: var(--spacing-md);
+  text-align: center;
+  display: inline-block;
+  overflow: hidden;
+}
+
+#Header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#Presets {
+  max-width: 120px;
+  max-height: 20px;
+  margin: var(--spacing-lg) auto 0 var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+#editIcon {
+  width: 10px;
+  height: 10px;
+}
+
+.preset,
+#editPresets {
+  font-size: var(--spacing-md);
+  font-style: normal;
+  font-weight: 500;
+  width: 12px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+#editIcon {
+  width: 9px !important;
+  height: 8px !important;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.activePreset {
+  color: var(--active);
+}
+
+#RightHeader {
+  max-width: 100px;
+  max-height: 20px;
+  display: flex;
+  flex-direction: row;
+  margin: var(--spacing-lg) var(--spacing-lg) 0 auto;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+}
+
+#Balance {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#balanceValue {
+  font-size: var(--spacing-md);
+  font-weight: 400;
+  color: var(--text);
+}
+
+#Close {
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  margin: auto;
+  position: relative;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#closeMark {
+  position: absolute;
+  top: -1%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  font-size: var(--spacing-md);
+  /* opacity: 0.5;    Base Opacity  */
+  opacity: 0;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.separator {
+  border: 0.25px solid var(--surface);
+}
+
+#separatorDiv {
+  display: flex;
+  flex-direction: row;
+}
+
+#presetsSeparator {
+  width: 110px;
+  height: 0;
+  margin: 0 auto 0 var(--spacing-md);
+}
+
+#balanceSeparator {
+  width: 65px;
+  height: 0;
+  margin: 0 42px 0 auto;
+}
+
+#Content {
+  display: flex;
+  flex-direction: column;
+  margin: var(--spacing-lg) var(--spacing-lg);
+  gap: var(--spacing-lg);
+  padding: 0;
+}
+
+#Buys,
+#Sells {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  gap: var(--spacing-sm);
+}
+
+#buyText,
+#sellText {
+  margin: 0;
+  font-size: var(--spacing-md);
+  font-style: normal;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+#buyButtons,
+#sellButtons {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-xs);
+}
+
+.buyButton,
+.sellButton {
+  width: 80px;
+  height: 30px;
+  background: transparent;
+  border-radius: var(--radius-lg);
+  border-width: 1px;
+  border-style: solid;
+  cursor: pointer;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.buyButton {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.sellButton {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+#footerSeparator {
+  border: 0.75px solid var(--surface);
+  margin: 0;
+  padding: 0;
+}
+
+#footerInfoSep {
+  border: 0.25px solid var(--surface);
+  height: 75%;
+  margin: 0;
+  padding: 0;
+  align-self: center;
+}
+
+#footerData {
+  height: 30px;
+  background-color: var(--footerbg);
+  font-size: var(--spacing-md);
+  font-style: normal;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 var(--spacing-lg);
+}
+
+.footerInfo {
+  display: flex;
+  flex-direction: row;
+  color: var(--text);
+  text-align: center;
+  gap: var(--spacing-xs);
+  padding: 0;
+}
+
+#boughtText {
+  color: var(--green);
+}
+
+#soldText {
+  color: var(--red);
+}
+
+#holdText {
+  color: var(--text);
+}
+
+/* Animations and events */
+
+#editPresets:hover #editIcon {
+  transform: translateY(-1px);
+  color: var(--active);
+}
+
+#editPresets:active #editIcon {
+  transform: translateY(0);
+}
+
+#Close:hover #closeMark {
+  opacity: 0.5;
+}
+
+#Close:active #closeMark {
+  transform: translateX(-50%) scale(0.8);
+}
+
+#Close:active {
+  opacity: 0.9;
+}
+
+.preset:active {
+  transform: scale(0.95);
+}
+
+.preset:hover {
+  text-shadow: 0 0 6px var(--text);
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.preset {
+  text-shadow: none;
+  transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.buyButton:hover {
+  background: var(--green);
+  color: var(--background);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(166, 227, 161, 0.3);
+}
+
+.buyButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(166, 227, 161, 0.2);
+}
+
+.sellButton:hover {
+  background: var(--red);
+  color: var(--background);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 139, 168, 0.3);
+}
+
+.sellButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(243, 139, 168, 0.2);
+}
+
+/* Custom Tooltip Styles */
+.tooltip {
+  position: absolute;
+  background: var(--surface);
+  color: var(--text);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 400;
+  font-family: "Poppins", sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0;
+  transform: translateY(5px);
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--surface);
+  backdrop-filter: blur(8px);
+  max-width: 130px;
+  word-wrap: break-word;
+}
+
+.tooltip::before {
+  display: none;
+}
+
+.tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Tooltip hover effects */
+[data-tooltip] {
+  position: relative;
+}
+
+/* Special tooltip styles for different elements */
+.buyButton[data-tooltip]:hover::after,
+.sellButton[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: var(--background);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: var(--spacing-xs);
+  opacity: 0;
+  animation: tooltipFadeIn 0.2s ease forwards;
+}
+
+.sellButton[data-tooltip]:hover::after {
+  background: var(--red);
+}
+
+.notification {
+  position: absolute;
+  width: 350px;
+  transform: translateY(-100%);
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--surface, #222);
+  color: var(--text, #fff);
+  padding: 16px 32px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  font-family: "Poppins", sans-serif;
+  font-size: 0.75rem;
+  text-align: center;
+  z-index: -1;
+  transition:
+    transform 0.4s cubic-bezier(0.4, 2, 0.6, 1),
+    opacity 0.3s;
+  pointer-events: none;
+  opacity: 0.97;
+}
+
+.notification.show {
+  transform: translateY(0px); /* Slide down below container */
+  opacity: 1;
+}
+
+.loading-dots {
+  display: inline-block;
+  width: 24px;
+  text-align: center;
+}
+
+.loading-dots span {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin: 0 1px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: loadingBounce 1s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+#loginBlocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(30, 30, 46, 0.92);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.9rem;
+  pointer-events: all;
+  user-select: none;
+}
+
+#loginMessage {
+  padding: 16px 24px;
+  background: var(--surface);
+  border: 1px solid var(--active);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+@keyframes loadingBounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    top: -40px;
+    opacity: 0;
+  }
+  100% {
+    top: 20px;
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    top: 20px;
+    opacity: 1;
+  }
+  100% {
+    top: -40px;
+    opacity: 0;
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 8px 2px var(--active);
+  }
+  100% {
+    box-shadow: 0 0 16px 4px var(--active);
+  }
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
