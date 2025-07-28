@@ -71,6 +71,7 @@ export function showNotification(message, type) {
       break;
     case "error":
       safePlay(failSound);
+      console.error(message);
       break;
     case "info":
       // No sound for info

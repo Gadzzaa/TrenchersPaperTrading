@@ -309,7 +309,7 @@ function injectApp() {
     border-radius: 0 0 12px 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     font-family: "Poppins", sans-serif;
-    font-size: clamp(0.5rem, 2.5vw, 0.85rem);
+    font-size: clamp(0.25rem, 2.5vw, 0.85rem);
     text-align: center;
     z-index: -1;
     transition:

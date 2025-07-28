@@ -5,12 +5,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const editModeToggle = document.getElementById("editPresets");
   const buyButtons = document.querySelectorAll("#buyButtons .buyButton");
   const sellButtons = document.querySelectorAll("#sellButtons .sellButton");
-  window.editMode = false;
 
   editModeToggle.addEventListener("click", () => {
     const body = document.body;
 
-    if (window.editMode) {
+    if (body.classList.contains("edit-mode")) {
       body.classList.add("edit-mode-exit");
 
       // Wait for animation to finish
@@ -27,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   buyButtons.forEach((button) => {
     button.addEventListener("click", () => {
       try {
-        if (window.editMode == false) return;
+        if (!document.body.classList.contains("edit-mode")) return;
         if (!button) throw new Error("Button not found.");
 
         let amount = prompt("Enter new BUY label:", button.dataset.amount);
@@ -38,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const activePreset = document.querySelector(".activePreset")?.id;
         if (!activePreset) throw new Error("No active preset found.");
 
-        const presets = getPresets();
+        const presets = JSON.parse(getPresets());
         if (!presets)
           throw new Error("Active preset not found in presets array.");
 
@@ -47,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!presets[activePreset] || !presets[activePreset].buys[button.id])
           throw new Error(
-            `Buy button with id ${button.id} not found in active preset.`,
+            `Buy button with id "${button.id}" not found in active preset.`,
           );
 
         presets[activePreset].buys[button.id].amount = amount;
@@ -56,10 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        showNotification(
-          "An error occurred while updating the buy label: " + message,
-          "error",
-        );
+        showNotification("[editManager.js]: " + message, "error");
       }
     });
   });
@@ -67,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
   sellButtons.forEach((button) => {
     button.addEventListener("click", () => {
       try {
-        if (window.editMode == false) return;
+        if (!document.body.classList.contains("edit-mode")) return;
         let amount = prompt("Enter new SELL label:", button.dataset.amount);
         if (!amount?.trim() == "") throw new Error("Invalid input.");
 
@@ -76,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const activePreset = document.querySelector(".activePreset")?.id;
         if (!activePreset) throw new Error("No active preset found.");
 
-        const presets = getPresets();
+        const presets = JSON.parse(getPresets());
         if (!presets)
           throw new Error("Active preset not found in presets array.");
 
@@ -94,10 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        showNotification(
-          "An error occurred while updating the sell label: " + message,
-          "error",
-        );
+        showNotification("[editManager.js]: " + message, "error");
       }
     });
   });

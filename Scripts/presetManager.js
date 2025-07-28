@@ -108,7 +108,8 @@ export function applyPreset(presetName) {
 
     button.dataset.amount = buttonData.amount;
     button.dataset.symbol = buttonData.symbol;
-    button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
+    button.dataset.tooltip = `Buy ${buttonData.amount} SOL worth`;
+    button.textContent = `${buttonData.amount}`;
   }
 
   for (const buttonId in presetData.sells) {
@@ -119,7 +120,9 @@ export function applyPreset(presetName) {
 
     button.dataset.amount = buttonData.amount;
     button.dataset.symbol = buttonData.symbol;
-    button.textContent = `${buttonData.amount} ${buttonData.symbol}`;
+    if (buttonData.amount == 100) button.dataset.tooltip = `Sell all holdings`;
+    else button.dataset.tooltip = `Sell ${buttonData.amount}% of holdings`;
+    button.textContent = `${buttonData.amount}${buttonData.symbol}`;
   }
   localStorage.setItem("usingPreset", newPresetUI.id);
 }

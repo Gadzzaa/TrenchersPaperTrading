@@ -110,7 +110,7 @@ function handleActionButtonClick(button) {
     );
 
     try {
-      if (window.editMode) return;
+      if (document.body.classList.contains("edit-mode")) return;
       disableAllTradeButtons(actionButtons);
       showButtonLoading(button);
 
