@@ -88,6 +88,17 @@ function safePlay(audio) {
   // }
 }
 
+// Access blocker
+export function enableUI() {
+  const blocker = document.getElementById("loginBlocker");
+  if (blocker) blocker.style.display = "none";
+}
+
+export function disableUI() {
+  const blocker = document.getElementById("loginBlocker");
+  if (blocker) blocker.style.display = "flex";
+}
+
 // Requests from inject.js
 export function requestSymbol() {
   return new Promise((resolve) => {

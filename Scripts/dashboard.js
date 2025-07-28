@@ -24,6 +24,8 @@ import {
   disableAllTradeButtons,
   enableAllTradeButtons,
   showButtonLoading,
+  enableUI,
+  disableUI,
 } from "./utils.js";
 
 // LOCAL ONLY:
@@ -48,15 +50,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!sessionToken) {
       clearPositions();
-      // TODO: Lock dashboard until session is valid
-      throw new error("Session token not found.");
+      disableUI();
+      throw new Error("Session token not found.");
     }
 
     const isSessionValid = await checkSession();
     if (!isSessionValid) {
       clearPositions();
       localStorage.removeItem("sessionToken");
-      // TODO: Lock dashboard until session is valid
+      disableUI();
       throw new Error("Session token is invalid.");
     }
 

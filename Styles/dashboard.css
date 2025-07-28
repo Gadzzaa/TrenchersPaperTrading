@@ -531,6 +531,33 @@ body.edit-mode-exit::before {
   animation-delay: 0.4s;
 }
 
+#loginBlocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(30, 30, 46, 0.92);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.9rem;
+  pointer-events: all;
+  user-select: none;
+}
+
+#loginMessage {
+  padding: 16px 24px;
+  background: var(--surface);
+  border: 1px solid var(--active);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
 @keyframes loadingBounce {
   0%,
   80%,

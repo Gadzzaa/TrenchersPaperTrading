@@ -1,8 +1,10 @@
-import { showNotification } from "./utils.js";
+import { showNotification, enableUI, disableUI } from "./utils.js";
 import { updateBalanceUI } from "./dashboard.js";
 import CONFIG, { USE_LOCAL } from "../config.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
 const maxAttempts = 3;
+
+//TODO: Fix backend API
 const slippagePercentage = 0;
 const feeAmount = 0;
 
@@ -206,8 +208,7 @@ export async function login(username, password) {
 
         localStorage.setItem("username", username);
         localStorage.setItem("sessionToken", result.token);
-        showNotification("Logged in successfully!", "success");
-        // TODO: enable dashboard access
+        enableUI();
         break;
       } catch (error) {
         if (attempt === 1)
@@ -253,7 +254,7 @@ export async function register(username, password) {
         localStorage.setItem("username", username);
         localStorage.setItem("sessionToken", result.token);
         resetAccount(100);
-        // TODO: enable dashboard access
+        enableUI();
         break;
       } catch (error) {
         if (attempt === 1)
