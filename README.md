@@ -1,7 +1,7 @@
 
 # Trenchers Paper Trading 🧠💸
 
-![Logo](./Images/logo.webp)
+![Logo](./Images/logo.png)
 
 **Trenchers Paper Trading** is a Chrome extension designed for paper trading memecoins on [Axiom](https://axiom.trade). Practice your trading strategies without risking real SOL — perfect for beginners and degen explorers.
 

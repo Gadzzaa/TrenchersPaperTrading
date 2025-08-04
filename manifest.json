@@ -10,6 +10,10 @@
     "scripting",
     "notifications"
   ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "Images/logo.png"
+  },
   "host_permissions": [
     "https://axiom.trade/*"
   ],
@@ -28,5 +32,10 @@
       ],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "icons": {
+    "16": "Images/16x16.png",
+    "48": "Images/48x48.png",
+    "128": "Images/128x128.png"
+  }
 }

@@ -4,6 +4,10 @@ const openPositions = [];
 let currentMint = null;
 let pnlIntervalId = null;
 
+export function isActiveToken() {
+  return currentMint !== null;
+}
+
 export function setActiveToken(mint) {
   if (pnlIntervalId) clearInterval(pnlIntervalId);
 
@@ -44,7 +48,10 @@ export async function updateTotalPnl() {
     const totalSpent = pos.totalSpent;
     const totalSold = pos.totalSold;
 
-    if (Number(parseFloat(quantity).toFixed(9)) <= 0)
+    if (
+      Number(parseFloat(quantity).toFixed(9)) <= 0 &&
+      !document.body.classList.contains("edit-mode")
+    )
       sellsTab.classList.add("hidden");
     else sellsTab.classList.remove("hidden");
 

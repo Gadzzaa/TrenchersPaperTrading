@@ -1,5 +1,6 @@
 import { getPresets, setPresets } from "./presetManager.js";
 import { showNotification } from "./utils.js";
+import { isActiveToken } from "./pnlHandler.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const editModeToggle = document.getElementById("editPresets");
@@ -8,15 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   editModeToggle.addEventListener("click", () => {
     const body = document.body;
+    const sellsTab = document.getElementById("Sells");
 
     if (body.classList.contains("edit-mode")) {
       body.classList.add("edit-mode-exit");
+      if (!isActiveToken()) sellsTab.classList.add("hidden");
 
       // Wait for animation to finish
       setTimeout(() => {
         body.classList.remove("edit-mode", "edit-mode-exit");
       }, 400);
     } else {
+      sellsTab.classList.remove("hidden");
       body.classList.add("edit-mode");
     }
 
@@ -64,10 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("click", () => {
       try {
         if (!document.body.classList.contains("edit-mode")) return;
-        let amount = prompt("Enter new SELL label:", button.dataset.amount);
-        if (!amount?.trim() == "") throw new Error("Invalid input.");
+        if (!button) throw new Error("Button not found.");
 
-        amount = parseInt(amount);
+        let amount = prompt("Enter new SELL label:", button.dataset.amount);
+        if (amount?.trim() == "") throw new Error("Invalid input.");
+
+        amount = Number(amount);
 
         const activePreset = document.querySelector(".activePreset")?.id;
         if (!activePreset) throw new Error("No active preset found.");
