@@ -13,6 +13,86 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body>
-    <div></div>
+    <div id="Home">
+      <div id="account">
+        <button id="accountButton">@username</button>
+        <!-- Have to add a down arrow here -->
+      </div>
+      <div id="balance">
+        <strong id="solBalance">100.00 SOL</strong>
+        <small id="pnlData">+0.00 SOL (0.00%)</small>
+      </div>
+      <div id="tokensData">
+        <p1 id="tokensText">Tokens</p1>
+        <!-- Tokens List here -->
+      </div>
+    </div>
+
+    <div id-="History">
+      <!-- TODO later -->
+    </div>
+
+    <div id="Settings">
+      <p1 id="settingsText"> Settings </p1>
+      <div id="Preferences">
+        <p2 id="preferencesText"> Preferences </p2>
+        <div id="themes">
+          <p2 id="themeText">Theme:</p2>
+          <button id="themeDark">Dark</button>
+          <button id="themeWhite">White</button>
+        </div>
+        <div id="volume">
+          <label id="volumeText" for="volumeSlider">Volume:</label>
+          <input type="range" min="0" max="100" value="0" id="volumeSlider" />
+        </div>
+        <div id="animation">
+          <label id="animationText" for="animationSlider"
+            >Animation Quality:</label
+          >
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            id="animationSlider"
+          />
+        </div>
+      </div>
+      <div id="Premium">
+        <p2 id="premiumText"> Premium Features </p2>
+        <div id="pnlRefresh">
+          <label id="pnlRefreshText" for="pnlSlider"
+            >PNL Refresh Interval:</label
+          >
+          <input type="range" min="0" max="100" value="0" id="pnlSlider" />
+        </div>
+        <div id="saveWindow">
+          <label id="saveWindowText" for="saveWindowBox"
+            >Save Window Position:</label
+          >
+          <input type="checkbox" id="saveWindowBox" />
+        </div>
+        <div id="Connect Mobile App">
+          <p2 id="mobileText">Connect Mobile App (soon)</p2>
+        </div>
+      </div>
+      <div id="Advanced">
+        <button id="debugButton">Debug Mode</button>
+        <button id="updateHistoryButton">Update History</button>
+      </div>
+    </div>
+
+    <div id="footerBar">
+      <hr id="Selector" />
+      <button id="homeButton">
+        <i class="fa-solid fa-house"></i>
+      </button>
+      <button id="historyButton">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+      </button>
+      <button id="settingsButton">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+    </div>
   </body>
 </html>
