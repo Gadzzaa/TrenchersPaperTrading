@@ -2,8 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
       rel="stylesheet"
     />
     <link
@@ -13,6 +15,7 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body>
+    <div id="background"></div>
     <div id="Home">
       <div id="account">
         <button id="accountButton">@username</button>
@@ -24,15 +27,25 @@
       </div>
       <div id="tokensData">
         <p1 id="tokensText">Tokens</p1>
+        <button class="tkn">
+          <div class="tknImage">
+            <img src="Images/solana-sol-logo.png" class="tknImageFile" />
+          </div>
+          <div class="tknInfo">
+            <p2 class="tknName">Solana</p2>
+            <p2 class="tknValue">0 Sol</p2>
+          </div>
+          <p1 class="tknClickTxt">Click to open</p1>
+        </button>
         <!-- Tokens List here -->
       </div>
     </div>
 
-    <div id-="History">
+    <div id-="History" class="hidden">
       <!-- TODO later -->
     </div>
 
-    <div id="Settings">
+    <div id="Settings" class="hidden">
       <p1 id="settingsText"> Settings </p1>
       <div id="Preferences">
         <p2 id="preferencesText"> Preferences </p2>
@@ -83,16 +96,19 @@
     </div>
 
     <div id="footerBar">
-      <hr id="Selector" />
-      <button id="homeButton">
-        <i class="fa-solid fa-house"></i>
-      </button>
-      <button id="historyButton">
-        <i class="fa-solid fa-clock-rotate-left"></i>
-      </button>
-      <button id="settingsButton">
-        <i class="fa-solid fa-gear"></i>
-      </button>
+      <div class="indicator"></div>
+      <div id="footerButtons">
+        <button class="navBut footerButton active">
+          <i id="homeIcon" class="fa-solid fa-house fa-2x"></i>
+        </button>
+        <button id="historyButton " class="hiddenButton footerButton">
+          <i id="historyIcon" class="fa-solid fa-clock-rotate-left fa-2x"></i>
+        </button>
+        <button id="settingsButton " class="navBut footerButton">
+          <i id="settingsIcon" class="fa-solid fa-gear fa-2x"></i>
+        </button>
+      </div>
     </div>
   </body>
+  <script type="module" src="Scripts/popup.js"></script>
 </html>
