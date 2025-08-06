@@ -1,5 +1,6 @@
 * {
   z-index: 10;
+  font-family: "Poppins", sans-serif;
 }
 html,
 body {
@@ -29,21 +30,25 @@ body {
     rgba(180, 190, 254, 1),
     rgba(0, 0, 0, 0)
   );
-  filter: blur(1px);
   z-index: 0;
   width: 360px;
   height: 550px;
   box-shadow: inset 0 1px 3px 2px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
 }
 
 #Home {
   display: flex;
   flex-direction: column;
-  font-family: "Poppins", sans-serif;
-  font-style: normal;
+  font-weight: 400;
   width: 360px;
   height: 550px;
-  overflow: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  pointer-events: auto;
 }
 
 #account {
@@ -81,14 +86,23 @@ body {
 
 #tokensData {
   margin-top: 50px;
-  margin-left: 32px;
 }
 
 #tokensText {
+  margin-left: 32px;
   color: #a6adc8;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
+}
+
+#tokenList {
+  max-height: 310px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
 }
 
 .tkn {
@@ -102,17 +116,22 @@ body {
   align-items: center;
   border: none;
   cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tkn:hover {
-  background-color: rgba(88, 91, 112, 0.5);
+  background-color: rgba(88, 91, 112, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .tkn:active {
-  background-color: rgba(88, 91, 112, 0.25);
+  background-color: rgba(88, 91, 112, 0.7);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
   transform: scale(0.99);
 }
 
@@ -121,7 +140,7 @@ body {
   height: 50px;
   border: 1px;
   border-color: transparent;
-  background-color: black;
+  background-color: #1e1e2e;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -137,18 +156,24 @@ body {
   margin-left: 24px;
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  text-align: center;
 }
 
 .tknName {
+  margin: 0;
+  max-height: 35px;
   font-size: 18px;
   font-weight: 400;
   color: #cdd6f4;
 }
 
 .tknValue {
-  margin-top: 5px;
+  margin: 0;
+  max-height: 35px;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 300;
   color: #bac2de;
   align-self: flex-start;
 }
@@ -158,9 +183,9 @@ body {
   align-self: center;
   justify-self: flex-end;
   margin-left: auto;
-  margin-top: 5px;
-  margin-right: 15px;
+  margin-right: 10px;
   color: rgba(186, 194, 222, 0.5);
+  font-weight: 200;
 }
 
 #footerBar {
@@ -170,6 +195,7 @@ body {
   flex-direction: column;
   justify-content: center;
   position: relative;
+  z-index: 20;
 }
 
 #footerButtons {
@@ -216,4 +242,25 @@ body {
 #settingsIcon {
   width: 22px;
   height: 23px;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+/* Scrollbar Thumb */
+::-webkit-scrollbar-thumb {
+  background: #45475a;
+  border-radius: 10px;
+}
+
+/* Scrollbar Track Background */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* On hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #585b70;
 }

@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body>
-    <div id="background"></div>
     <div id="Home">
       <div id="account">
         <button id="accountButton">@username</button>
@@ -27,17 +26,7 @@
       </div>
       <div id="tokensData">
         <p1 id="tokensText">Tokens</p1>
-        <button class="tkn">
-          <div class="tknImage">
-            <img src="Images/solana-sol-logo.png" class="tknImageFile" />
-          </div>
-          <div class="tknInfo">
-            <p2 class="tknName">Solana</p2>
-            <p2 class="tknValue">0 Sol</p2>
-          </div>
-          <p1 class="tknClickTxt">Click to open</p1>
-        </button>
-        <!-- Tokens List here -->
+        <div id="tokenList"></div>
       </div>
     </div>
 
@@ -109,6 +98,8 @@
         </button>
       </div>
     </div>
+
+    <div id="background"></div>
   </body>
   <script type="module" src="Scripts/popup.js"></script>
 </html>
