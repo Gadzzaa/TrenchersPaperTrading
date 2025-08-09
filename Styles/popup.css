@@ -26,7 +26,7 @@ body {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .hiddenButton {
@@ -71,12 +71,20 @@ body {
 }
 
 #account {
+  position: relative;
+  align-self: center;
+  margin-top: 15px;
+  z-index: 1;
+}
+
+#accountButton {
   display: flex;
   flex-direction: row;
-  align-self: center;
   align-items: center;
-  margin-top: 15px;
-  text-align: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #arrowImage {
@@ -86,13 +94,64 @@ body {
   height: 18px;
 }
 
-#accountButton {
+#accountText {
   padding: 0;
-  background-color: transparent;
-  border: none;
   color: rgb(var(--subtext1));
   font-size: 18px;
   font-weight: 400;
+  text-align: center;
+}
+
+#accountButton:hover,
+#accountButton:hover * {
+  filter: brightness(1.1);
+}
+
+#accountDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+  /* Blend with background */
+  background-color: rgba(var(--surface0), 0.7); /* semi-transparent */
+  backdrop-filter: blur(8px); /* blur behind */
+  -webkit-backdrop-filter: blur(8px); /* Safari support */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* subtle light border */
+
+  opacity: 0;
+  transform-origin: top center;
+  transform: scaleY(0);
+  pointer-events: none;
+
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
+  z-index: 10;
+}
+
+#accountDropdown.show {
+  opacity: 1;
+  transform: scaleY(1);
+  pointer-events: auto;
+}
+
+.dropdownItem {
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  color: rgb(var(--text));
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background-color: rgba(var(--overlay0), 0.8);
 }
 
 #balance {

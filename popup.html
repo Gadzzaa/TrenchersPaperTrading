@@ -17,9 +17,16 @@
   <body>
     <div id="Home">
       <div id="account">
-        <button id="accountButton">@username</button
-        ><img src="Images/keyboard_arrow_down.png" id="arrowImage" />
+        <button id="accountButton">
+          <div id="accountText">@username</div>
+          <img src="Images/keyboard_arrow_down.png" id="arrowImage" />
+        </button>
+        <div id="accountDropdown">
+          <button class="dropdownItem" id="resetAccount">Reset Account</button>
+          <button class="dropdownItem" id="logout">Logout</button>
+        </div>
       </div>
+
       <div id="balance">
         <strong id="solBalance">100.00 SOL</strong>
         <small id="pnlData">+0.00 SOL (0.00%)</small>

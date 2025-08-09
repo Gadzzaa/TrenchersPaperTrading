@@ -4,8 +4,13 @@ const tokens = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   const footerButtons = document.querySelectorAll(".navBut");
+  const accountButton = document.getElementById("accountButton");
+  const accountDropdown = document.getElementById("accountDropdown");
+  const dropdownElements = document.querySelectorAll(".dropdownItem");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
+
+  accountDropdown.classList.remove("show");
 
   // Footer Buttons animation
   footerButtons.forEach((button) => {
@@ -15,6 +20,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         ?.classList.remove("active");
       button.classList.add("active");
       moveIndicator(button);
+    });
+  });
+
+  accountButton.addEventListener("click", () => {
+    accountDropdown.classList.toggle("show");
+  });
+
+  dropdownElements.forEach((button) => {
+    button.addEventListener("click", () => {
+      switch (button.id) {
+        case "resetAccount":
+          //reset account functionality
+          break;
+        case "logout":
+          //logout functionality
+          break;
+      }
     });
   });
 
