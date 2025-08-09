@@ -2,8 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
       rel="stylesheet"
     />
     <link
@@ -13,6 +15,98 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body>
-    <div></div>
+    <div id="Home">
+      <div id="account">
+        <button id="accountButton">
+          <div id="accountText">@username</div>
+          <img src="Images/keyboard_arrow_down.png" id="arrowImage" />
+        </button>
+        <div id="accountDropdown">
+          <button class="dropdownItem" id="resetAccount">Reset Account</button>
+          <button class="dropdownItem" id="logout">Logout</button>
+        </div>
+      </div>
+
+      <div id="balance">
+        <strong id="solBalance">100.00 SOL</strong>
+        <small id="pnlData">+0.00 SOL (0.00%)</small>
+      </div>
+      <div id="tokensData">
+        <p1 id="tokensText">Tokens</p1>
+        <div id="tokenList"></div>
+      </div>
+    </div>
+
+    <div id-="History" class="hidden">
+      <!-- TODO later -->
+    </div>
+
+    <div id="Settings" class="hidden">
+      <p1 id="settingsText"> Settings </p1>
+      <div id="Preferences">
+        <p id="preferencesText">Preferences</p>
+        <div id="themes">
+          <p id="themeText">Theme:</p>
+          <button id="themeDark">Dark</button>
+          <button id="themeWhite">White</button>
+        </div>
+        <div id="volume">
+          <label id="volumeText" for="volumeSlider">Volume:</label>
+          <input type="range" min="0" max="100" value="0" id="volumeSlider" />
+        </div>
+        <div id="animation">
+          <label id="animationText" for="animationSlider"
+            >Animation Quality:</label
+          >
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            id="animationSlider"
+          />
+        </div>
+      </div>
+      <div id="Premium">
+        <p id="premiumText">Premium Features</p>
+        <div id="pnlRefresh">
+          <label id="pnlRefreshText" for="pnlSlider"
+            >PNL Refresh Interval:</label
+          >
+          <input type="range" min="0" max="100" value="0" id="pnlSlider" />
+        </div>
+        <div id="saveWindow">
+          <label id="saveWindowText" for="saveWindowBox"
+            >Save Window Position:</label
+          >
+          <input type="checkbox" id="saveWindowBox" />
+        </div>
+        <div id="connectMobileApp">
+          <p id="mobileText">Connect Mobile App (soon)</p>
+        </div>
+      </div>
+      <div id="Advanced">
+        <button id="debugButton">Debug Mode</button>
+        <button id="updateHistoryButton">Update History</button>
+      </div>
+    </div>
+
+    <div id="footerBar">
+      <div class="indicator"></div>
+      <div id="footerButtons">
+        <button class="navBut footerButton active">
+          <i id="homeIcon" class="fa-solid fa-house fa-2x"></i>
+        </button>
+        <button id="historyButton " class="hiddenButton footerButton">
+          <i id="historyIcon" class="fa-solid fa-clock-rotate-left fa-2x"></i>
+        </button>
+        <button id="settingsButton " class="navBut footerButton">
+          <i id="settingsIcon" class="fa-solid fa-gear fa-2x"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="background"></div>
   </body>
+  <script type="module" src="Scripts/popup.js"></script>
 </html>
