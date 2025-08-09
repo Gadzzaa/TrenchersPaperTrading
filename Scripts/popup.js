@@ -1,3 +1,4 @@
+//import { resetAccount } from "./API.js";
 let tokenListContainer, indicator;
 const barWidth = 30;
 const tokens = [];
@@ -12,17 +13,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   accountDropdown.classList.remove("show");
 
-  // Footer Buttons animation
-  footerButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      document
-        .querySelector(".footerButton.active")
-        ?.classList.remove("active");
-      button.classList.add("active");
-      moveIndicator(button);
-    });
+  document.addEventListener("click", (e) => {
+    if (
+      !accountButton.contains(e.target) &&
+      !accountDropdown.contains(e.target)
+    )
+      accountDropdown.classList.remove("show");
   });
-
   accountButton.addEventListener("click", () => {
     accountDropdown.classList.toggle("show");
   });
@@ -31,12 +28,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     button.addEventListener("click", () => {
       switch (button.id) {
         case "resetAccount":
-          //reset account functionality
+          //TODO: reset account functionality
           break;
         case "logout":
-          //logout functionality
+          //TODO: logout functionality
           break;
       }
+    });
+  });
+
+  // Footer Buttons animation
+  footerButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      document
+        .querySelector(".footerButton.active")
+        ?.classList.remove("active");
+      button.classList.add("active");
+      moveIndicator(button);
     });
   });
 

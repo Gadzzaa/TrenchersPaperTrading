@@ -7,10 +7,34 @@
   --subtext1: 186, 194, 222; /* #bac2de */
   --lavender: 180, 190, 254; /* #b4befe */
   --green: 166, 227, 161; /* #a6e3a1 */
-  --overlay0: 88, 91, 112; /* Approx from rgba(88, 91, 112) */
+  --overlay0: 88, 91, 112; /* #585b70 */
   --surface0: 49, 50, 68; /* #313244 */
   --surface1: 69, 71, 90; /* #45475a */
   --surface2: 88, 91, 112; /* #585b70 */
+
+  /* Catppuccin Mocha palette additions */
+  --rosewater: 245, 224, 220; /* #f5e0dc */
+  --flamingo: 242, 205, 205; /* #f2cdcd */
+  --pink: 245, 194, 231; /* #f5c2e7 */
+  --mauve: 203, 166, 247; /* #cba6f7 */
+  --red: 237, 135, 150; /* #ed8796 */
+  --maroon: 197, 131, 131; /* #b55a66 approx, adjusted */
+  --peach: 250, 179, 135; /* #f9e2af approx, adjusted */
+  --yellow: 250, 224, 129; /* #f9e2af */
+  --green_alt: 166, 227, 161; /* #a6e3a1 */
+  --teal: 148, 226, 213; /* #94e2d5 */
+  --sky: 137, 180, 250; /* #89b4fa */
+  --sapphire: 115, 160, 250; /* #74c7ec approx */
+  --blue: 131, 165, 252; /* #8aadf4 */
+  --lavender_alt: 180, 190, 254; /* #b4befe */
+
+  /* Extra neutrals */
+  --text_dim: 116, 118, 152; /* #747294 */
+  --overlay1: 69, 71, 90; /* #45475a */
+  --overlay2: 98, 100, 130; /* #626482 */
+
+  /* Transparent colors if needed */
+  --transparent_black_50: rgba(0, 0, 0, 0.5);
 }
 
 * {
@@ -72,16 +96,19 @@ body {
 
 #account {
   position: relative;
+  display: inline-block;
   align-self: center;
   margin-top: 15px;
   z-index: 1;
 }
 
 #accountButton {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: transparent;
+  background: transparent;
   border: none;
   cursor: pointer;
   transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -115,29 +142,28 @@ body {
   display: flex;
   flex-direction: column;
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-
-  /* Blend with background */
-  background-color: rgba(var(--surface0), 0.7); /* semi-transparent */
-  backdrop-filter: blur(8px); /* blur behind */
-  -webkit-backdrop-filter: blur(8px); /* Safari support */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* subtle light border */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  background-color: rgba(var(--surface0), 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
   opacity: 0;
-  transform-origin: top center;
-  transform: scaleY(0);
   pointer-events: none;
 
+  transform-origin: top center;
+  transform: scaleY(0.9) translateY(-10px);
   transition:
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
-  z-index: 10;
+    opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  overflow: hidden;
 }
 
 #accountDropdown.show {
   opacity: 1;
-  transform: scaleY(1);
-  pointer-events: auto;
+  pointer-events: auto; /* enable interactions when shown */
+  transform: scaleY(1) translateY(0);
 }
 
 .dropdownItem {
@@ -148,10 +174,32 @@ body {
   color: rgb(var(--text));
   font-size: 14px;
   cursor: pointer;
+  border-radius: 0;
+  user-select: none;
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdownItem:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.dropdownItem:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .dropdownItem:hover {
-  background-color: rgba(var(--overlay0), 0.8);
+  background-color: rgba(var(--overlay0), 0.5);
+  color: rgb(var(--blue, 180, 190, 254)); /* fallback color */
+}
+
+.dropdownItem:active {
+  background-color: rgba(var(--overlay0), 0.9);
+  color: rgb(var(--blue, 180, 190, 254));
+  transition-duration: 0.1s;
 }
 
 #balance {
