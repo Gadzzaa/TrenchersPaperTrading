@@ -47,10 +47,34 @@ body {
   height: 600px;
   background-color: rgb(var(--base));
   color: rgb(var(--text));
+  margin: 0;
 }
 
-.hidden {
-  display: none !important;
+.menuItem {
+  display: none;
+  font-weight: 400;
+  width: 360px;
+  height: calc(100% - 50px);
+  max-height: 550px;
+  overflow: auto;
+  pointer-events: none;
+}
+
+.menuItem.active {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  pointer-events: auto;
+  color: rgb(var(--text));
+  z-index: 1;
+}
+
+#Home {
+  overflow-y: auto;
 }
 
 .hiddenButton {
@@ -59,11 +83,9 @@ body {
 }
 
 #background {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 0;
-  bottom: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
   opacity: 20%;
   background: linear-gradient(
     to bottom,
@@ -77,23 +99,6 @@ body {
   pointer-events: none;
 }
 
-#Home {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  font-weight: 400;
-  width: 360px;
-  height: 550px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  will-change: scroll-position;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  pointer-events: auto;
-  color: rgb(var(--text));
-  z-index: 1;
-}
-
 #account {
   position: relative;
   display: inline-block;
@@ -102,36 +107,12 @@ body {
   z-index: 1;
 }
 
-#accountButton {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#arrowImage {
-  margin-left: 2px;
-  margin-top: 1px;
-  width: 18px;
-  height: 18px;
-}
-
 #accountText {
   padding: 0;
   color: rgb(var(--subtext1));
   font-size: 18px;
   font-weight: 400;
   text-align: center;
-}
-
-#accountButton:hover,
-#accountButton:hover * {
-  filter: brightness(1.1);
 }
 
 #accountDropdown {
@@ -327,12 +308,16 @@ body {
 }
 
 #footerBar {
-  background-color: rgb(var(--mantle));
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 360px;
   height: 50px;
+  background-color: rgb(var(--mantle));
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative;
   z-index: 20;
 }
 
@@ -345,14 +330,16 @@ body {
 
 .footerButton {
   position: relative;
-  background-color: transparent;
+  background: transparent;
   border: none;
   color: rgb(var(--text));
   z-index: 1;
+  transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
-.navBut {
-  cursor: pointer;
+.footerButton:hover {
+  filter: brightness(1.1);
 }
 
 .indicator {

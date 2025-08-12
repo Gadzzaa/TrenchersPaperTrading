@@ -4,38 +4,9 @@ const barWidth = 30;
 const tokens = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const footerButtons = document.querySelectorAll(".navBut");
-  const accountButton = document.getElementById("accountButton");
-  const accountDropdown = document.getElementById("accountDropdown");
-  const dropdownElements = document.querySelectorAll(".dropdownItem");
+  const footerButtons = document.querySelectorAll(".footerButton");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
-
-  accountDropdown.classList.remove("show");
-
-  document.addEventListener("click", (e) => {
-    if (
-      !accountButton.contains(e.target) &&
-      !accountDropdown.contains(e.target)
-    )
-      accountDropdown.classList.remove("show");
-  });
-  accountButton.addEventListener("click", () => {
-    accountDropdown.classList.toggle("show");
-  });
-
-  dropdownElements.forEach((button) => {
-    button.addEventListener("click", () => {
-      switch (button.id) {
-        case "resetAccount":
-          //TODO: reset account functionality
-          break;
-        case "logout":
-          //TODO: logout functionality
-          break;
-      }
-    });
-  });
 
   // Footer Buttons animation
   footerButtons.forEach((button) => {
@@ -43,19 +14,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       document
         .querySelector(".footerButton.active")
         ?.classList.remove("active");
+      setDisplay(button);
       button.classList.add("active");
       moveIndicator(button);
     });
   });
 
   // Default active footer button
-  moveIndicator(document.querySelector(".navBut.active"));
+  const defaultButton = document.querySelector(".footerButton.active");
+  moveIndicator(defaultButton);
+  setDisplay(defaultButton);
+
   addToken("Solana", "SOL", 0.1);
   addToken("Solana", "SOL", 0.1);
   addToken("Solana", "SOL", 0.1);
   addToken("Solana", "SOL", 0.1);
   addToken("Solana", "SOL", 0.1);
 });
+
+function setDisplay(button) {
+  document.querySelector(".menuItem.active")?.classList.remove("active");
+  document.getElementById(button.dataset.menu).classList.add("active");
+}
 
 function addToken(
   name,
