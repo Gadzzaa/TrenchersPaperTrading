@@ -11,11 +11,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Footer Buttons animation
   footerButtons.forEach((button) => {
     button.addEventListener("click", () => {
+      const index = parseInt(button.dataset.index, 10);
       document
         .querySelector(".footerButton.active")
         ?.classList.remove("active");
-      setDisplay(button);
       button.classList.add("active");
+      setDisplay(index);
       moveIndicator(button);
     });
   });
@@ -23,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Default active footer button
   const defaultButton = document.querySelector(".footerButton.active");
   moveIndicator(defaultButton);
-  setDisplay(defaultButton);
+  setDisplay(defaultButton.dataset.index);
 
   addToken("Solana", "SOL", 0.1);
   addToken("Solana", "SOL", 0.1);
@@ -32,9 +33,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   addToken("Solana", "SOL", 0.1);
 });
 
-function setDisplay(button) {
-  document.querySelector(".menuItem.active")?.classList.remove("active");
-  document.getElementById(button.dataset.menu).classList.add("active");
+function setDisplay(index) {
+  const carousel = document.querySelector(".pageCarousel");
+  const items = document.querySelectorAll(".menuItem");
+  /*  document.querySelector(".menuItem.active")?.classList.remove("active");
+  document.getElementById(button.dataset.menu).classList.add("active"); */
+  const itemWidth = items[0].offsetWidth;
+  carousel.scrollTo({
+    left: itemWidth * index,
+    behavior: "smooth",
+  });
 }
 
 function addToken(

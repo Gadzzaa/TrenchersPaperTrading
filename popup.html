@@ -15,102 +15,115 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body>
-    <div id="Home" class="menuItem">
-      <div id="account">
-        <div id="accountText">@username</div>
+    <div class="pageCarousel">
+      <div id="Home" class="menuItem">
+        <div id="account">
+          <div id="accountText">@username</div>
+        </div>
+
+        <div id="balance">
+          <strong id="solBalance">100.00 SOL</strong>
+          <small id="pnlData">+0.00 SOL (0.00%)</small>
+        </div>
+        <div id="tokensData">
+          <p1 id="tokensText">Tokens</p1>
+          <div id="tokenList"></div>
+        </div>
       </div>
 
-      <div id="balance">
-        <strong id="solBalance">100.00 SOL</strong>
-        <small id="pnlData">+0.00 SOL (0.00%)</small>
+      <div id="History" class="menuItem" style="display: none">
+        <!-- TODO later -->
       </div>
-      <div id="tokensData">
-        <p1 id="tokensText">Tokens</p1>
-        <div id="tokenList"></div>
-      </div>
-    </div>
 
-    <div id="History" class="menuItem">
-      <!-- TODO later -->
-    </div>
+      <div id="Settings" class="menuItem">
+        <p1 id="settingsText"> Settings </p1>
+        <div id="Preferences">
+          <p id="preferencesText">Preferences</p>
+          <div id="themes">
+            <p id="themeText">Theme:</p>
+            <button id="themeDark">Dark</button>
+            <button id="themeWhite">White</button>
+          </div>
+          <div id="volume">
+            <label id="volumeText" for="volumeSlider">Volume:</label>
+            <input type="range" min="0" max="100" value="0" id="volumeSlider" />
+          </div>
+          <div id="animation">
+            <label id="animationText" for="animationSlider"
+              >Animation Quality:</label
+            >
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value="0"
+              id="animationSlider"
+            />
+          </div>
+        </div>
+        <div id="Premium">
+          <p id="premiumText">Premium Features</p>
+          <div id="pnlRefresh">
+            <label id="pnlRefreshText" for="pnlSlider"
+              >PNL Refresh Interval:</label
+            >
+            <input type="range" min="0" max="100" value="0" id="pnlSlider" />
+          </div>
+          <div id="saveWindow">
+            <label id="saveWindowText" for="saveWindowBox"
+              >Save Window Position:</label
+            >
+            <input type="checkbox" id="saveWindowBox" />
+          </div>
+          <div id="connectMobileApp">
+            <p id="mobileText">Connect Mobile App (soon)</p>
+          </div>
+        </div>
+        <div id="Advanced">
+          <button id="debugButton">Debug Mode</button>
+          <button id="updateHistoryButton">Update History</button>
+        </div>
+      </div>
 
-    <div id="Settings" class="menuItem">
-      <p1 id="settingsText"> Settings </p1>
-      <div id="Preferences">
-        <p id="preferencesText">Preferences</p>
-        <div id="themes">
-          <p id="themeText">Theme:</p>
-          <button id="themeDark">Dark</button>
-          <button id="themeWhite">White</button>
+      <div id="Account" class="menuItem">
+        <p1 id="accountText">Account</p1>
+        <div id="accountDetails">
+          <p id="accountDetailsText">Account Details</p>
         </div>
-        <div id="volume">
-          <label id="volumeText" for="volumeSlider">Volume:</label>
-          <input type="range" min="0" max="100" value="0" id="volumeSlider" />
+        <div id="logoutButtonContainer">
+          <button id="logoutButton">Logout</button>
         </div>
-        <div id="animation">
-          <label id="animationText" for="animationSlider"
-            >Animation Quality:</label
-          >
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value="0"
-            id="animationSlider"
-          />
-        </div>
-      </div>
-      <div id="Premium">
-        <p id="premiumText">Premium Features</p>
-        <div id="pnlRefresh">
-          <label id="pnlRefreshText" for="pnlSlider"
-            >PNL Refresh Interval:</label
-          >
-          <input type="range" min="0" max="100" value="0" id="pnlSlider" />
-        </div>
-        <div id="saveWindow">
-          <label id="saveWindowText" for="saveWindowBox"
-            >Save Window Position:</label
-          >
-          <input type="checkbox" id="saveWindowBox" />
-        </div>
-        <div id="connectMobileApp">
-          <p id="mobileText">Connect Mobile App (soon)</p>
-        </div>
-      </div>
-      <div id="Advanced">
-        <button id="debugButton">Debug Mode</button>
-        <button id="updateHistoryButton">Update History</button>
-      </div>
-    </div>
-
-    <div id="Account" class="menuItem">
-      <p1 id="accountText">Account</p1>
-      <div id="accountDetails">
-        <p id="accountDetailsText">Account Details</p>
-      </div>
-      <div id="logoutButtonContainer">
-        <button id="logoutButton">Logout</button>
       </div>
     </div>
 
     <div id="footerBar">
       <div class="indicator"></div>
       <div id="footerButtons">
-        <button class="footerButton active" data-menu="Home">
+        <button class="footerButton active" data-menu="Home" data-index="0">
           <i id="homeIcon" class="fa-solid fa-house fa-2x"></i>
         </button>
         <button
           id="historyButton"
           class="hiddenButton footerButton"
           data-menu="History"
+          data-index="1"
         >
           <i id="historyIcon" class="fa-solid fa-clock-rotate-left fa-2x"></i>
         </button>
-        <button id="settingsButton" class="footerButton" data-menu="Settings">
+        <button
+          id="settingsButton"
+          class="footerButton"
+          data-menu="Settings"
+          data-index="1"
+        >
           <i id="settingsIcon" class="fa-solid fa-gear fa-2x"></i>
         </button>
-        <button id="accountButton" class="footerButton" data-menu="Account">
+        <button
+          id="accountButton"
+          class="footerButton"
+          data-menu="Account"
+          data-index="2"
+        >
           <i id="accountIcon" class="fa-solid fa-user fa-2x"></i>
         </button>
       </div>

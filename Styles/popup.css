@@ -48,33 +48,60 @@ body {
   background-color: rgb(var(--base));
   color: rgb(var(--text));
   margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.pageCarousel {
+  display: flex;
+  scroll-behavior: smooth;
+  overflow: hidden;
+
+  /* Enable snapping */
+  scroll-snap-type: x mandatory;
+
+  scrollbar-width: none; /* Firefox */
+}
+.pageCarousel::-webkit-scrollbar {
+  display: none; /* Chrome */
 }
 
 .menuItem {
-  display: none;
+  flex: 0 0 100%; /* each item fills the carousel width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
   font-weight: 400;
   width: 360px;
   height: calc(100% - 50px);
   max-height: 550px;
   overflow: auto;
   pointer-events: none;
+  color: rgb(var(--text));
+
+  scroll-snap-align: start;
 }
 
-.menuItem.active {
+/* .menuItem.active {
+  position: relative;
+    z-index: 1;
+} */
+
+#Home {
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   scroll-behavior: smooth;
   will-change: scroll-position;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  pointer-events: auto;
-  color: rgb(var(--text));
-  z-index: 1;
-}
 
-#Home {
+  pointer-events: auto;
   overflow-y: auto;
+  z-index: 1;
 }
 
 .hiddenButton {
@@ -208,20 +235,30 @@ body {
 }
 
 #tokensText {
-  margin-left: 32px;
+  position: absolute;
+  left: 8.25%;
   color: rgb(var(--subtext0));
+  font-size: 16px;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
 }
 
 #tokenList {
-  max-height: 310px;
+  margin-top: 24px;
+  max-height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   box-sizing: border-box;
+}
+
+#tokenList::after {
+  content: "";
+  flex: 0 0 auto;
+  height: 10px; /* adjust as needed */
+  width: 100%;
 }
 
 .tkn {
@@ -353,21 +390,6 @@ body {
     left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     width 0.3s ease;
   z-index: 1;
-}
-
-#homeIcon {
-  width: 30px;
-  height: 23px;
-}
-
-#historyIcon {
-  width: 23px;
-  height: 23px;
-}
-
-#settingsIcon {
-  width: 22px;
-  height: 23px;
 }
 
 ::-webkit-scrollbar {
