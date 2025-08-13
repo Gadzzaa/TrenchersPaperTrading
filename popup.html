@@ -17,9 +17,7 @@
   <body>
     <div class="pageCarousel">
       <div id="Home" class="menuItem">
-        <div id="account">
-          <div id="accountText">@username</div>
-        </div>
+        <div class="header">@username</div>
 
         <div id="balance">
           <strong id="solBalance">100.00 SOL</strong>
@@ -36,29 +34,45 @@
       </div>
 
       <div id="Settings" class="menuItem">
-        <p1 id="settingsText"> Settings </p1>
+        <div class="header">Settings</div>
         <div id="Preferences">
           <p id="preferencesText">Preferences</p>
           <div id="themes">
-            <p id="themeText">Theme:</p>
-            <button id="themeDark">Dark</button>
-            <button id="themeWhite">White</button>
+            <p class="preferencesSubText">Theme:</p>
+            <button id="themeDark" class="theme">Dark</button>
+            <button id="themeWhite" class="theme">White</button>
           </div>
-          <div id="volume">
+          <div id="volume" class="preferencesSubText">
             <label id="volumeText" for="volumeSlider">Volume:</label>
-            <input type="range" min="0" max="100" value="0" id="volumeSlider" />
+            <div class="slider-container">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+                id="animationSlider"
+                class="slider"
+              />
+            </div>
           </div>
-          <div id="animation">
+          <div id="animation" class="preferencesSubText">
             <label id="animationText" for="animationSlider"
               >Animation Quality:</label
             >
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value="0"
-              id="animationSlider"
-            />
+            <div class="slider-container">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+                id="animationSlider"
+                class="slider"
+              />
+              <div class="ticks">
+                <span></span><span></span><span></span><span></span><span></span
+                ><span></span>
+              </div>
+            </div>
           </div>
         </div>
         <div id="Premium">

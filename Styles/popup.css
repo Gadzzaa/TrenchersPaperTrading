@@ -126,15 +126,12 @@ body {
   pointer-events: none;
 }
 
-#account {
+.header {
   position: relative;
   display: inline-block;
   align-self: center;
-  margin-top: 15px;
+  margin-top: 25px;
   z-index: 1;
-}
-
-#accountText {
   padding: 0;
   color: rgb(var(--subtext1));
   font-size: 18px;
@@ -390,6 +387,71 @@ body {
     left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     width 0.3s ease;
   z-index: 1;
+}
+
+#Settings {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  align-items: flex-start;
+}
+
+#Preferences {
+  margin-top: 32px;
+  margin-left: 15px;
+  padding: 0;
+  padding-left: 34px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  gap: 14px;
+  pointer-events: auto;
+}
+
+#preferencesText {
+  margin-left: -34px;
+  color: rgb(var(--subtext1));
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+#themes {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  align-items: center;
+  gap: 15px;
+  max-height: 34px;
+}
+
+.preferencesSubText {
+  color: rgb(var(--subtext1));
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+}
+
+.theme {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(var(--text));
+  cursor: pointer;
+}
+
+.theme.active {
+  font-weight: 600;
+  color: rgv(var(--mauve));
 }
 
 ::-webkit-scrollbar {

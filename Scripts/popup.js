@@ -8,6 +8,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
 
+  // Disable arrow keys
+  document.addEventListener("keydown", (e) => {
+    const scrollKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    if (scrollKeys.includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+
   // Footer Buttons animation
   footerButtons.forEach((button) => {
     button.addEventListener("click", () => {
