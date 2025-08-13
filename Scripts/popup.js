@@ -7,16 +7,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const footerButtons = document.querySelectorAll(".footerButton");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
-  const sliders = document.querySelectorAll(".slider");
-
-  sliders.forEach((el) => {
-    el.addEventListener("mousedown", () => {
-      el.classList.add("active-thumb");
-    });
-    el.addEventListener("mouseup", () => {
-      el.classList.remove("active-thumb");
-    });
-  });
 
   // Disable arrow keys
   document.addEventListener("keydown", (e) => {
