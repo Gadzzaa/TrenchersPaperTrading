@@ -5,9 +5,7 @@
   --text: 205, 214, 244; /* #cdd6f4 */
   --subtext0: 166, 173, 200; /* #a6adc8 */
   --subtext1: 186, 194, 222; /* #bac2de */
-  --lavender: 180, 190, 254; /* #b4befe */
-  --green: 166, 227, 161; /* #a6e3a1 */
-  --overlay0: 88, 91, 112; /* #585b70 */
+  --overlay0: 108, 112, 134; /* #6c7086 */
   --surface0: 49, 50, 68; /* #313244 */
   --surface1: 69, 71, 90; /* #45475a */
   --surface2: 88, 91, 112; /* #585b70 */
@@ -17,24 +15,20 @@
   --flamingo: 242, 205, 205; /* #f2cdcd */
   --pink: 245, 194, 231; /* #f5c2e7 */
   --mauve: 203, 166, 247; /* #cba6f7 */
-  --red: 237, 135, 150; /* #ed8796 */
-  --maroon: 197, 131, 131; /* #b55a66 approx, adjusted */
-  --peach: 250, 179, 135; /* #f9e2af approx, adjusted */
+  --red: 243, 139, 168; /* #f38ba8 */
+  --maroon: 235, 160, 172; /* #eba0ac */
+  --peach: 250, 179, 135; /* #fab387 approx, adjusted */
   --yellow: 250, 224, 129; /* #f9e2af */
-  --green_alt: 166, 227, 161; /* #a6e3a1 */
+  --green: 166, 227, 161; /* #a6e3a1 */
   --teal: 148, 226, 213; /* #94e2d5 */
-  --sky: 137, 180, 250; /* #89b4fa */
+  --sky: 137, 220, 235; /* #89dceb */
   --sapphire: 115, 160, 250; /* #74c7ec approx */
-  --blue: 131, 165, 252; /* #8aadf4 */
-  --lavender_alt: 180, 190, 254; /* #b4befe */
+  --blue: 137, 180, 250; /* #89b4fa */
+  --lavender: 180, 190, 254; /* #b4befe */
 
   /* Extra neutrals */
-  --text_dim: 116, 118, 152; /* #747294 */
-  --overlay1: 69, 71, 90; /* #45475a */
+  --overlay1: 127, 132, 156; /* #7f849c */
   --overlay2: 98, 100, 130; /* #626482 */
-
-  /* Transparent colors if needed */
-  --transparent_black_50: rgba(0, 0, 0, 0.5);
 }
 
 * {
@@ -47,10 +41,61 @@ body {
   height: 600px;
   background-color: rgb(var(--base));
   color: rgb(var(--text));
+  margin: 0;
+  padding: 0;
+  position: relative;
 }
 
-.hidden {
-  display: none !important;
+.pageCarousel {
+  display: flex;
+  scroll-behavior: smooth;
+  overflow: hidden;
+
+  /* Enable snapping */
+  scroll-snap-type: x mandatory;
+
+  scrollbar-width: none; /* Firefox */
+}
+.pageCarousel::-webkit-scrollbar {
+  display: none; /* Chrome */
+}
+
+.menuItem {
+  flex: 0 0 100%; /* each item fills the carousel width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  font-weight: 400;
+  width: 360px;
+  height: calc(100% - 50px);
+  max-height: 550px;
+  overflow: auto;
+  pointer-events: none;
+  color: rgb(var(--text));
+
+  scroll-snap-align: start;
+}
+
+/* .menuItem.active {
+  position: relative;
+    z-index: 1;
+} */
+
+#Home {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  pointer-events: auto;
+  overflow-y: auto;
+  z-index: 1;
 }
 
 .hiddenButton {
@@ -59,11 +104,9 @@ body {
 }
 
 #background {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 0;
-  bottom: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
   opacity: 20%;
   background: linear-gradient(
     to bottom,
@@ -77,61 +120,17 @@ body {
   pointer-events: none;
 }
 
-#Home {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  font-weight: 400;
-  width: 360px;
-  height: 550px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  will-change: scroll-position;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  pointer-events: auto;
-  color: rgb(var(--text));
-  z-index: 1;
-}
-
-#account {
+.header {
   position: relative;
   display: inline-block;
   align-self: center;
-  margin-top: 15px;
+  margin-top: 25px;
   z-index: 1;
-}
-
-#accountButton {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#arrowImage {
-  margin-left: 2px;
-  margin-top: 1px;
-  width: 18px;
-  height: 18px;
-}
-
-#accountText {
   padding: 0;
   color: rgb(var(--subtext1));
   font-size: 18px;
   font-weight: 400;
   text-align: center;
-}
-
-#accountButton:hover,
-#accountButton:hover * {
-  filter: brightness(1.1);
 }
 
 #accountDropdown {
@@ -227,20 +226,30 @@ body {
 }
 
 #tokensText {
-  margin-left: 32px;
+  position: absolute;
+  left: 8.25%;
   color: rgb(var(--subtext0));
+  font-size: 16px;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
 }
 
 #tokenList {
-  max-height: 310px;
+  margin-top: 24px;
+  max-height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   box-sizing: border-box;
+}
+
+#tokenList::after {
+  content: "";
+  flex: 0 0 auto;
+  height: 10px; /* adjust as needed */
+  width: 100%;
 }
 
 .tkn {
@@ -327,12 +336,16 @@ body {
 }
 
 #footerBar {
-  background-color: rgb(var(--mantle));
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 360px;
   height: 50px;
+  background-color: rgb(var(--mantle));
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative;
   z-index: 20;
 }
 
@@ -345,14 +358,16 @@ body {
 
 .footerButton {
   position: relative;
-  background-color: transparent;
+  background: transparent;
   border: none;
   color: rgb(var(--text));
   z-index: 1;
+  transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
-.navBut {
-  cursor: pointer;
+.footerButton:hover {
+  filter: brightness(1.1);
 }
 
 .indicator {
@@ -368,21 +383,254 @@ body {
   z-index: 1;
 }
 
-#homeIcon {
-  width: 30px;
-  height: 23px;
+#Settings {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  align-items: flex-start;
+  pointer-events: auto;
+}
+.Category {
+  width: 95%;
+  margin-top: 24px;
+  margin-left: 15px;
+  padding: 0;
+  padding-left: 24px;
+  padding-right: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  gap: 14px;
+  pointer-events: auto;
+}
+.categoryText {
+  margin-left: -24px;
+  color: rgb(var(--subtext1));
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 0;
 }
 
-#historyIcon {
-  width: 23px;
-  height: 23px;
+#themes {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  align-items: center;
+  gap: 15px;
+  max-height: 34px;
 }
 
-#settingsIcon {
-  width: 22px;
-  height: 23px;
+.settingsSubText {
+  color: rgb(var(--subtext1));
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
 }
 
+.theme {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(var(--text));
+  cursor: pointer;
+}
+
+.theme.active {
+  font-weight: 600;
+  color: rgb(var(--mauve));
+}
+
+#volume,
+#animation {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  width: 150px;
+}
+
+.slider {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  margin: 0;
+  padding: 0;
+  height: 1px;
+  position: relative;
+  z-index: 1;
+  /*  background-color: rgb(var(--overlay1)); */
+  background: transparent;
+
+  pointer-events: none;
+  padding-bottom: 5px;
+  cursor: grab;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* required */
+  transform: translateY(0px);
+  margin-bottom: 15px;
+  width: 20px;
+  height: 12px;
+  background: url("../Images/downArrow.png") no-repeat center;
+  background-size: 12px 7px;
+  border: none;
+  transition: transform 0.2s ease;
+  pointer-events: auto;
+}
+.slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: translateY(-5px) scale(1.2);
+}
+
+#tickDiv {
+  width: 73.5%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: -2px;
+}
+
+#tickDiv * {
+  margin: 0;
+  width: 1px;
+  height: 3px;
+  background-color: rgb(var(--overlay2));
+}
+
+#track {
+  width: 73.5%;
+  height: 1px;
+  background-color: rgb(var(--overlay2));
+  position: relative;
+}
+
+#pnlRefresh {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  gap: 14px;
+}
+
+.checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Base checkmark box */
+.checkmark {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgb(var(--overlay1));
+  border-radius: 4px;
+  background-color: transparent;
+  transition: box-shadow 0.3s ease;
+}
+
+.checkbox:hover .checkmark {
+  box-shadow: 0 0 10px rgba(var(--overlay1), 0.5);
+}
+
+/* SVG styling */
+.checkmark svg {
+  width: 100%;
+  height: 100%;
+}
+
+.checkmark path {
+  fill: none;
+  stroke: rgb(var(--mauve));
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 25;
+  stroke-dashoffset: 25;
+  transition: stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checkbox input:checked + .checkmark path {
+  stroke-dashoffset: 0;
+}
+
+#connectMobileApp {
+  height: 20px;
+  text-align: center;
+}
+#connectMobileApp * {
+  height: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.advancedButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-left: -18px;
+}
+
+.advancedButtons button {
+  height: 40px;
+  padding: 0 18px;
+  background: transparent;
+  border: 1px solid rgb(var(--overlay1));
+  border-radius: 10px;
+  color: rgb(var(--text));
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+
+  /* Subtle 3D look */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+  /* Smooth transitions for multiple props */
+  transition:
+    background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.advancedButtons button:hover {
+  background-color: rgba(var(--overlay1), 0.2);
+  box-shadow: 0 2px 6px rgba(var(--overlay1), 0.4);
+}
+
+.advancedButtons button:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--overlay1), 0.5);
+}
+
+#debugButton.active {
+  background-color: rgba(var(--lavender), 0.15);
+  color: rgb(var(--lavender));
+  border-color: rgb(var(--lavender));
+  box-shadow: 0 0 10px rgba(var(--lavender), 0.5);
+}
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
