@@ -584,11 +584,12 @@ body {
   margin: 0;
   padding: 0;
 }
+
 .advancedButtons {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-  gap: 15px;
+  margin-left: -18px;
 }
 
 .advancedButtons button {
@@ -609,8 +610,9 @@ body {
   /* Smooth transitions for multiple props */
   transition:
     background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.15s ease;
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .advancedButtons button:hover {
@@ -624,8 +626,10 @@ body {
 }
 
 #debugButton.active {
-  background-color: rgba(var(--green), 0.3);
-  box-shadow: 0 0 10px rgba(var(--green), 0.6);
+  background-color: rgba(var(--lavender), 0.15);
+  color: rgb(var(--lavender));
+  border-color: rgb(var(--lavender));
+  box-shadow: 0 0 10px rgba(var(--lavender), 0.5);
 }
 ::-webkit-scrollbar {
   width: 5px;

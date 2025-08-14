@@ -5,6 +5,7 @@ const tokens = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   const footerButtons = document.querySelectorAll(".footerButton");
+  const debugButton = document.getElementById("debugButton");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
 
@@ -14,6 +15,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (scrollKeys.includes(e.key)) {
       e.preventDefault();
     }
+  });
+
+  debugButton.addEventListener("click", () => {
+    if (debugButton.classList.contains("active"))
+      debugButton.classList.remove("active");
+    else debugButton.classList.add("active");
   });
 
   // Footer Buttons animation
