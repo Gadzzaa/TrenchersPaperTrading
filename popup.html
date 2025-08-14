@@ -35,17 +35,24 @@
 
       <div id="Settings" class="menuItem">
         <div class="header">Settings</div>
-        <div id="Preferences">
-          <p id="preferencesText">Preferences</p>
+        <div id="Preferences" class="Category">
+          <p class="categoryText">Preferences</p>
           <div id="themes">
-            <p class="preferencesSubText">Theme:</p>
-            <button id="themeDark" class="theme">Dark</button>
+            <p class="settingsSubText">Theme:</p>
+            <button id="themeDark" class="theme active">Dark</button>
             <button id="themeWhite" class="theme">White</button>
           </div>
-          <div id="volume" class="preferencesSubText">
+          <div id="volume" class="settingsSubText">
             <label id="volumeText" for="volumeSlider">Volume:</label>
             <div class="slider-container">
-              <input type="range" min="0" max="100" value="0" class="slider" />
+              <input
+                id="volumeSlider"
+                type="range"
+                min="0"
+                max="100"
+                value="0"
+                class="slider"
+              />
               <div id="tickDiv">
                 <div></div>
                 <div></div>
@@ -56,12 +63,19 @@
               <div id="track"></div>
             </div>
           </div>
-          <div id="animation" class="preferencesSubText">
+          <div id="animation" class="settingsSubText">
             <label id="animationText" for="animationSlider"
               >Animation Quality:</label
             >
             <div class="slider-container">
-              <input type="range" min="0" max="4" value="0" class="slider" />
+              <input
+                id="animationSlider"
+                type="range"
+                min="0"
+                max="4"
+                value="0"
+                class="slider"
+              />
               <div id="tickDiv">
                 <div></div>
                 <div></div>
@@ -73,27 +87,52 @@
             </div>
           </div>
         </div>
-        <div id="Premium">
-          <p id="premiumText">Premium Features</p>
-          <div id="pnlRefresh">
+        <div id="Premium" class="Category">
+          <p class="categoryText">Premium Features</p>
+          <div id="pnlRefresh" class="settingsSubText">
             <label id="pnlRefreshText" for="pnlSlider"
               >PNL Refresh Interval:</label
             >
-            <input type="range" min="0" max="100" value="0" id="pnlSlider" />
+            <div class="slider-container">
+              <input
+                id="pnlSlider"
+                type="range"
+                min="0"
+                max="4"
+                value="0"
+                class="slider"
+              />
+              <div id="tickDiv">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+              <div id="track"></div>
+            </div>
           </div>
-          <div id="saveWindow">
-            <label id="saveWindowText" for="saveWindowBox"
-              >Save Window Position:</label
-            >
-            <input type="checkbox" id="saveWindowBox" />
+          <div id="saveWindow" class="settingsSubText">
+            <label id="saveWindowText" for="saveWindowBox" class="checkbox"
+              >Save Window Position:
+              <input type="checkbox" id="saveWindowBox" />
+              <span class="checkmark">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 12l6 6L20 6" />
+                </svg>
+              </span>
+            </label>
           </div>
-          <div id="connectMobileApp">
-            <p id="mobileText">Connect Mobile App (soon)</p>
+          <div id="connectMobileApp" class="settingsSubText hiddenButton">
+            <p id="mobileText">Connect Mobile App</p>
           </div>
         </div>
-        <div id="Advanced">
-          <button id="debugButton">Debug Mode</button>
-          <button id="updateHistoryButton">Update History</button>
+        <div id="Advanced" class="Category">
+          <p class="categoryText">Advanced</p>
+          <div class="advancedButtons">
+            <button id="debugButton" class="active">Debug Mode</button>
+            <button id="updateHistoryButton">Update History</button>
+          </div>
         </div>
       </div>
 
