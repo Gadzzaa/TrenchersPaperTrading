@@ -46,6 +46,11 @@ body {
   position: relative;
 }
 
+html button,
+body button {
+  will-change: transform;
+}
+
 .pageCarousel {
   display: flex;
   scroll-behavior: smooth;
@@ -393,7 +398,7 @@ body {
 }
 .Category {
   width: 95%;
-  margin-top: 24px;
+  height: 600px;
   margin-left: 15px;
   padding: 0;
   padding-left: 24px;
@@ -595,10 +600,7 @@ body {
 .advancedButtons button {
   height: 40px;
   padding: 0 18px;
-  background: transparent;
-  border: 1px solid rgb(var(--overlay1));
   border-radius: 10px;
-  color: rgb(var(--text));
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -612,186 +614,261 @@ body {
     background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.advancedButtons button:hover {
-  background-color: rgba(var(--overlay1), 0.2);
-  box-shadow: 0 2px 6px rgba(var(--overlay1), 0.4);
-}
-
-.advancedButtons button:active {
-  transform: scale(0.96);
-  box-shadow: 0 1px 3px rgba(var(--overlay1), 0.5);
-}
-
-#debugButton.active {
-  background-color: rgba(var(--lavender), 0.15);
-  color: rgb(var(--lavender));
-  border-color: rgb(var(--lavender));
-  box-shadow: 0 0 10px rgba(var(--lavender), 0.5);
-}
-
-/* Container */
-#accountContainer {
-  z-index: 1;
-  pointer-events: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px 20px;
-  gap: 12px; /* spacing between elements */
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-/* Account Name */
-#accountName {
-  font-size: 24px;
-  font-weight: 700;
-  color: rgb(var(--text));
-  margin: 0;
-  text-align: center;
-}
-
-/* Status */
-#accountStatus {
-  margin-bottom: 30px;
-}
-
-.status {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-}
-
-.status.free {
-  background-color: rgba(var(--red), 0.15);
-  color: rgb(var(--red));
-}
-
-.status.premium {
-  background-color: rgba(var(--green), 0.15);
-  color: rgb(var(--green));
-}
-
-/* Reset Account */
-#resetContainer {
-  margin: 12px 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.secondaryButton {
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    background-color 0.25s ease,
-    transform 0.15s ease;
-  background-color: rgba(var(--overlay1), 0.15);
-  border: 1px solid rgb(var(--overlay1));
-  color: rgb(var(--overlay1));
-}
-
-.secondaryButton:hover {
-  background-color: rgba(var(--overlay1), 0.25);
-}
-
-.secondaryButton:active {
-  transform: scale(0.96);
-}
-
-/* Upgrade Button */
-#accountStatusContainer {
-  margin: 12px 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-
-#accountStatusContainer button {
-  width: 150px;
-}
-
-.primaryButton {
-  padding: 10px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    background-color 0.25s ease,
-    transform 0.15s ease;
+#updateHistoryButton {
   background-color: rgba(var(--mauve), 0.15);
   border: 1px solid rgb(var(--mauve));
   color: rgb(var(--mauve));
 }
 
-.primaryButton:hover {
-  background-color: rgba(var(--mauve), 0.25);
+#updateHistoryButton:hover {
+  background-color: rgba(var(--mauve), 0.2);
+  box-shadow: 0 2px 6px rgba(var(--mauve), 0.4);
 }
 
-.primaryButton:active {
+#updateHistoryButton:active {
   transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--mauve), 0.5);
 }
 
-/* Contact Info */
-#contactInfo {
-  text-align: center;
-  font-size: 13px;
+#debugButton {
+  background-color: rgba(var(--rosewater), 0.15);
+  border: 1px solid rgb(var(--rosewater));
+  color: rgb(var(--rosewater));
+}
+
+#debugButton:hover {
+  background-color: rgba(var(--rosewater), 0.2);
+  box-shadow: 0 2px 6px rgba(var(--rosewater), 0.4);
+}
+
+#debugButton:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--rosewater), 0.5);
+}
+
+#debugButton.active {
+  background-color: rgba(var(--peach), 0.15);
+  border-color: rgb(var(--peach));
+  color: rgb(var(--peach));
+  box-shadow: 0 0 10px rgba(var(--peach), 0.5);
+}
+
+#debugButton.active:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--peach), 0.5);
+}
+
+#Account * {
+}
+
+#Account {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 550px;
+  gap: 0;
+  overflow: hidden;
+}
+
+#accountDetails {
+  margin-bottom: 14px;
+}
+
+#subscriptionDiv {
+  margin-top: 10px;
+}
+
+.accountInfo {
+  width: 325px;
+  box-sizing: border-box;
+  background-color: rgba(var(--overlay2), 0.15);
+  border: 1px solid rgb(var(--overlay2));
+  border-radius: 20px;
+  margin: 0px 20px;
+  padding: 10px 35px 12.5px 35px;
+  overflow: hidden; /* Temporary */
+}
+
+.accountButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accountButtons button {
+  height: 40px;
+  padding: 0 25px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  /* Subtle 3D look */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  /* Smooth transitions for multiple props */
+  transition:
+    background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#resetButton {
+  padding: 0 15px;
+  background-color: rgba(var(--pink), 0.15);
+  border: 1px solid rgb(var(--pink));
+  color: rgb(var(--pink));
+}
+
+#resetButton:hover {
+  background-color: rgba(var(--pink), 0.2);
+  box-shadow: 0 2px 6px rgba(var(--pink), 0.4);
+}
+
+#resetButton:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--pink), 0.5);
+}
+
+#logoutButton {
+  background-color: rgba(var(--maroon), 0.15);
+  border: 1px solid rgb(var(--maroon));
+  color: rgb(var(--maroon));
+}
+
+#logoutButton:hover {
+  background-color: rgba(var(--maroon), 0.2);
+  box-shadow: 0 2px 6px rgba(var(--maroon), 0.4);
+}
+
+#logoutButton:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--maroon), 0.5);
+}
+
+#manageButton {
+  background-color: rgba(var(--blue), 0.15);
+  border: 1px solid rgb(var(--blue));
+  color: rgb(var(--blue));
+}
+
+#manageButton:hover {
+  background-color: rgba(var(--blue), 0.2);
+  box-shadow: 0 2px 6px rgba(var(--blue), 0.4);
+}
+
+#manageButton:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--blue), 0.5);
+}
+
+#upgradeButton {
+  background-color: rgba(var(--teal), 0.15);
+  border: 1px solid rgb(var(--teal));
+  color: rgb(var(--teal));
+}
+
+#upgradeButton:hover {
+  background-color: rgba(var(--teal), 0.2);
+  box-shadow: 0 2px 6px rgba(var(--teal), 0.4);
+}
+
+#upgradeButton:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(var(--teal), 0.5);
+}
+
+.accountText {
+  margin: 0;
+  margin-left: -18px;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(var(--text));
+}
+
+.accountSubtext {
+  margin-top: 10px;
+  font-size: 12px;
   font-weight: 400;
-  color: rgba(var(--subtext1), 0.7);
-  line-height: 1.5;
+  color: rgb(var(--subtext1));
+  margin-bottom: 12px;
 }
 
-/* Logout Button */
-#accountButtons {
-  margin-top: auto;
+.accountSubtext p {
+  text-align: center;
+  height: 20px;
+  margin: 0;
+}
+
+.flexHorizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+#accountFooter {
   width: 100%;
   display: flex;
-  justify-content: center;
-  margin-bottom: 8px;
+  flex-direction: row;
+  justify-content: space-between;
+  justify-self: flex-end;
 }
 
-.dangerButton {
-  padding: 10px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    background-color 0.25s ease,
-    transform 0.15s ease;
-  background-color: rgba(var(--red), 0.15);
-  border: 1px solid rgb(var(--red));
-  color: rgb(var(--red));
+#contactInfo * {
+  font-size: 10px;
+  font-weight: 400;
+  color: rgb(var(--subtext1));
 }
 
-.dangerButton:hover {
-  background-color: rgba(var(--red), 0.25);
-}
-
-.dangerButton:active {
-  transform: scale(0.96);
-}
-
-/* Bottom Info */
-#appInfo {
-  display: flex;
+#helpText {
   font-size: 12px;
-  color: rgba(var(--subtext1), 0.6);
+  font-weight: 700;
+  color: rgb(var(--text));
+}
+
+#twitterDiv,
+#mailDiv {
+  margin-top: 10px;
+}
+
+#twitterText,
+#mailText {
+  margin: 0;
+  margin-left: 3px;
   text-align: center;
-  gap: 10px;
-  margin-bottom: -25px;
+  height: 15px;
+}
+
+#appInfo {
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+#versionInfo,
+#copyrightInfo {
+  text-align: center;
+  height: 15px;
+  font-weight: 400;
+  font-size: 10px;
+  color: rgb(var(--subtext0));
+  margin: 0;
+  margin-top: 5px;
+}
+
+#iconsCredit {
+  position: absolute;
+  bottom: 0;
+  font-size: 8px;
+  color: rgb(var(--subtext0));
 }
 
 ::-webkit-scrollbar {
