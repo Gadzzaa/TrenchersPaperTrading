@@ -1,4 +1,4 @@
-//import { resetAccount } from "./API.js";
+import { resetAccount, login, register } from "./API.js";
 let tokenListContainer, indicator;
 const barWidth = 30;
 const tokens = [];
@@ -6,12 +6,38 @@ const tokens = [];
 document.addEventListener("DOMContentLoaded", async () => {
   const footerButtons = document.querySelectorAll(".footerButton");
   const debugButton = document.getElementById("debugButton");
+  const usernameInput = document.getElementById("formUsername");
+  const passwordInput = document.getElementById("formPassword");
+  const showPasswordButton = document.getElementById("showPasswordButton");
+  const icon = showPasswordButton.querySelector("i");
   const usernameText = document.getElementById("usernameText");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
 
+  document.getElementById("loginButton").addEventListener("click", async () => {
+    login(usernameInput.value, passwordInput.value);
+  });
+
+  document
+    .getElementById("registerButton")
+    .addEventListener("click", async () => {
+      register(usernameInput.value, passwordInput.value);
+    });
+
   chrome.storage.local.get(["username"], (res) => {
     usernameText.textContent = res.username || "Guest";
+  });
+
+  showPasswordButton.addEventListener("click", () => {
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    } else {
+      passwordInput.type = "password";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+    }
   });
 
   // Disable arrow keys
