@@ -1,4 +1,10 @@
-import { showNotification, enableUI, disableUI } from "./utils.js";
+import {
+  showNotification,
+  enableUI,
+  disableUI,
+  getFromStorage,
+  setToStorage,
+} from "./utils.js";
 import { updateBalanceUI } from "./dashboard.js";
 import CONFIG, { USE_LOCAL } from "../config.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
@@ -17,7 +23,7 @@ export async function checkSession() {
       try {
         const response = await fetch(API_BASE_URL + "/api/check-session", {
           method: "GET",
-          headers: getAuthHeaders(),
+          headers: await getAuthHeaders(),
           signal: controller.signal,
         });
         clearTimeout(timeout);
@@ -63,7 +69,7 @@ export async function buyToken(
       try {
         const response = await fetch(API_BASE_URL + "/api/buy", {
           method: "POST",
-          headers: getAuthHeaders(),
+          headers: await getAuthHeaders(),
           body: JSON.stringify(payload),
           signal: controller.signal,
         });
@@ -134,7 +140,7 @@ export async function getPortfolio() {
           API_BASE_URL + `/api/portfolio/${encodeURIComponent(username)}`,
           {
             method: "GET",
-            headers: getAuthHeaders(),
+            headers: await getAuthHeaders(),
             signal: controller.signal,
           },
         );
@@ -206,8 +212,8 @@ export async function login(username, password) {
         if (!result?.token)
           throw new Error("No token received from server: " + result.error);
 
-        localStorage.setItem("username", username);
-        localStorage.setItem("sessionToken", result.token);
+        await setToStorage("username", username);
+        await setToStorage("sessionToken", result.token);
         enableUI();
         break;
       } catch (error) {
@@ -251,8 +257,8 @@ export async function register(username, password) {
         if (!result?.token)
           throw new Error("No token received from server: " + result.error);
 
-        localStorage.setItem("username", username);
-        localStorage.setItem("sessionToken", result.token);
+        await setToStorage("username", username);
+        await setToStorage("sessionToken", result.token);
         resetAccount(100);
         enableUI();
         break;
@@ -288,7 +294,7 @@ async function sellToken(
     try {
       const response = await fetch(API_BASE_URL + "/api/sell", {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers: await getAuthHeaders(),
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
@@ -327,7 +333,7 @@ async function resetUserData(username) {
         `http://localhost:3000/api/reset/:${username}`,
         {
           method: "GET",
-          headers: getAuthHeaders(),
+          headers: await getAuthHeaders(),
           signal: controller.signal,
         },
       );
@@ -352,7 +358,7 @@ async function setUserBalance(amount) {
       const timeout = setTimeout(() => controller.abort(), 5000);
       const response = await fetch("http://localhost:3000/api/set-balance", {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ amount }),
         signal: controller.signal,
       });
@@ -374,8 +380,8 @@ async function setUserBalance(amount) {
   }
 }
 
-function getAuthHeaders() {
-  const sessionToken = localStorage.getItem("sessionToken");
+async function getAuthHeaders() {
+  const sessionToken = await getFromStorage("sessionToken");
   if (!sessionToken) {
     throw new Error("No sessionToken found. Please log in again.");
   }

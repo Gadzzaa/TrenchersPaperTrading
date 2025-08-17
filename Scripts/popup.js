@@ -6,8 +6,13 @@ const tokens = [];
 document.addEventListener("DOMContentLoaded", async () => {
   const footerButtons = document.querySelectorAll(".footerButton");
   const debugButton = document.getElementById("debugButton");
+  const usernameText = document.getElementById("usernameText");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
+
+  chrome.storage.local.get(["username"], (res) => {
+    usernameText.textContent = res.username || "Guest";
+  });
 
   // Disable arrow keys
   document.addEventListener("keydown", (e) => {

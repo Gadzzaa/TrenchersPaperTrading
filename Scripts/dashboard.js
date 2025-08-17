@@ -26,6 +26,7 @@ import {
   showButtonLoading,
   enableUI,
   disableUI,
+  getFromStorage,
 } from "./utils.js";
 
 // LOCAL ONLY:
@@ -45,8 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       login("TestingUser", "Parola");
     }
 
-    const sessionToken = localStorage.getItem("sessionToken");
-    const username = localStorage.getItem("username");
+    const sessionToken = await getFromStorage("sessionToken");
 
     if (!sessionToken) {
       clearPositions();
