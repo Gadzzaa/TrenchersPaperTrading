@@ -51,6 +51,103 @@ body button {
   will-change: transform;
 }
 
+.hideLoginPanel {
+  display: none;
+}
+
+#loginPanel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 360px;
+  height: 600px;
+  background-color: rgba(0, 0, 0, 0.3); /* black with 80% opacity */
+  backdrop-filter: blur(15px); /* blur the background behind the div */
+  -webkit-backdrop-filter: blur(15px); /* Safari support */
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  max-width: 360px;
+  padding: 10px 30px;
+  gap: 5px;
+  box-sizing: border-box;
+}
+
+.inputGroup label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgb(var(--subtext1));
+}
+
+.inputGroup input,
+#passwordWrapper input {
+  background: rgb(var(--surface1));
+  border: 0.5px solid rgb(var(--surface0));
+  color: rgb(var(--text));
+  width: 80%;
+  padding: 10px 45px 10px 10px;
+  border-radius: 10px;
+  letter-spacing: 0.3px;
+}
+
+#passwordWrapper {
+  position: relative;
+  width: 100%;
+}
+
+#showPasswordButton {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgb(var(--text));
+  transition:
+    filter 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#showPasswordButton:hover {
+  filter: brightness(1.5);
+}
+
+#showPasswordButton:active {
+  filter: brightness(0.9);
+  transform: scale(0.95) translateY(-50%);
+}
+
+#formUsername {
+  padding-right: 10px;
+  width: 90%;
+}
+
+#welcomeText {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-align: center;
+  margin-top: 35px;
+}
+
+#welcomeText h1 {
+  font-size: 20px;
+  font-weight: 900;
+  height: 25px;
+  margin: 0;
+  color: rgb(var(--text));
+}
+
 .pageCarousel {
   display: flex;
   scroll-behavior: smooth;

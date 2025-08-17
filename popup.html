@@ -15,6 +15,31 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body>
+    <div id="loginPanel">
+      <div id="welcomeText">
+        <h1>Welcome to</h1>
+        <h1>Trenchers Paper Trading</h1>
+      </div>
+      <div id="loginForm">
+        <div class="inputGroup">
+          <label for="formUsername">Username</label>
+          <input type="text" id="formUsername" />
+        </div>
+        <div class="inputGroup">
+          <label for="formPassword">Password</label>
+          <div id="passwordWrapper">
+            <input type="password" id="formPassword" />
+            <button id="showPasswordButton">
+              <i class="fa-solid fa-eye-slash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="formButtons">
+        <button id="loginButton">Login</button>
+        <button id="registerButton">Register</button>
+      </div>
+    </div>
     <div class="pageCarousel">
       <div id="Home" class="menuItem">
         <div class="header" id="usernameText">@username</div>
