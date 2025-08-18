@@ -37,28 +37,58 @@ import CONFIG, { USE_LOCAL } from "../config.js";
 let currentContract = null;
 let currentPreset = null;
 
+async function init() {
+  if (!location.pathname.endsWith("dashboard.html")) return;
+
+  chrome.storage.local.get("theme", ({ theme }) => {
+    if (theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+    } else {
+      // default
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  });
+
+  if (USE_LOCAL) {
+    //localStorage.clear();
+    //register("TestingUser", "Parola");
+    login("TestingUser", "Parola");
+  }
+
+  const isSessionValid = await checkSession();
+  if (!isSessionValid) {
+    clearPositions();
+    localStorage.removeItem("sessionToken");
+    disableUI();
+    throw new Error("Session token is invalid.");
+  }
+
+  currentPreset = getUsingPreset();
+  if (currentPreset == null || currentPreset === "undefined") {
+    applyPreset("preset1");
+  } else applyPreset(currentPreset);
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    if (!location.pathname.endsWith("dashboard.html")) return;
-    // PROD ONLY:
-    if (USE_LOCAL) {
-      //localStorage.clear();
-      //register("TestingUser", "Parola");
-      login("TestingUser", "Parola");
-    }
+    const actionButtons = document.querySelectorAll(
+      "#buyButtons .buyButton, #sellButtons .sellButton",
+    );
 
-    const isSessionValid = await checkSession();
-    if (!isSessionValid) {
-      clearPositions();
-      localStorage.removeItem("sessionToken");
-      disableUI();
-      throw new Error("Session token is invalid.");
-    }
+    await init();
 
-    currentPreset = getUsingPreset();
-    if (currentPreset == null || currentPreset === "undefined") {
-      applyPreset("preset1");
-    } else applyPreset(currentPreset);
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.theme) {
+        document.documentElement.setAttribute(
+          "data-theme",
+          changes.theme.newValue,
+        );
+      }
+    });
+
+    for (const button of actionButtons) {
+      button.addEventListener("click", handleActionButtonClick(button));
+    }
 
     setInterval(async () => {
       currentPreset = document.querySelector(".activePreset")?.id;
@@ -83,13 +113,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       await updateBalanceUI();
     }, 1000);
-
-    const actionButtons = document.querySelectorAll(
-      "#buyButtons .buyButton, #sellButtons .sellButton",
-    );
-    for (const button of actionButtons) {
-      button.addEventListener("click", handleActionButtonClick(button));
-    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification("[dashboard.js] " + message, "error");

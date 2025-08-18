@@ -3,7 +3,16 @@ let tokenListContainer, indicator;
 const barWidth = 30;
 const tokens = [];
 
-async function dataLoading() {
+async function init() {
+  const loginPanel = document.getElementById("loginPanel");
+
+  chrome.storage.local.get("theme", ({ theme }) => {
+    if (!theme) theme = "dark";
+    const button = document.getElementById(theme + "Theme");
+    button.classList.add("active");
+    document.documentElement.setAttribute("data-theme", theme);
+  });
+
   const validSession = await checkSession();
   if (validSession) {
     loginPanel.classList.add("hideLoginPanel");
@@ -20,11 +29,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const showPasswordButton = document.getElementById("showPasswordButton");
   const icon = showPasswordButton.querySelector("i");
   const usernameText = document.getElementById("usernameText");
-  const loginPanel = document.getElementById("loginPanel");
+  const themeButtons = document.querySelectorAll(".theme");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
 
-  await dataLoading();
+  await init();
 
   chrome.storage.local.get(["username"], (res) => {
     usernameText.textContent = res.username || "Guest";
@@ -57,6 +66,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     const scrollKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
     if (scrollKeys.includes(e.key)) {
       e.preventDefault();
+    }
+  });
+
+  themeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      themeButtons.forEach((btn) => btn.classList.remove("active"));
+      switch (button.id) {
+        case "lightTheme":
+          chrome.storage.local.set({ theme: "light" });
+          button.classList.add("active");
+          break;
+        case "darkTheme":
+          chrome.storage.local.set({ theme: "dark" });
+          button.classList.add("active");
+          break;
+      }
+    });
+  });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.theme) {
+      document.documentElement.setAttribute(
+        "data-theme",
+        changes.theme.newValue,
+      );
     }
   });
 
