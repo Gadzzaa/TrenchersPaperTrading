@@ -1,7 +1,16 @@
-import { resetAccount, login, register } from "./API.js";
+import { resetAccount, login, register, checkSession } from "./API.js";
 let tokenListContainer, indicator;
 const barWidth = 30;
 const tokens = [];
+
+async function dataLoading() {
+  const validSession = await checkSession();
+  if (validSession) {
+    loginPanel.classList.add("hideLoginPanel");
+  } else {
+    loginPanel.classList.remove("hideLoginPanel");
+  }
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const footerButtons = document.querySelectorAll(".footerButton");
@@ -11,8 +20,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const showPasswordButton = document.getElementById("showPasswordButton");
   const icon = showPasswordButton.querySelector("i");
   const usernameText = document.getElementById("usernameText");
+  const loginPanel = document.getElementById("loginPanel");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
+
+  await dataLoading();
+
+  chrome.storage.local.get(["username"], (res) => {
+    usernameText.textContent = res.username || "Guest";
+  });
 
   document.getElementById("loginButton").addEventListener("click", async () => {
     login(usernameInput.value, passwordInput.value);
@@ -23,10 +39,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     .addEventListener("click", async () => {
       register(usernameInput.value, passwordInput.value);
     });
-
-  chrome.storage.local.get(["username"], (res) => {
-    usernameText.textContent = res.username || "Guest";
-  });
 
   showPasswordButton.addEventListener("click", () => {
     if (passwordInput.type === "password") {

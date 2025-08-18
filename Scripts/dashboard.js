@@ -39,19 +39,12 @@ let currentPreset = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    if (!location.pathname.endsWith("dashboard.html")) return;
     // PROD ONLY:
     if (USE_LOCAL) {
       //localStorage.clear();
       //register("TestingUser", "Parola");
       login("TestingUser", "Parola");
-    }
-
-    const sessionToken = await getFromStorage("sessionToken");
-
-    if (!sessionToken) {
-      clearPositions();
-      disableUI();
-      throw new Error("Session token not found.");
     }
 
     const isSessionValid = await checkSession();

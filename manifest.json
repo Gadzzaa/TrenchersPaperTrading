@@ -26,7 +26,6 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "account.html",
         "dashboard.html",
         "Sounds/*.wav"
       ],
