@@ -279,14 +279,31 @@ function injectApp() {
   appContainer.appendChild(appIframe);
   document.body.appendChild(appContainer);
 
+  chrome.storage.local.get("animation", ({ animation }) => {
+    if (!animation) animation = 3;
+    document.documentElement.style.setProperty(
+      "--anim-time",
+      `${animation / 10}s`,
+    );
+  });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.animation) {
+      document.documentElement.style.setProperty(
+        "--anim-time",
+        `${changes.animation.newValue / 10}s`,
+      );
+    }
+  });
+
   const style = document.createElement("style");
   style.textContent = `
   #TrenchersPaperTrading {
     transition: 
-      background 0.4s ease,
-      color 0.4s ease,
-      border-color 0.4s ease,
-      box-shadow 0.4s ease;
+      background var(--anim-time) ease,
+      color var(--anim-time) ease,
+      border-color var(--anim-time) ease,
+      box-shadow var(--anim-time) ease;
   }
   #TrenchersPaperTrading[data-theme="dark"]{
     --base: 30, 30, 46; /* #1e1e2e */
@@ -371,8 +388,8 @@ function injectApp() {
     text-align: center;
     z-index: -1;
     transition:
-      transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.3s;
+      transform var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
+      opacity var(--anim-time);
     pointer-events: none;
     opacity: 0.97;
   }

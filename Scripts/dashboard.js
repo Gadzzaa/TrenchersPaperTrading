@@ -41,12 +41,16 @@ async function init() {
   if (!location.pathname.endsWith("dashboard.html")) return;
 
   chrome.storage.local.get("theme", ({ theme }) => {
-    if (theme) {
-      document.documentElement.setAttribute("data-theme", theme);
-    } else {
-      // default
-      document.documentElement.setAttribute("data-theme", "dark");
-    }
+    if (!theme) theme = "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+  });
+
+  chrome.storage.local.get("animation", ({ animation }) => {
+    if (!animation) animation = 3;
+    document.documentElement.style.setProperty(
+      "--anim-time",
+      `${animation / 10}s`,
+    );
   });
 
   if (USE_LOCAL) {
@@ -82,6 +86,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.documentElement.setAttribute(
           "data-theme",
           changes.theme.newValue,
+        );
+      }
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.animation) {
+        document.documentElement.style.setProperty(
+          "--anim-time",
+          `${changes.animation.newValue / 10}s`,
         );
       }
     });

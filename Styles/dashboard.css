@@ -24,8 +24,6 @@ body {
   --radius-xl: 1rem;
   /* 16px */
 
-  --anim-time: 0.3s;
-
   margin: 0;
   padding: 0;
   overflow: hidden;

@@ -1,9 +1,9 @@
 :root * {
   transition:
-    background 0.4s ease,
-    color 0.4s ease,
-    border-color 0.4s ease,
-    box-shadow 0.4s ease;
+    background var(--anim-time) ease,
+    color var(--anim-time) ease,
+    border-color var(--anim-time) ease,
+    box-shadow var(--anim-time) ease;
 }
 :root[data-theme="dark"] {
   --base: 30, 30, 46; /* #1e1e2e */

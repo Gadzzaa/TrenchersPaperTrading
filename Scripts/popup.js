@@ -19,6 +19,16 @@ async function init() {
     volumeSlider.value = volume * 100;
   });
 
+  chrome.storage.local.get("animation", ({ animation }) => {
+    if (!animation) animation = 3;
+    const animationSlider = document.getElementById("animationSlider");
+    animationSlider.value = animation;
+    document.documentElement.style.setProperty(
+      "--anim-time",
+      `${animation / 10}s`,
+    );
+  });
+
   const validSession = await checkSession();
   if (validSession) {
     loginPanel.classList.add("hideLoginPanel");
@@ -103,9 +113,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("volumeSlider")
     .addEventListener("input", function () {
-      console.log(`Volume set to: ${this.value}`);
       chrome.storage.local.set({ volume: parseFloat(this.value) / 100 });
     });
+
+  document
+    .getElementById("animationSlider")
+    .addEventListener("input", function () {
+      console.log(`Animation Quality set to: ${this.value}`);
+      chrome.storage.local.set({ animation: this.value });
+    });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.animation) {
+      document.documentElement.style.setProperty(
+        "--anim-time",
+        `${changes.animation.newValue / 10}s`,
+      );
+    }
+  });
 
   debugButton.addEventListener("click", () => {
     if (debugButton.classList.contains("active"))

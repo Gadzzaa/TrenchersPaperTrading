@@ -20,12 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
   notificationPopup = document.getElementById("notificationPopup");
   notificationText = document.getElementById("notificationText");
   notificationInner = document.getElementById("notificationInner");
+
   chrome.storage.local.get("volume", ({ volume }) => {
-    if (volume) {
-      audioVolume = volume;
-    } else {
-      audioVolume = 1.0;
-    }
+    if (!volume) volume = 1.0;
+    audioVolume = volume;
   });
 
   chrome.storage.onChanged.addListener((changes, area) => {
