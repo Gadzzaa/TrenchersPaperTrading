@@ -35,6 +35,12 @@ async function init() {
     saveWindowBox.checked = saveWindowPos;
   });
 
+  chrome.storage.local.get("pnlSlider", ({ pnlSlider }) => {
+    if (!pnlSlider) pnlSlider = 500;
+    const pnlSlider = document.getElementById("pnlSlider");
+    pnlSlider.value = pnlSlider / 100;
+  });
+
   const validSession = await checkSession();
   if (validSession) {
     loginPanel.classList.add("hideLoginPanel");
@@ -52,7 +58,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const icon = showPasswordButton.querySelector("i");
   const usernameText = document.getElementById("usernameText");
   const themeButtons = document.querySelectorAll(".theme");
+  const volumeSlider = document.getElementById("volumeSlider");
+  const animationSlider = document.getElementById("animationSlider");
   const saveWindowBox = document.getElementById("saveWindowBox");
+  const pnlSlider = document.getElementById("pnlSlider");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
 
@@ -117,18 +126,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  document
-    .getElementById("volumeSlider")
-    .addEventListener("input", function () {
-      chrome.storage.local.set({ volume: parseFloat(this.value) / 100 });
-    });
+  volumeSlider.addEventListener("input", function () {
+    chrome.storage.local.set({ volume: parseFloat(this.value) / 100 });
+  });
 
-  document
-    .getElementById("animationSlider")
-    .addEventListener("input", function () {
-      console.log(`Animation Quality set to: ${this.value}`);
-      chrome.storage.local.set({ animation: this.value });
-    });
+  animationSlider.addEventListener("input", function () {
+    chrome.storage.local.set({ animation: this.value });
+  });
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.animation) {
@@ -143,10 +147,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     chrome.storage.local.set({ saveWindowPos: e.target.checked });
   });
 
+  pnlSlider.addEventListener("input", function () {
+    chrome.storage.local.set({ pnlSlider: this.value * 100 });
+  });
+
   debugButton.addEventListener("click", () => {
-    if (debugButton.classList.contains("active"))
+    if (debugButton.classList.contains("active")) {
       debugButton.classList.remove("active");
-    else debugButton.classList.add("active");
+    } else {
+      debugButton.classList.add("active");
+    }
   });
 
   // Footer Buttons animation

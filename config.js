@@ -1,4 +1,4 @@
-export const USE_LOCAL = true; // toggle manually here
+export let USE_LOCAL = true; // toggle manually here
 
 const CONFIG = {
   API_BASE_URL: USE_LOCAL

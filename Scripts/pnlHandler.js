@@ -17,8 +17,6 @@ export function setActiveToken(mint) {
     console.warn("No position found for mint:", mint);
     return;
   }
-  const pos = openPositions[idx];
-  const quantity = pos.quantity;
 
   pnlIntervalId = setInterval(updateTotalPnl, 250);
 }
