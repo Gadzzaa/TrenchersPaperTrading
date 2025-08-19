@@ -29,6 +29,12 @@ async function init() {
     );
   });
 
+  chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
+    if (!saveWindowPos) saveWindowPos = false;
+    const saveWindowBox = document.getElementById("saveWindowBox");
+    saveWindowBox.checked = saveWindowPos;
+  });
+
   const validSession = await checkSession();
   if (validSession) {
     loginPanel.classList.add("hideLoginPanel");
@@ -46,6 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const icon = showPasswordButton.querySelector("i");
   const usernameText = document.getElementById("usernameText");
   const themeButtons = document.querySelectorAll(".theme");
+  const saveWindowBox = document.getElementById("saveWindowBox");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
 
@@ -130,6 +137,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         `${changes.animation.newValue / 10}s`,
       );
     }
+  });
+
+  saveWindowBox.addEventListener("change", (e) => {
+    chrome.storage.local.set({ saveWindowPos: e.target.checked });
   });
 
   debugButton.addEventListener("click", () => {

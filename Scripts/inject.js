@@ -257,14 +257,18 @@ function injectApp() {
   const savedLeft = localStorage.getItem("draggableLeft");
   const savedTop = localStorage.getItem("draggableTop");
 
-  if (
-    savedLeft &&
-    savedTop &&
-    isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
-  ) {
-    appContainer.style.left = savedLeft;
-    appContainer.style.top = savedTop;
-  }
+  chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
+    console.log("saveWindowPos", saveWindowPos);
+    if (!saveWindowPos) return;
+    if (
+      savedLeft &&
+      savedTop &&
+      isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
+    ) {
+      appContainer.style.left = savedLeft;
+      appContainer.style.top = savedTop;
+    }
+  });
 
   const appIframe = document.createElement("iframe");
   appIframe.src = chrome.runtime.getURL("dashboard.html");
