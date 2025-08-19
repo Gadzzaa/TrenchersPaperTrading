@@ -13,6 +13,12 @@ async function init() {
     document.documentElement.setAttribute("data-theme", theme);
   });
 
+  chrome.storage.local.get("volume", ({ volume }) => {
+    if (!volume) volume = 1.0;
+    const volumeSlider = document.getElementById("volumeSlider");
+    volumeSlider.value = volume * 100;
+  });
+
   const validSession = await checkSession();
   if (validSession) {
     loginPanel.classList.add("hideLoginPanel");
@@ -93,6 +99,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
     }
   });
+
+  document
+    .getElementById("volumeSlider")
+    .addEventListener("input", function () {
+      console.log(`Volume set to: ${this.value}`);
+      chrome.storage.local.set({ volume: parseFloat(this.value) / 100 });
+    });
 
   debugButton.addEventListener("click", () => {
     if (debugButton.classList.contains("active"))

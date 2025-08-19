@@ -10,11 +10,9 @@ let popTimeout1;
 let popTimeout2;
 let glowTimeout1;
 let glowTimeout2;
-let lastPlay = 0;
 const successSound = new Audio(chrome.runtime.getURL("Sounds/success.wav"));
 const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
-successSound.volume = 0.4;
-failSound.volume = 0.4;
+let audioVolume;
 
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
@@ -22,6 +20,19 @@ document.addEventListener("DOMContentLoaded", () => {
   notificationPopup = document.getElementById("notificationPopup");
   notificationText = document.getElementById("notificationText");
   notificationInner = document.getElementById("notificationInner");
+  chrome.storage.local.get("volume", ({ volume }) => {
+    if (volume) {
+      audioVolume = volume;
+    } else {
+      audioVolume = 1.0;
+    }
+  });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.volume) {
+      audioVolume = changes.volume.newValue;
+    }
+  });
 });
 
 export function disableAllTradeButtons(allButtons) {
@@ -67,10 +78,10 @@ export function showNotification(message, type) {
   );
   switch (type) {
     case "success":
-      safePlay(successSound);
+      safePlay(type);
       break;
     case "error":
-      safePlay(failSound);
+      safePlay(type);
       console.error(message);
       break;
     case "info":
@@ -79,14 +90,23 @@ export function showNotification(message, type) {
   }
 }
 
-function safePlay(audio) {
-  const now = Date.now();
-  //  if (now - lastPlay > 50) {
-  lastPlay = now;
-  audio.play().catch((e) => {
-    throw new Error(`${audio} sound failed:`, e);
+function safePlay(type) {
+  let sound;
+  switch (type) {
+    case "success":
+      sound = new Audio(successSound.src);
+      break;
+    case "error":
+      sound = new Audio(failSound.src);
+      break;
+    default:
+      return;
+  }
+
+  sound.volume = audioVolume;
+  sound.play().catch((e) => {
+    console.error(`${type} sound failed:`, e);
   });
-  // }
 }
 
 // Access blocker
