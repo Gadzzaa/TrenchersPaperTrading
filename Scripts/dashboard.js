@@ -15,7 +15,7 @@ import {
   recordSell,
   loadPositions,
   clearPositions,
-  refreshInterval,
+  changeDelay,
 } from "./pnlHandler.js";
 
 import {
