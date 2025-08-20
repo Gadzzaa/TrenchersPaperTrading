@@ -258,7 +258,6 @@ function injectApp() {
   const savedTop = localStorage.getItem("draggableTop");
 
   chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
-    console.log("saveWindowPos", saveWindowPos);
     if (!saveWindowPos) return;
     if (
       savedLeft &&

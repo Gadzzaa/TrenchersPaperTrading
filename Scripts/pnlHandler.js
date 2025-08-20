@@ -1,5 +1,5 @@
 import { requestPrice, showNotification } from "./utils.js";
-import { USE_LOCAL } from "../config.js";
+import { getDebugMode } from "../config.js";
 const openPositions = [];
 let currentMint = null;
 let pnlIntervalId = null;
@@ -69,7 +69,7 @@ export async function updateTotalPnl() {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(
-      USE_LOCAL ? "[pnlHandler.js]" + message : message,
+      getDebugMode() ? "[pnlHandler.js]" + message : message,
       "error",
     );
   }

@@ -6,7 +6,8 @@ import {
   setToStorage,
 } from "./utils.js";
 import { updateBalanceUI } from "./dashboard.js";
-import CONFIG, { USE_LOCAL } from "../config.js";
+import { getDebugMode } from "../config.js";
+import CONFIG from "../config.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
 const maxAttempts = 3;
 
@@ -42,7 +43,7 @@ export async function checkSession() {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    showNotification(USE_LOCAL ? "[API.js] " + message : message, "error");
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
   }
   return false;
 }
@@ -97,7 +98,7 @@ export async function buyToken(
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    const errMsg = USE_LOCAL ? "[API.js] " + message : message;
+    const errMsg = getDebugMode() ? "[API.js] " + message : message;
     return { error: errMsg };
   }
 }
@@ -122,7 +123,7 @@ export async function sellByPercentage(tokenMint, percentage, price) {
     return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    const errMsg = USE_LOCAL ? "[API.js] " + message : message;
+    const errMsg = getDebugMode() ? "[API.js] " + message : message;
     return { error: errMsg };
   }
 }
@@ -160,7 +161,7 @@ export async function getPortfolio() {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return { error: USE_LOCAL ? "[API.js] " + message : message };
+    return { error: getDebugMode() ? "[API.js] " + message : message };
   }
   return null;
 }
@@ -181,7 +182,7 @@ export async function resetAccount(amount) {
     clearPositions();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    showNotification(USE_LOCAL ? `[API.js] ${message}` : message, "error");
+    showNotification(getDebugMode() ? `[API.js] ${message}` : message, "error");
   }
 }
 
@@ -223,7 +224,7 @@ export async function login(username, password) {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    showNotification(USE_LOCAL ? "[API.js] " + message : message, "error");
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
   }
 }
 
@@ -269,7 +270,7 @@ export async function register(username, password) {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    showNotification(USE_LOCAL ? "[API.js] " + message : message, "error");
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
   }
 }
 

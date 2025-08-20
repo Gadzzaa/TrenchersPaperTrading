@@ -44,7 +44,7 @@ let defaultPresets = {
 };
 
 import { showNotification } from "./utils.js";
-import { USE_LOCAL } from "../config.js";
+import { getDebugMode } from "../config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   try {
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   } catch (error) {
     const message = error instanceof Error ? error.message : string(error);
     showNotification(
-      USE_LOCAL ? "[pnlHandler.js] " + message : message,
+      getDebugMode() ? "[pnlHandler.js] " + message : message,
       "error",
     );
   }

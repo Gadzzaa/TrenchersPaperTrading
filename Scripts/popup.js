@@ -1,4 +1,5 @@
 import { resetAccount, login, register, checkSession } from "./API.js";
+import { getDebugMode, setDebugMode } from "../config.js";
 let tokenListContainer, indicator;
 const barWidth = 30;
 const tokens = [];
@@ -37,8 +38,23 @@ async function init() {
 
   chrome.storage.local.get("pnlSlider", ({ pnlSlider }) => {
     if (!pnlSlider) pnlSlider = 500;
-    const pnlSlider = document.getElementById("pnlSlider");
-    pnlSlider.value = pnlSlider / 100;
+    const pnlSliderEl = document.getElementById("pnlSlider");
+    pnlSliderEl.value = pnlSlider / 100;
+  });
+
+  chrome.storage.local.get("debugMode", ({ debugMode }) => {
+    if (!debugMode) debugMode = false;
+    const debugButton = document.getElementById("debugButton");
+    switch (debugMode) {
+      case true:
+        debugButton.classList.add("active");
+        setDebugMode(true);
+        break;
+      case false:
+        debugButton.classList.remove("active");
+        setDebugMode(false);
+        break;
+    }
   });
 
   const validSession = await checkSession();
@@ -154,8 +170,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   debugButton.addEventListener("click", () => {
     if (debugButton.classList.contains("active")) {
       debugButton.classList.remove("active");
+      setDebugMode(false);
+      chrome.storage.local.set({ debugMode: false });
     } else {
       debugButton.classList.add("active");
+      setDebugMode(true);
+      chrome.storage.local.set({ debugMode: true });
     }
   });
 
