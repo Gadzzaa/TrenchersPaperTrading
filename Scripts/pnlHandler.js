@@ -4,6 +4,12 @@ const openPositions = [];
 let currentMint = null;
 let pnlIntervalId = null;
 
+export function changeDelay(delay) {
+  if (!pnlIntervalId) return;
+  clearInterval(pnlIntervalId);
+  pnlIntervalId = setInterval(updateTotalPnl, delay);
+}
+
 export function isActiveToken() {
   return currentMint !== null;
 }
@@ -18,7 +24,10 @@ export function setActiveToken(mint) {
     return;
   }
 
-  pnlIntervalId = setInterval(updateTotalPnl, 250);
+  chrome.storage.local.get("pnlSlider", (data) => {
+    if (!data) data = 500;
+    pnlIntervalId = setInterval(updateTotalPnl, data);
+  });
 }
 
 export async function updateTotalPnl() {

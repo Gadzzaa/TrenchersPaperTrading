@@ -15,6 +15,7 @@ import {
   recordSell,
   loadPositions,
   clearPositions,
+  refreshInterval,
 } from "./pnlHandler.js";
 
 import {
@@ -52,6 +53,7 @@ async function init() {
       `${animation / 10}s`,
     );
   });
+
   if (USE_LOCAL) {
     login("TestingUser", "Parola"); // TODO: remove this line in production
   }
@@ -93,6 +95,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           "--anim-time",
           `${changes.animation.newValue / 10}s`,
         );
+      }
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.pnlSlider) {
+        changeDelay(changes.updateDelay.newValue);
       }
     });
 
