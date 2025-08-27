@@ -5,7 +5,6 @@ import {
   getFromStorage,
   setToStorage,
 } from "./utils.js";
-import { updateBalanceUI } from "./dashboard.js";
 import { getDebugMode } from "../config.js";
 import CONFIG from "../config.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
@@ -46,6 +45,35 @@ export async function checkSession() {
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
   }
   return false;
+}
+
+// PopupData.js
+export async function fetchPopupData() {
+  try {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(API_BASE_URL + "/api/popupData", {
+          method: "GET",
+          headers: await getAuthHeaders(),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
+        const data = await response.json();
+        if (!data) throw new Error("No data received from server");
+        return data;
+      } catch (error) {
+        if (attempt === maxAttempts)
+          throw new Error("Failed to fetch popup data: " + error.message);
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+  }
 }
 
 // BuyHandler.js

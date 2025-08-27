@@ -1,6 +1,22 @@
-import { resetAccount, login, register, checkSession } from "./API.js";
+import {
+  resetAccount,
+  login,
+  register,
+  checkSession,
+  fetchPopupData,
+} from "./API.js";
 import { getDebugMode, setDebugMode } from "../config.js";
-let tokenListContainer, indicator;
+let tokenListContainer,
+  indicator,
+  usernameText,
+  accountUser,
+  solBalance,
+  accountId,
+  accountResets,
+  subscriptionType,
+  subscriptionNextPayment,
+  subscriptionPrice,
+  subscriptionMethod;
 const barWidth = 30;
 const tokens = [];
 
@@ -56,13 +72,13 @@ async function init() {
         break;
     }
   });
-
   const validSession = await checkSession();
-  if (validSession) {
-    loginPanel.classList.add("hideLoginPanel");
-  } else {
+  if (!validSession) {
     loginPanel.classList.remove("hideLoginPanel");
+    return;
   }
+  loginPanel.classList.add("hideLoginPanel");
+  await loadAPIData();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -72,7 +88,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const passwordInput = document.getElementById("formPassword");
   const showPasswordButton = document.getElementById("showPasswordButton");
   const icon = showPasswordButton.querySelector("i");
-  const usernameText = document.getElementById("usernameText");
+  usernameText = document.getElementById("usernameText");
+  solBalance = document.getElementById("solBalance");
+  accountUser = document.getElementById("username");
   const themeButtons = document.querySelectorAll(".theme");
   const volumeSlider = document.getElementById("volumeSlider");
   const animationSlider = document.getElementById("animationSlider");
@@ -80,21 +98,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pnlSlider = document.getElementById("pnlSlider");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
+  accountId = document.getElementById("id");
+  accountResets = document.getElementById("resets");
+  subscriptionType = document.getElementById("subscriptionType");
+  subscriptionNextPayment = document.getElementById("subscriptionStatus");
+  subscriptionPrice = document.getElementById("price");
+  subscriptionMethod = document.getElementById("method");
 
   await init();
 
   chrome.storage.local.get(["username"], (res) => {
     usernameText.textContent = res.username || "Guest";
+    accountUser.textContent = res.username || "Guest";
   });
 
   document.getElementById("loginButton").addEventListener("click", async () => {
-    login(usernameInput.value, passwordInput.value);
+    login(usernameInput.value, passwordInput.value)
+      .then(async () => {
+        await loadAPIData();
+      })
+      .catch((err) => {
+        console.error("Login failed:", err);
+      });
   });
 
   document
     .getElementById("registerButton")
     .addEventListener("click", async () => {
-      register(usernameInput.value, passwordInput.value);
+      register(usernameInput.value, passwordInput.value)
+        .then(async () => {
+          await loadAPIData();
+        })
+        .catch((err) => {
+          console.error("Registration failed:", err);
+        });
     });
 
   showPasswordButton.addEventListener("click", () => {
@@ -196,14 +233,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   const defaultButton = document.querySelector(".footerButton.active");
   moveIndicator(defaultButton);
   setDisplay(defaultButton.dataset.index);
-
-  addToken("Solana", "SOL", 0.1);
-  addToken("Solana", "SOL", 0.1);
-  addToken("Solana", "SOL", 0.1);
-  addToken("Solana", "SOL", 0.1);
-  addToken("Solana", "SOL", 0.1);
 });
 
+async function loadAPIData() {
+  const popupData = await fetchPopupData();
+  const { userId, username, resets, portfolio, subscription } = popupData;
+  if (!userId) throw new Error("No user ID returned from API");
+  if (!username) throw new Error("No username returned from API");
+  if (resets == null) throw new Error("No resets count returned from API");
+  if (usernameText.textContent != username) usernameText.textContent = username;
+  solBalance.textContent = `${portfolio.solBalance.toFixed(2)} SOL`;
+  localStorage.setItem("cachedSolBalance", portfolio.solBalance.toFixed(2));
+  localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
+  // TODO: Calculate total PNL
+  for (const [mint] of Object.entries(portfolio.tokens)) {
+    addToken(mint, mint.name, mint.symbol, mint.amount, mint.image);
+  }
+  if (accountUser.textContent != username) accountUser.textContent = username;
+  accountId.textContent = userId;
+  accountResets.textContent = resets + " / 5";
+  subscriptionType.textContent = subscription.status;
+  subscriptionNextPayment.textContent = subscription.expiresAt;
+  subscriptionPrice.textContent = `${subscription.currency} ${subscription.price}`;
+  subsciptionMethod.textContent = subscription.paymentMethodType;
+}
 function setDisplay(index) {
   const carousel = document.querySelector(".pageCarousel");
   const items = document.querySelectorAll(".menuItem");
@@ -217,12 +270,14 @@ function setDisplay(index) {
 }
 
 function addToken(
+  mint,
   name,
   symbol,
   amount,
   imagePath = "Images/solana-sol-logo.png",
 ) {
   const token = {
+    mint,
     name,
     symbol,
     amount,
@@ -247,10 +302,9 @@ function renderToken(token) {
     <p class="tknClickTxt">Click to open</p>
   `;
 
-  /* click handler
-    button.addEventListener("click", () => {
-    console.log(`Clicked ${token.name}`);
-  }); */
+  button.addEventListener("click", () => {
+    window.open(`https://axiom.trade/meme/${token.mint}`, "_blank");
+  });
 
   if (!tokenListContainer) console.error("Token list container not found.");
   tokenListContainer.appendChild(button);

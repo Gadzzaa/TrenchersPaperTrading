@@ -39,8 +39,6 @@ let currentContract = null;
 let currentPreset = null;
 
 async function init() {
-  if (!location.pathname.endsWith("dashboard.html")) return;
-
   chrome.storage.local.get("theme", ({ theme }) => {
     if (!theme) theme = "dark";
     document.documentElement.setAttribute("data-theme", theme);
@@ -226,7 +224,7 @@ export async function updateBalanceUI(force = false) {
   );
   const now = Date.now();
 
-  const maxAge = 1000 * 60 * 5; // 5 mins
+  const maxAge = 1000 * 60 * 10; // 5 mins
   if (!force && cache && now - lastUpdated < maxAge) {
     solBalance.innerText = parseFloat(cache).toFixed(2);
     return;
