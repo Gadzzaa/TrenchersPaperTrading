@@ -110,7 +110,9 @@ function safePlay(type) {
 // Access blocker
 export function enableUI() {
   const blocker = document.getElementById("loginBlocker");
+  const loginPanel = document.getElementById("loginPanel");
   if (blocker) blocker.style.display = "none";
+  if (loginPanel) loginPanel.style.display = "none";
 }
 
 export function disableUI() {

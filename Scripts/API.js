@@ -1,14 +1,12 @@
 import {
   showNotification,
   enableUI,
-  disableUI,
   getFromStorage,
   setToStorage,
 } from "./utils.js";
 import { getDebugMode } from "../config.js";
 import CONFIG from "../config.js";
 import { clearPositions } from "./pnlHandler.js";
-import { updateBalanceUI } from "./dashboard.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
 const maxAttempts = 3;
 
@@ -209,8 +207,10 @@ export async function resetAccount(amount) {
         throw new Error("Failed to fetch portfolio: " + error.message);
     }
     clearPositions();
-    if (document.querySelector("#TrenchersPaperTrading") !== null)
+    if (document.querySelector("#TrenchersPaperTrading") !== null) {
+      const { updateBalanceUI } = await import("./dashboard.js");
       updateBalanceUI(true);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? `[API.js] ${message}` : message, "error");
@@ -260,15 +260,17 @@ export async function login(username, password) {
 }
 
 // RegisterHandler.js
-export async function register(username, password) {
+export async function register(username, password, initialBalance) {
   try {
+    let balance = initialBalance;
     let response;
     if (!username || !password)
       throw new Error("Username and password are required.");
     if (password.length < 6)
       throw new Error("Password must be at least 6 characters.");
+    if (typeof balance != "number") balance = Number(balance);
 
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
@@ -277,14 +279,16 @@ export async function register(username, password) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ username, password, balance }),
           signal: controller.signal,
         });
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
         clearTimeout(timeout);
+        if (!response.ok) {
+          if (response.status >= 500)
+            throw new Error(`Server responded with status ${response.status}`);
+        } else break;
       } catch (error) {
-        if (attempt === 1)
+        if (attempt === maxAttempts)
           throw new Error("Registration failed with error: " + error.message);
       }
     }

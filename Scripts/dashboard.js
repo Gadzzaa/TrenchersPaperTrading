@@ -30,11 +30,6 @@ import {
   getFromStorage,
 } from "./utils.js";
 
-// LOCAL ONLY:
-import { login, register } from "./API.js";
-
-import { USE_LOCAL } from "../config.js";
-
 let currentContract = null;
 let currentPreset = null;
 
@@ -51,10 +46,6 @@ async function init() {
       `${animation / 10}s`,
     );
   });
-
-  if (USE_LOCAL) {
-    login("TestingUser", "Parola"); // TODO: remove this line in production
-  }
 
   const isSessionValid = await checkSession();
   if (!isSessionValid) {

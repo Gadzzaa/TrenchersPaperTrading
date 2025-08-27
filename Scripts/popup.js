@@ -13,10 +13,12 @@ let tokenListContainer,
   solBalance,
   accountId,
   accountResets,
+  resetsWhenText,
   subscriptionType,
   subscriptionNextPayment,
   subscriptionPrice,
-  subscriptionMethod;
+  subscriptionMethod,
+  versionInfo;
 const barWidth = 30;
 const tokens = [];
 
@@ -100,10 +102,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   tokenListContainer = document.getElementById("tokenList");
   accountId = document.getElementById("id");
   accountResets = document.getElementById("resets");
+  resetsWhenText = document.getElementById("resetsWhenText");
   subscriptionType = document.getElementById("subscriptionType");
   subscriptionNextPayment = document.getElementById("subscriptionStatus");
   subscriptionPrice = document.getElementById("price");
   subscriptionMethod = document.getElementById("method");
+  versionInfo = document.getElementById("versionInfo");
 
   await init();
 
@@ -113,24 +117,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("loginButton").addEventListener("click", async () => {
-    login(usernameInput.value, passwordInput.value)
-      .then(async () => {
-        await loadAPIData();
-      })
+    await login(usernameInput.value, passwordInput.value)
       .catch((err) => {
         console.error("Login failed:", err);
+      })
+      .finally(async () => {
+        await loadAPIData();
       });
   });
 
   document
     .getElementById("registerButton")
     .addEventListener("click", async () => {
-      register(usernameInput.value, passwordInput.value)
-        .then(async () => {
-          await loadAPIData();
-        })
+      await register(usernameInput.value, passwordInput.value, 50)
         .catch((err) => {
           console.error("Registration failed:", err);
+        })
+        .finally(async () => {
+          await loadAPIData();
         });
     });
 
@@ -237,7 +241,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function loadAPIData() {
   const popupData = await fetchPopupData();
-  const { userId, username, resets, portfolio, subscription } = popupData;
+  const { userId, username, resets, portfolio, subscriptionInfo, version } =
+    popupData;
+  let subscription = subscriptionInfo.subscription;
   if (!userId) throw new Error("No user ID returned from API");
   if (!username) throw new Error("No username returned from API");
   if (resets == null) throw new Error("No resets count returned from API");
@@ -251,11 +257,34 @@ async function loadAPIData() {
   }
   if (accountUser.textContent != username) accountUser.textContent = username;
   accountId.textContent = userId;
-  accountResets.textContent = resets + " / 5";
+  accountResets.textContent = resets.resetsNumber + " / 5";
+  startCountdown(resets.lastReset);
   subscriptionType.textContent = subscription.status;
   subscriptionNextPayment.textContent = subscription.expiresAt;
-  subscriptionPrice.textContent = `${subscription.currency} ${subscription.price}`;
-  subsciptionMethod.textContent = subscription.paymentMethodType;
+  subscriptionPrice.textContent = `${subscription.currency}${parseFloat(subscription.price).toFixed(2)}`;
+  subscriptionMethod.textContent = subscription.paymentMethodType;
+  versionInfo.textContent = version;
+}
+function getTimeUntilNextReset(lastReset) {
+  const last = new Date(lastReset);
+  const next = new Date(last.getTime() + 24 * 60 * 60 * 1000); // +24h
+  const now = new Date();
+  let diffMs = next - now;
+  if (diffMs < 0) diffMs = 0; // already passed
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+  return { hours, minutes, seconds };
+}
+function startCountdown(lastReset) {
+  function update() {
+    const { hours, minutes, seconds } = getTimeUntilNextReset(lastReset);
+    resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
+  }
+  update(); // initial call
+  setInterval(update, 1000 * 30); // update every minute
 }
 function setDisplay(index) {
   const carousel = document.querySelector(".pageCarousel");
