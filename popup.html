@@ -16,6 +16,22 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body>
+    <div id="dialogOverlay" class="hidden">
+      <div id="dialogBackground"></div>
+      <div id="dialogBox">
+        <div id="dialogHeader"></div>
+        <div id="dialogBody"></div>
+        <div id="dialogInput" class="hidden">
+          <span id="warning" class="hidden"></span>
+          <input type="number" id="dialogTextInput" min="0" max="100" />
+          <button id="confirmButton">Confirm</button>
+        </div>
+        <div id="dialogButtons" class="hidden">
+          <button id="confirmButton">Confirm</button>
+          <button id="cancelButton">Cancel</button>
+        </div>
+      </div>
+    </div>
     <div id="loginPanel">
       <div id="welcomeText">
         <h1>Welcome to</h1>
