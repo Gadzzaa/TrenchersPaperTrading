@@ -271,12 +271,13 @@ async function loadAPIData() {
   if (accountUser.textContent != username) accountUser.textContent = username;
   accountId.textContent = userId;
   accountResets.textContent = resets.resetsNumber + " / 5";
-  startCountdown(resets.lastReset);
+  console.log("Last reset:", resets.lastReset);
   subscriptionType.textContent = subscription.status;
   subscriptionNextPayment.textContent = subscription.expiresAt;
   subscriptionPrice.textContent = `${subscription.currency}${parseFloat(subscription.price).toFixed(2)}`;
   subscriptionMethod.textContent = subscription.paymentMethodType;
   versionInfo.textContent = version;
+  startCountdown(resets.lastReset);
 }
 function getTimeUntilNextReset(lastReset) {
   const last = new Date(lastReset);
@@ -287,13 +288,12 @@ function getTimeUntilNextReset(lastReset) {
 
   const hours = Math.floor(diffMs / (1000 * 60 * 60));
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-  return { hours, minutes, seconds };
+  return { hours, minutes };
 }
 function startCountdown(lastReset) {
   function update() {
-    const { hours, minutes, seconds } = getTimeUntilNextReset(lastReset);
+    const { hours, minutes } = getTimeUntilNextReset(lastReset);
     resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
   }
   update(); // initial call

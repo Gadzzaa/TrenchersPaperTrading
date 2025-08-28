@@ -208,6 +208,7 @@ export async function resetAccount(amount) {
       const { updateBalanceUI } = await import("./dashboard.js");
       updateBalanceUI(true);
     }
+    return { success: true, resetsRemaining: response.resetsLeft };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? `[API.js] ${message}` : message, "error");
