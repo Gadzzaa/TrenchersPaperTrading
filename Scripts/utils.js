@@ -117,7 +117,9 @@ export function enableUI() {
 
 export function disableUI() {
   const blocker = document.getElementById("loginBlocker");
+  const loginPanel = document.getElementById("loginPanel");
   if (blocker) blocker.style.display = "flex";
+  if (loginPanel) loginPanel.style.display = "flex";
 }
 
 // Requests from inject.js
@@ -208,5 +210,11 @@ export function getFromStorage(key) {
 export function setToStorage(key, value) {
   return new Promise((resolve) => {
     chrome.storage.local.set({ [key]: value }, () => resolve());
+  });
+}
+
+export function removeFromStorage(key) {
+  return new Promise((resolve) => {
+    chrome.storage.local.remove([key], () => resolve());
   });
 }

@@ -1,8 +1,10 @@
 import {
   showNotification,
   enableUI,
+  disableUI,
   getFromStorage,
   setToStorage,
+  removeFromStorage,
 } from "./utils.js";
 import { getDebugMode } from "../config.js";
 import CONFIG from "../config.js";
@@ -18,24 +20,12 @@ const feeAmount = 0;
 export async function checkSession() {
   try {
     let response;
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      try {
-        response = await fetch(API_BASE_URL + "/api/check-session", {
-          method: "GET",
-          headers: await getAuthHeaders(),
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
-        else break;
-      } catch (error) {
-        if (attempt === maxAttempts)
-          throw new Error("Failed to check session: " + error);
-      }
-    }
+    response = await fetch(API_BASE_URL + "/api/check-session", {
+      method: "GET",
+      headers: await getAuthHeaders(),
+    });
+    if (!response?.ok)
+      throw new Error(`Server responded with status ${response.status}`);
     return true;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -221,6 +211,37 @@ export async function resetAccount(amount) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? `[API.js] ${message}` : message, "error");
+  }
+}
+
+// LogoutHandler.js
+export async function logout() {
+  try {
+    let response;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        response = await fetch(API_BASE_URL + `/api/logout`, {
+          method: "DELETE",
+          headers: await getAuthHeaders(),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
+        else break;
+      } catch (error) {
+        if (attempt === maxAttempts)
+          throw new Error("Logout failed with error: " + error.message);
+      }
+    }
+    removeFromStorage("sessionToken");
+    removeFromStorage("username");
+    disableUI();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
   }
 }
 

@@ -2,6 +2,7 @@ import {
   resetAccount,
   login,
   register,
+  logout,
   checkSession,
   fetchPopupData,
 } from "./API.js";
@@ -18,7 +19,8 @@ let tokenListContainer,
   subscriptionNextPayment,
   subscriptionPrice,
   subscriptionMethod,
-  versionInfo;
+  versionInfo,
+  defaultButton;
 const barWidth = 30;
 const tokens = [];
 
@@ -123,6 +125,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
       .finally(async () => {
         await loadAPIData();
+        moveIndicator(defaultButton);
+        setDisplay(defaultButton.dataset.index);
       });
   });
 
@@ -135,7 +139,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
         .finally(async () => {
           await loadAPIData();
+          moveIndicator(defaultButton);
+          setDisplay(defaultButton.dataset.index);
         });
+    });
+  document
+    .getElementById("logoutButton")
+    .addEventListener("click", async () => {
+      await logout().catch((err) => {
+        console.error("Logout failed:", err);
+      });
     });
 
   showPasswordButton.addEventListener("click", () => {
@@ -234,7 +247,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Default active footer button
-  const defaultButton = document.querySelector(".footerButton.active");
+  defaultButton = document.querySelector(".footerButton.active");
   moveIndicator(defaultButton);
   setDisplay(defaultButton.dataset.index);
 });
