@@ -27,9 +27,10 @@ export async function checkSession() {
           headers: await getAuthHeaders(),
           signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        clearTimeout(timeout);
+        else break;
       } catch (error) {
         if (attempt === maxAttempts)
           throw new Error("Failed to check session: " + error);
@@ -56,9 +57,10 @@ export async function fetchPopupData() {
           headers: await getAuthHeaders(),
           signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        clearTimeout(timeout);
+        else break;
       } catch (error) {
         if (attempt === maxAttempts)
           throw new Error("Failed to fetch popup data: " + error.message);
@@ -104,9 +106,10 @@ export async function buyToken(
           body: JSON.stringify(payload),
           signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        clearTimeout(timeout);
+        else break;
       } catch (error) {
         if (attempt === maxAttempts)
           throw new Error("Buy failed with error: " + error.message);
@@ -167,9 +170,10 @@ export async function getPortfolio() {
           headers: await getAuthHeaders(),
           signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        clearTimeout(timeout);
+        else break;
       } catch (error) {
         if (attempt === maxAttempts)
           throw new Error("Failed to fetch portfolio: " + error.message);
@@ -190,21 +194,24 @@ export async function resetAccount(amount) {
     let response;
     if (isNaN(amount) || amount < 1)
       throw new Error("Invalid amount — must be a number ≥ 1");
-    try {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
-      response = await fetch(API_BASE_URL + `/api/reset`, {
-        method: "PATCH",
-        headers: await getAuthHeaders(),
-        body: json.stringify({ amount }),
-        signal: controller.signal,
-      });
-      if (!response?.ok)
-        throw new Error(`Server responded with status ${response.status}`);
-      clearTimeout(timeout);
-    } catch (error) {
-      if (attempt === maxAttempts)
-        throw new Error("Failed to fetch portfolio: " + error.message);
+      try {
+        response = await fetch(API_BASE_URL + `/api/reset`, {
+          method: "PATCH",
+          headers: await getAuthHeaders(),
+          body: json.stringify({ amount }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
+        else break;
+      } catch (error) {
+        if (attempt === maxAttempts)
+          throw new Error("Failed to fetch portfolio: " + error.message);
+      }
     }
     clearPositions();
     if (document.querySelector("#TrenchersPaperTrading") !== null) {
@@ -236,9 +243,10 @@ export async function login(username, password) {
           body: JSON.stringify({ username, password }),
           signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        clearTimeout(timeout);
+        else break;
       } catch (error) {
         if (attempt === maxAttempts)
           throw new Error("Login failed with error: " + error.message);
@@ -283,10 +291,9 @@ export async function register(username, password, initialBalance) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (!response.ok) {
-          if (response.status >= 500)
-            throw new Error(`Server responded with status ${response.status}`);
-        } else break;
+        if (!response?.ok)
+          throw new Error(`Server responded with status ${response.status}`);
+        else break;
       } catch (error) {
         if (attempt === maxAttempts)
           throw new Error("Registration failed with error: " + error.message);
@@ -337,14 +344,13 @@ async function sellToken(
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
-      if (!response?.ok) {
-        return {
-          error: "Server responded with status " + response.status,
-        };
-      }
       clearTimeout(timeout);
+      if (!response?.ok)
+        throw new Error("Server responded with status " + response.status);
+      else break;
     } catch (error) {
-      if (attempt === maxAttempts) return { error: error.message }; // Simplified since it will pass through sellByPercentage
+      if (attempt === maxAttempts)
+        throw new Error("Sell failed with error: " + error);
     }
   }
 
