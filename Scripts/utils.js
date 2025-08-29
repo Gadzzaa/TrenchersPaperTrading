@@ -112,14 +112,33 @@ export function enableUI() {
   const blocker = document.getElementById("loginBlocker");
   const loginPanel = document.getElementById("loginPanel");
   if (blocker) blocker.style.display = "none";
-  if (loginPanel) loginPanel.style.display = "none";
+  if (loginPanel) loginPanel.classList.add("loginHidden");
 }
 
 export function disableUI() {
   const blocker = document.getElementById("loginBlocker");
   const loginPanel = document.getElementById("loginPanel");
   if (blocker) blocker.style.display = "flex";
-  if (loginPanel) loginPanel.style.display = "flex";
+  if (loginPanel) loginPanel.classList.remove("loginHidden");
+}
+
+export function startLoadingDots(button) {
+  let dots = 0;
+  button.dataset.originalText = button.textContent; // save original text
+  document.body.style.pointerEvents = "none";
+
+  const interval = setInterval(() => {
+    dots = (dots + 1) % 4; // 0 → 1 → 2 → 3 → 0
+    button.textContent = ".".repeat(dots);
+  }, 250);
+
+  return interval; // return interval ID so you can clear it later
+}
+
+export function stopLoadingDots(button, interval) {
+  clearInterval(interval);
+  button.textContent = button.dataset.originalText;
+  document.body.style.pointerEvents = "auto";
 }
 
 // Requests from inject.js

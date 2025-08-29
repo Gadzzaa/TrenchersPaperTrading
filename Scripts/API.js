@@ -286,6 +286,7 @@ export async function login(username, password) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+    throw error;
   }
 }
 
@@ -333,6 +334,7 @@ export async function register(username, password, initialBalance) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+    throw error;
   }
 }
 

@@ -7,6 +7,12 @@ import {
   fetchPopupData,
 } from "./API.js";
 import { getDebugMode, setDebugMode } from "../config.js";
+import {
+  disableUI,
+  enableUI,
+  startLoadingDots,
+  stopLoadingDots,
+} from "./utils.js";
 let tokenListContainer,
   indicator,
   usernameText,
@@ -78,10 +84,10 @@ async function init() {
   });
   const validSession = await checkSession();
   if (!validSession) {
-    loginPanel.classList.remove("hideLoginPanel");
+    disableUI();
     return;
   }
-  loginPanel.classList.add("hideLoginPanel");
+  enableUI();
   await loadAPIData();
 }
 
@@ -110,6 +116,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   subscriptionPrice = document.getElementById("price");
   subscriptionMethod = document.getElementById("method");
   versionInfo = document.getElementById("versionInfo");
+  const loginButton = document.getElementById("loginButton");
+  const registerButton = document.getElementById("registerButton");
+  const logoutButton = document.getElementById("logoutButton");
 
   await init();
 
@@ -118,38 +127,52 @@ document.addEventListener("DOMContentLoaded", async () => {
     accountUser.textContent = res.username || "Guest";
   });
 
-  document.getElementById("loginButton").addEventListener("click", async () => {
+  loginButton.addEventListener("click", async () => {
+    const interval = startLoadingDots(loginButton);
+
     await login(usernameInput.value, passwordInput.value)
-      .catch((err) => {
-        console.error("Login failed:", err);
-      })
-      .finally(async () => {
+      .then(async () => {
         await loadAPIData();
         moveIndicator(defaultButton);
         setDisplay(defaultButton.dataset.index);
+      })
+      .catch((err) => {
+        console.error("Login failed:", err);
+      })
+      .finally(() => {
+        stopLoadingDots(loginButton, interval);
       });
   });
 
-  document
-    .getElementById("registerButton")
-    .addEventListener("click", async () => {
-      await register(usernameInput.value, passwordInput.value, 50)
-        .catch((err) => {
-          console.error("Registration failed:", err);
-        })
-        .finally(async () => {
-          await loadAPIData();
-          moveIndicator(defaultButton);
-          setDisplay(defaultButton.dataset.index);
-        });
-    });
-  document
-    .getElementById("logoutButton")
-    .addEventListener("click", async () => {
-      await logout().catch((err) => {
-        console.error("Logout failed:", err);
+  registerButton.addEventListener("click", async () => {
+    const interval = startLoadingDots(registerButton);
+    await register(usernameInput.value, passwordInput.value, 50)
+      .then(async () => {
+        await loadAPIData();
+        moveIndicator(defaultButton);
+        setDisplay(defaultButton.dataset.index);
+      })
+      .catch((err) => {
+        console.error("Registration failed:", err);
+      })
+      .finally(() => {
+        stopLoadingDots(registerButton, interval);
       });
-    });
+  });
+  logoutButton.addEventListener("click", async () => {
+    const interval = startLoadingDots(logoutButton);
+    await logout()
+      .then(() => {
+        moveIndicator(defaultButton);
+        setDisplay(defaultButton.dataset.index);
+      })
+      .catch((err) => {
+        console.error("Logout failed:", err);
+      })
+      .finally(() => {
+        stopLoadingDots(logoutButton, interval);
+      });
+  });
 
   showPasswordButton.addEventListener("click", () => {
     if (passwordInput.type === "password") {
@@ -256,6 +279,7 @@ async function loadAPIData() {
   const popupData = await fetchPopupData();
   const { userId, username, resets, portfolio, subscriptionInfo, version } =
     popupData;
+  console.log("Popup Data:", popupData);
   let subscription = subscriptionInfo.subscription;
   if (!userId) throw new Error("No user ID returned from API");
   if (!username) throw new Error("No username returned from API");

@@ -18,12 +18,18 @@ body button {
   will-change: transform;
 }
 
-.hideLoginPanel {
+.hidden {
   display: none !important;
 }
 
-.hidden {
-  display: none !important;
+.fade {
+  transition: opacity var(--anim-time) ease;
+  opacity: 1;
+}
+
+.fade.loginHidden {
+  opacity: 0;
+  pointer-events: none; /* prevent clicks during fade out */
 }
 
 #dialogOverlay {
