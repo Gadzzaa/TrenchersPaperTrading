@@ -29,59 +29,80 @@ let tokenListContainer,
   defaultButton;
 const barWidth = 30;
 const tokens = [];
+const settings = [
+  {
+    key: "username",
+    default: "Guest",
+    apply: (value) => {
+      usernameText.textContent = value;
+      accountUser.textContent = value;
+    },
+  },
+  {
+    key: "theme",
+    default: "dark",
+    apply: (value) => {
+      const button = document.getElementById(value + "Theme");
+      button?.classList.add("active");
+      document.documentElement.setAttribute("data-theme", value);
+    },
+  },
+  {
+    key: "volume",
+    default: 1.0,
+    apply: (value) => {
+      const slider = document.getElementById("volumeSlider");
+      if (slider) slider.value = value * 100;
+    },
+  },
+  {
+    key: "animation",
+    default: 3,
+    apply: (value) => {
+      const slider = document.getElementById("animationSlider");
+      if (slider) slider.value = value;
+      document.documentElement.style.setProperty(
+        "--anim-time",
+        `${value / 10}s`,
+      );
+      setQualityPreset(value);
+    },
+  },
+  {
+    key: "saveWindowPos",
+    default: false,
+    apply: (value) => {
+      const checkbox = document.getElementById("saveWindowBox");
+      if (checkbox) checkbox.checked = value;
+    },
+  },
+  {
+    key: "pnlSlider",
+    default: 500,
+    apply: (value) => {
+      const slider = document.getElementById("pnlSlider");
+      if (slider) slider.value = value / 100;
+    },
+  },
+  {
+    key: "debugMode",
+    default: false,
+    apply: (value) => {
+      const button = document.getElementById("debugButton");
+      if (!button) return;
+      button.classList.toggle("active", value);
+      setDebugMode(value);
+    },
+  },
+];
 
 async function init() {
   const loginPanel = document.getElementById("loginPanel");
-
-  chrome.storage.local.get("theme", ({ theme }) => {
-    if (!theme) theme = "dark";
-    const button = document.getElementById(theme + "Theme");
-    button.classList.add("active");
-    document.documentElement.setAttribute("data-theme", theme);
-  });
-
-  chrome.storage.local.get("volume", ({ volume }) => {
-    if (!volume) volume = 1.0;
-    const volumeSlider = document.getElementById("volumeSlider");
-    volumeSlider.value = volume * 100;
-  });
-
-  chrome.storage.local.get("animation", ({ animation }) => {
-    if (!animation) animation = 3;
-    const animationSlider = document.getElementById("animationSlider");
-    animationSlider.value = animation;
-    document.documentElement.style.setProperty(
-      "--anim-time",
-      `${animation / 10}s`,
-    );
-    setQualityPreset(animation);
-  });
-
-  chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
-    if (!saveWindowPos) saveWindowPos = false;
-    const saveWindowBox = document.getElementById("saveWindowBox");
-    saveWindowBox.checked = saveWindowPos;
-  });
-
-  chrome.storage.local.get("pnlSlider", ({ pnlSlider }) => {
-    if (!pnlSlider) pnlSlider = 500;
-    const pnlSliderEl = document.getElementById("pnlSlider");
-    pnlSliderEl.value = pnlSlider / 100;
-  });
-
-  chrome.storage.local.get("debugMode", ({ debugMode }) => {
-    if (!debugMode) debugMode = false;
-    const debugButton = document.getElementById("debugButton");
-    switch (debugMode) {
-      case true:
-        debugButton.classList.add("active");
-        setDebugMode(true);
-        break;
-      case false:
-        debugButton.classList.remove("active");
-        setDebugMode(false);
-        break;
-    }
+  settings.forEach(({ key, default: def, apply }) => {
+    chrome.storage.local.get(key, ({ [key]: value }) => {
+      if (value === undefined) value = def;
+      apply(value);
+    });
   });
   const validSession = await checkSession();
   if (!validSession) {
@@ -122,11 +143,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const logoutButton = document.getElementById("logoutButton");
 
   await init();
-
-  chrome.storage.local.get(["username"], (res) => {
-    usernameText.textContent = res.username || "Guest";
-    accountUser.textContent = res.username || "Guest";
-  });
 
   loginButton.addEventListener("click", async () => {
     const interval = startLoadingDots(loginButton);
@@ -210,32 +226,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   });
-
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.theme) {
-      document.documentElement.setAttribute(
-        "data-theme",
-        changes.theme.newValue,
-      );
-    }
-  });
-
   volumeSlider.addEventListener("input", function () {
     chrome.storage.local.set({ volume: parseFloat(this.value) / 100 });
   });
 
   animationSlider.addEventListener("input", function () {
     chrome.storage.local.set({ animation: this.value });
-  });
-
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.animation) {
-      document.documentElement.style.setProperty(
-        "--anim-time",
-        `${changes.animation.newValue / 10}s`,
-      );
-      setQualityPreset(changes.animation.newValue);
-    }
   });
 
   saveWindowBox.addEventListener("change", (e) => {
@@ -275,6 +271,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   defaultButton = document.querySelector(".footerButton.active");
   moveIndicator(defaultButton);
   setDisplay(defaultButton.dataset.index);
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.theme) {
+      document.documentElement.setAttribute(
+        "data-theme",
+        changes.theme.newValue,
+      );
+    }
+    if (area === "local" && changes.animation) {
+      document.documentElement.style.setProperty(
+        "--anim-time",
+        `${changes.animation.newValue / 10}s`,
+      );
+      setQualityPreset(changes.animation.newValue);
+    }
+  });
 });
 
 async function loadAPIData() {
