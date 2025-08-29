@@ -54,6 +54,7 @@ async function init() {
       "--anim-time",
       `${animation / 10}s`,
     );
+    setQualityPreset(animation);
   });
 
   chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
@@ -233,6 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         "--anim-time",
         `${changes.animation.newValue / 10}s`,
       );
+      setQualityPreset(changes.animation.newValue);
     }
   });
 
@@ -276,6 +278,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function loadAPIData() {
+  tokenListContainer.innerHTML = "";
+  tokens.length = 0;
   const popupData = await fetchPopupData();
   const { userId, username, resets, portfolio, subscriptionInfo, version } =
     popupData;
@@ -289,9 +293,11 @@ async function loadAPIData() {
   localStorage.setItem("cachedSolBalance", portfolio.solBalance.toFixed(2));
   localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
   // TODO: Calculate total PNL
-  for (const [mint] of Object.entries(portfolio.tokens)) {
-    addToken(mint, mint.name, mint.symbol, mint.amount, mint.image);
+
+  for (const [mint, token] of Object.entries(portfolio.tokens)) {
+    addToken(mint, token.name, token.symbol, token.amount, token.image);
   }
+
   if (accountUser.textContent != username) accountUser.textContent = username;
   accountId.textContent = userId;
   accountResets.textContent = resets.resetsNumber + " / 5";
@@ -329,10 +335,20 @@ function setDisplay(index) {
   /*  document.querySelector(".menuItem.active")?.classList.remove("active");
   document.getElementById(button.dataset.menu).classList.add("active"); */
   const itemWidth = items[0].offsetWidth;
-  carousel.scrollTo({
-    left: itemWidth * index,
-    behavior: "smooth",
-  });
+  const animTime = getComputedStyle(document.documentElement)
+    .getPropertyValue("--anim-time")
+    .trim();
+
+  if (parseFloat(animTime) * 10 < 3)
+    carousel.scrollTo({
+      left: itemWidth * index,
+      behavior: "instant",
+    });
+  else
+    carousel.scrollTo({
+      left: itemWidth * index,
+      behavior: "smooth",
+    });
 }
 
 function addToken(
@@ -385,6 +401,29 @@ function moveIndicator(el) {
 
   const barLeft = elCenter - parentLeft - barWidth / 2;
 
-  if (!indicator) console.error("Indicator not found.");
+  if (!indicator) {
+    console.error("Indicator not found.");
+    return;
+  }
   indicator.style.left = `${barLeft}px`;
+}
+
+function setQualityPreset(qualityValue) {
+  document.querySelector(".pageCarousel").style.scrollBehavior =
+    qualityValue < 3 ? "auto" : "smooth";
+  const buttons = document.querySelectorAll("button");
+  if (qualityValue < 2) {
+    buttons.forEach((btn) => btn.style.removeProperty("will-change"));
+  } else {
+    buttons.forEach(
+      (btn) =>
+        (btn.style.willChange =
+          "transform, background-color, color, box-shadow, border-color"),
+    );
+  }
+  if (qualityValue < 1) {
+    buttons.forEach((btn) => btn.classList.add("no-shadow"));
+  } else {
+    buttons.forEach((btn) => btn.classList.remove("no-shadow"));
+  }
 }

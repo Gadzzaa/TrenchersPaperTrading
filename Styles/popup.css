@@ -13,11 +13,9 @@ body {
   position: relative;
 }
 
-html button,
-body button {
-  will-change: transform;
+button.no-shadow {
+  box-shadow: none !important;
 }
-
 .hidden {
   display: none !important;
 }
