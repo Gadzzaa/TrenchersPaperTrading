@@ -46,7 +46,7 @@ body.edit-mode::before {
   font-weight: bold;
   padding: 2px 8px;
   border-radius: 6px;
-  z-index: 10000;
+  z-index: 25;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   font-family: "Poppins", sans-serif;
   animation: slideDown 0.4s ease-out forwards;
@@ -63,7 +63,7 @@ body.edit-mode::after {
   border-radius: 50%;
   box-shadow: 0 0 8px rgb(var(--blue));
   animation: pulseDot 1.2s infinite ease-in-out;
-  z-index: 9999;
+  z-index: 25;
 }
 
 body.edit-mode-exit::before {
@@ -120,6 +120,7 @@ body.edit-mode-exit::before {
   text-align: center;
   display: inline-block;
   overflow: hidden;
+  z-index: 50;
 }
 
 #Header {
@@ -204,6 +205,8 @@ body.edit-mode-exit::before {
   margin: auto;
   position: relative;
   transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  pointer-events: auto !important;
 }
 
 #closeMark {
@@ -416,7 +419,7 @@ body.edit-mode-exit::before {
   font-family: "Poppins", sans-serif;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 10000;
+  z-index: 100;
   opacity: 0;
   transform: translateY(5px);
   transition:
@@ -457,7 +460,7 @@ body.edit-mode-exit::before {
   border-radius: var(--radius-sm);
   font-size: 0.7rem;
   white-space: nowrap;
-  z-index: 1000;
+  z-index: 25;
   margin-bottom: var(--spacing-xs);
   opacity: 0;
   animation: tooltipFadeIn 0.2s ease forwards;
@@ -533,10 +536,10 @@ body.edit-mode-exit::before {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999;
+  z-index: 25;
   font-family: "Poppins", sans-serif;
   font-size: 0.9rem;
-  pointer-events: all;
+  pointer-events: none;
   user-select: none;
 }
 
