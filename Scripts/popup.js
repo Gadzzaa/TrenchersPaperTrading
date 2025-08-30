@@ -97,7 +97,6 @@ const settings = [
 ];
 
 async function init() {
-  const loginPanel = document.getElementById("loginPanel");
   settings.forEach(({ key, default: def, apply }) => {
     chrome.storage.local.get(key, ({ [key]: value }) => {
       if (value === undefined) value = def;
@@ -111,6 +110,7 @@ async function init() {
   }
   enableUI();
   await loadAPIData();
+  document.body.style.removeProperty("pointer-events");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
