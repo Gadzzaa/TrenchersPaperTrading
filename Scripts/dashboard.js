@@ -38,7 +38,7 @@ const settings = [
     key: "theme",
     default: "dark",
     apply: (value) => {
-      document.documentElement.setAttribute("data-theme", theme);
+      document.documentElement.setAttribute("data-theme", value);
     },
   },
   {
@@ -47,7 +47,7 @@ const settings = [
     apply: (value) => {
       document.documentElement.style.setProperty(
         "--anim-time",
-        `${animation / 10}s`,
+        `${value / 10}s`,
       );
     },
   },
@@ -64,7 +64,6 @@ async function init() {
   const isSessionValid = await checkSession();
   if (!isSessionValid) {
     clearPositions();
-    localStorage.removeItem("sessionToken");
     disableUI();
     throw new Error("Session token is invalid.");
   }
@@ -73,6 +72,8 @@ async function init() {
   if (currentPreset == null || currentPreset === "undefined") {
     applyPreset("preset1");
   } else applyPreset(currentPreset);
+
+  document.body.style.removeProperty("pointer-events");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
