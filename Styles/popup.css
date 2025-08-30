@@ -1051,6 +1051,22 @@ input[type="number"] {
   gap: 5px;
 }
 
+#id {
+  font-size: 12px;
+  background: rgb(var(--surface0));
+  color: rgb(var(--surface0));
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 1px;
+}
+
+#id:active {
+  background: transparent;
+  color: rgb(var(--subtext1));
+}
+
 #accountFooter {
   width: 100%;
   display: flex;
