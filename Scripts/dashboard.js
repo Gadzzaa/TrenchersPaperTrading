@@ -33,18 +33,32 @@ import {
 let currentContract = null;
 let currentPreset = null;
 
-async function init() {
-  chrome.storage.local.get("theme", ({ theme }) => {
-    if (!theme) theme = "dark";
-    document.documentElement.setAttribute("data-theme", theme);
-  });
+const settings = [
+  {
+    key: "theme",
+    default: "dark",
+    apply: (value) => {
+      document.documentElement.setAttribute("data-theme", theme);
+    },
+  },
+  {
+    key: "animation",
+    default: 3,
+    apply: (value) => {
+      document.documentElement.style.setProperty(
+        "--anim-time",
+        `${animation / 10}s`,
+      );
+    },
+  },
+];
 
-  chrome.storage.local.get("animation", ({ animation }) => {
-    if (!animation) animation = 3;
-    document.documentElement.style.setProperty(
-      "--anim-time",
-      `${animation / 10}s`,
-    );
+async function init() {
+  settings.forEach(({ key, default: def, apply }) => {
+    chrome.storage.local.get(key, ({ [key]: value }) => {
+      if (value === undefined) value = def;
+      apply(value);
+    });
   });
 
   const isSessionValid = await checkSession();
@@ -76,18 +90,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           changes.theme.newValue,
         );
       }
-    });
-
-    chrome.storage.onChanged.addListener((changes, area) => {
       if (area === "local" && changes.animation) {
         document.documentElement.style.setProperty(
           "--anim-time",
           `${changes.animation.newValue / 10}s`,
         );
       }
-    });
-
-    chrome.storage.onChanged.addListener((changes, area) => {
       if (area === "local" && changes.pnlSlider) {
         changeDelay(changes.updateDelay.newValue);
       }
