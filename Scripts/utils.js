@@ -61,7 +61,7 @@ export function showButtonLoading(button) {
 }
 
 // NotificationSystem.js
-export function showNotification(message, type) {
+export function showNotification(message, type, sound = true) {
   const typeClasses = {
     success: "✅",
     error: "❌",
@@ -74,18 +74,19 @@ export function showNotification(message, type) {
     },
     "*",
   );
-  switch (type) {
-    case "success":
-      safePlay(type);
-      break;
-    case "error":
-      safePlay(type);
-      console.error(message);
-      break;
-    case "info":
-      // No sound for info
-      break;
-  }
+  if (sound)
+    switch (type) {
+      case "success":
+        safePlay(type);
+        break;
+      case "error":
+        safePlay(type);
+        console.error(message);
+        break;
+      case "info":
+        // No sound for info
+        break;
+    }
 }
 
 function safePlay(type) {

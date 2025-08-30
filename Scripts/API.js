@@ -29,7 +29,11 @@ export async function checkSession() {
     return true;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+    showNotification(
+      getDebugMode() ? "[API.js] " + message : message,
+      "error",
+      false,
+    );
   }
   return false;
 }
