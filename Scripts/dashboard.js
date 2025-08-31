@@ -65,8 +65,10 @@ async function init() {
   if (!isSessionValid) {
     clearPositions();
     disableUI();
-    throw new Error("Session token is invalid.");
+    return;
   }
+
+  enableUI();
 
   currentPreset = getUsingPreset();
   if (currentPreset == null || currentPreset === "undefined") {

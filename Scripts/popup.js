@@ -155,7 +155,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         setDisplay(defaultButton.dataset.index);
       })
       .catch((err) => {
-        console.error("Login failed:", err);
+        showDialog({
+          title: "Login Failed",
+          message: err.message || "An error occurred during login.",
+          type: "Info",
+        });
       })
       .finally(() => {
         stopLoadingDots(loginButton, interval);
@@ -192,7 +196,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             setDisplay(defaultButton.dataset.index);
           })
           .catch((err) => {
-            console.error("Registration failed:", err);
+            showDialog({
+              title: "Registration Failed",
+              message: err.message || "An error occurred during registration.",
+              type: "Info",
+            });
           })
           .finally(() => {
             stopLoadingDots(registerButton, interval);
@@ -208,7 +216,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         setDisplay(defaultButton.dataset.index);
       })
       .catch((err) => {
-        console.error("Logout failed:", err);
+        showDialog({
+          title: "Logout Failed",
+          message: err.message || "An error occurred during logout.",
+          type: "Info",
+        });
       })
       .finally(() => {
         stopLoadingDots(logoutButton, interval);
@@ -246,7 +258,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             setDisplay(defaultButton.dataset.index);
           })
           .catch((err) => {
-            console.error("Account reset failed:", err);
+            showDialog({
+              title: "Reset Failed",
+              message: err.message || "An error occurred during reset.",
+              type: "Info",
+            });
           })
           .finally(() => {
             stopLoadingDots(resetButton, interval);

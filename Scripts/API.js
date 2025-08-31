@@ -215,6 +215,7 @@ export async function resetAccount(amount) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? `[API.js] ${message}` : message, "error");
+    throw error;
   }
 }
 
@@ -246,6 +247,7 @@ export async function logout() {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+    throw error;
   }
 }
 
