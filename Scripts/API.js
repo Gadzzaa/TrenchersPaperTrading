@@ -200,10 +200,12 @@ export async function resetAccount(amount) {
           throw new Error(`Server responded with status ${response.status}`);
         else break;
       } catch (error) {
-        if (attempt === maxAttempts)
+        if (attempt === maxAttempts || response.status >= 500)
           throw new Error("Failed to reset account: " + error.message);
       }
     }
+    if (!response.resetsLeft)
+      throw new Error("resetsLeft not received from server");
     clearPositions();
     if (document.querySelector("#TrenchersPaperTrading") !== null) {
       const { updateBalanceUI } = await import("./dashboard.js");

@@ -163,19 +163,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   registerButton.addEventListener("click", async () => {
-    const interval = startLoadingDots(registerButton);
-    await register(usernameInput.value, passwordInput.value, 50)
-      .then(async () => {
-        await loadAPIData();
-        moveIndicator(defaultButton);
-        setDisplay(defaultButton.dataset.index);
-      })
-      .catch((err) => {
-        console.error("Registration failed:", err);
-      })
-      .finally(() => {
-        stopLoadingDots(registerButton, interval);
+    showDialog({
+      title: "Startup Balance",
+      message:
+        "Please enter the amount of SOL you want to start with (minimum 1 SOL):",
+      type: "Input",
+    }).then(async (input) => {
+      if (input === null || input === undefined) return; // User canceled
+      const amount = Number(input);
+      if (isNaN(amount) || amount < 1)
+        showDialog({
+          title: "Invalid Amount",
+          message: "Please enter a valid number greater than or equal to 1.",
+          type: "Info",
+        });
+      showDialog({
+        title: "Register",
+        message:
+          "By registering, you agree to our Terms of Service and Privacy Policy.",
+        type: "Confirm",
+      }).then(async (confirmed) => {
+        if (!confirmed) return;
+        const interval = startLoadingDots(registerButton);
+        await register(usernameInput.value, passwordInput.value, amount)
+          .then(async () => {
+            await loadAPIData();
+            moveIndicator(defaultButton);
+            setDisplay(defaultButton.dataset.index);
+          })
+          .catch((err) => {
+            console.error("Registration failed:", err);
+          })
+          .finally(() => {
+            stopLoadingDots(registerButton, interval);
+          });
       });
+    });
   });
   logoutButton.addEventListener("click", async () => {
     const interval = startLoadingDots(logoutButton);
@@ -214,21 +237,20 @@ document.addEventListener("DOMContentLoaded", async () => {
           "Are you sure you want to reset your account? This action cannot be undone.",
         type: "Confirm",
       }).then(async (confirmed) => {
-        if (confirmed) {
-          const interval = startLoadingDots(resetButton);
-          await resetAccount(amount)
-            .then(async () => {
-              await loadAPIData();
-              moveIndicator(defaultButton);
-              setDisplay(defaultButton.dataset.index);
-            })
-            .catch((err) => {
-              console.error("Account reset failed:", err);
-            })
-            .finally(() => {
-              stopLoadingDots(resetButton, interval);
-            });
-        }
+        if (!confirmed) return;
+        const interval = startLoadingDots(resetButton);
+        await resetAccount(amount)
+          .then(async () => {
+            await loadAPIData();
+            moveIndicator(defaultButton);
+            setDisplay(defaultButton.dataset.index);
+          })
+          .catch((err) => {
+            console.error("Account reset failed:", err);
+          })
+          .finally(() => {
+            stopLoadingDots(resetButton, interval);
+          });
       });
     });
   });
