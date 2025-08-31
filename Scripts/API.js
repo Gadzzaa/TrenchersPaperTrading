@@ -19,13 +19,11 @@ const feeAmount = 0;
 // SessionChecker.js
 export async function checkSession() {
   try {
-    let response;
-    response = await fetch(API_BASE_URL + "/api/check-session", {
+    const response = await fetch(API_BASE_URL + "/api/check-session", {
       method: "GET",
       headers: await getAuthHeaders(),
     });
-    if (!response?.ok)
-      throw new Error(`Server responded with status ${response.status}`);
+    if (!response?.ok) return false;
     return true;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -34,8 +32,8 @@ export async function checkSession() {
       "error",
       false,
     );
+    return false;
   }
-  return false;
 }
 
 // PopupData.js
@@ -186,8 +184,7 @@ export async function getPortfolio() {
 export async function resetAccount(amount) {
   try {
     let response;
-    if (isNaN(amount) || amount < 1)
-      throw new Error("Invalid amount — must be a number ≥ 1");
+    console.log("Resetting account with amount:", amount, typeof amount);
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -195,7 +192,7 @@ export async function resetAccount(amount) {
         response = await fetch(API_BASE_URL + `/api/reset`, {
           method: "PATCH",
           headers: await getAuthHeaders(),
-          body: json.stringify({ amount }),
+          body: JSON.stringify({ amount }),
           signal: controller.signal,
         });
         clearTimeout(timeout);
@@ -204,7 +201,7 @@ export async function resetAccount(amount) {
         else break;
       } catch (error) {
         if (attempt === maxAttempts)
-          throw new Error("Failed to fetch portfolio: " + error.message);
+          throw new Error("Failed to reset account: " + error.message);
       }
     }
     clearPositions();

@@ -106,10 +106,10 @@ async function init() {
   const validSession = await checkSession();
   if (!validSession) {
     disableUI();
-    return;
+  } else {
+    enableUI();
+    await loadAPIData();
   }
-  enableUI();
-  await loadAPIData();
   document.body.style.removeProperty("pointer-events");
 }
 
@@ -141,6 +141,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const loginButton = document.getElementById("loginButton");
   const registerButton = document.getElementById("registerButton");
   const logoutButton = document.getElementById("logoutButton");
+  const resetButton = document.getElementById("resetButton");
 
   await init();
 
@@ -189,6 +190,47 @@ document.addEventListener("DOMContentLoaded", async () => {
       .finally(() => {
         stopLoadingDots(logoutButton, interval);
       });
+  });
+  resetButton.addEventListener("click", async () => {
+    showDialog({
+      title: "Start balance",
+      message: "With how much balance do you want to start over?",
+      type: "Input",
+    }).then(async (input) => {
+      if (input === null || input === undefined) return; // User canceled
+      const amount = parseFloat(input);
+      console.log("Reset amount:", amount);
+      if (isNaN(amount) || amount <= 0) {
+        showDialog({
+          title: "Invalid Amount",
+          message: "Please enter a valid positive number.",
+          type: "Info",
+        });
+        return;
+      }
+      showDialog({
+        title: "Confirm Reset",
+        message:
+          "Are you sure you want to reset your account? This action cannot be undone.",
+        type: "Confirm",
+      }).then(async (confirmed) => {
+        if (confirmed) {
+          const interval = startLoadingDots(resetButton);
+          await resetAccount(amount)
+            .then(async () => {
+              await loadAPIData();
+              moveIndicator(defaultButton);
+              setDisplay(defaultButton.dataset.index);
+            })
+            .catch((err) => {
+              console.error("Account reset failed:", err);
+            })
+            .finally(() => {
+              stopLoadingDots(resetButton, interval);
+            });
+        }
+      });
+    });
   });
 
   showPasswordButton.addEventListener("click", () => {
@@ -438,4 +480,93 @@ function setQualityPreset(qualityValue) {
   } else {
     buttons.forEach((btn) => btn.classList.remove("no-shadow"));
   }
+}
+
+function showDialog({ title, message, type }) {
+  return new Promise((resolve) => {
+    const dialogOverlay = document.getElementById("dialogOverlay");
+    const dialogHeader = document.getElementById("dialogHeader");
+    const dialogBody = document.getElementById("dialogBody");
+    const dialogInput = document.getElementById("dialogInput");
+    const dialogButtons = document.getElementById("dialogButtons");
+    const dialogInfo = document.getElementById("dialogInfo");
+
+    // Reset and hide all conditional parts
+    dialogInput.classList.add("hidden");
+    dialogButtons.classList.add("hidden");
+
+    // Set common text
+    dialogHeader.textContent = title;
+    dialogBody.textContent = message;
+
+    // Show the dialog
+    dialogOverlay.classList.remove("hidden");
+
+    // Prevent inputs
+    document.body.style.pointerEvents = "none";
+
+    let baseCleanup = () => {
+      dialogOverlay.classList.add("hidden");
+      dialogHeader.textContent = "";
+      dialogBody.textContent = "";
+      document.body.style.removeProperty("pointer-events");
+    };
+
+    if (type === "Input") {
+      dialogInput.classList.remove("hidden");
+      const inputField = document.getElementById("dialogTextInput");
+      const inputConfirmButton = document.getElementById("inputConfirmButton");
+
+      let cleanup = () => {
+        dialogInput.classList.add("hidden");
+        inputConfirmButton.removeEventListener("click", onInputConfirm);
+        inputField.value = "";
+      };
+
+      var onInputConfirm = () => {
+        baseCleanup();
+        resolve(inputField.value);
+        cleanup();
+      };
+      inputConfirmButton.addEventListener("click", onInputConfirm);
+    } else if (type === "Confirm") {
+      dialogButtons.classList.remove("hidden");
+      const confirmButton = document.getElementById("dialogConfirmButton");
+      const cancelButton = document.getElementById("dialogCancelButton");
+
+      let cleanup = () => {
+        dialogButtons.classList.add("hidden");
+        confirmButton.removeEventListener("click", onConfirm);
+        cancelButton.removeEventListener("click", onCancel);
+      };
+      var onConfirm = () => {
+        baseCleanup();
+        cleanup();
+        resolve(true);
+      };
+      var onCancel = () => {
+        baseCleanup();
+        cleanup();
+        resolve(false);
+      };
+
+      confirmButton.addEventListener("click", onConfirm);
+      cancelButton.addEventListener("click", onCancel);
+    } else if (type === "Info") {
+      dialogInfo.classList.remove("hidden");
+      const okayButton = document.getElementById("dialogInfoButton");
+
+      let cleanup = () => {
+        dialogInfo.classList.add("hidden");
+        okayButton.removeEventListener("click", onConfirm);
+      };
+
+      var onConfirm = () => {
+        baseCleanup();
+        cleanup();
+      };
+
+      okayButton.addEventListener("click", onConfirm);
+    }
+  });
 }

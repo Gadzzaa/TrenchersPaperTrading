@@ -31,6 +31,7 @@ button.no-shadow {
 }
 
 #dialogOverlay {
+  pointer-events: auto !important;
   position: absolute;
   width: 100%;
   height: 100%;
@@ -149,7 +150,8 @@ input[type="number"] {
 }
 
 #dialogButtons button,
-#dialogInput button {
+#dialogInput button,
+#dialogInfo button {
   height: 40px;
   padding: 0 18px;
   border-radius: 10px;
@@ -170,34 +172,34 @@ input[type="number"] {
     transform var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#confirmButton {
+.confirmButton {
   background-color: rgba(var(--green), 0.15);
   border: 1px solid rgb(var(--green));
   color: rgb(var(--green));
 }
 
-#confirmButton:hover {
+.confirmButton:hover {
   background-color: rgba(var(--green), 0.2);
   box-shadow: 0 2px 6px rgba(var(--green), 0.4);
 }
 
-#confirmButton:active {
+.confirmButton:active {
   transform: scale(0.96);
   box-shadow: 0 1px 3px rgba(var(--green), 0.5);
 }
 
-#cancelButton {
+.cancelButton {
   background-color: rgba(var(--red), 0.15);
   border: 1px solid rgb(var(--red));
   color: rgb(var(--red));
 }
 
-#cancelButton:hover {
+.cancelButton:hover {
   background-color: rgba(var(--red), 0.2);
   box-shadow: 0 2px 6px rgba(var(--red), 0.4);
 }
 
-#cancelButton:active {
+.cancelButton:active {
   transform: scale(0.96);
   box-shadow: 0 1px 3px rgba(var(--red), 0.5);
 }

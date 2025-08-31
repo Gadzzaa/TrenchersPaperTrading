@@ -24,11 +24,17 @@
         <div id="dialogInput" class="hidden">
           <span id="warning" class="hidden"></span>
           <input type="number" id="dialogTextInput" min="0" max="100" />
-          <button id="inputConfirmButton">Confirm</button>
+          <button id="inputConfirmButton" class="confirmButton">Confirm</button>
         </div>
         <div id="dialogButtons" class="hidden">
-          <button id="dialogConfirmButton">Confirm</button>
-          <button id="cancelButton">Cancel</button>
+          <button id="dialogConfirmButton" class="confirmButton">
+            Confirm
+          </button>
+          <button id="dialogCancelButton" class="cancelButton">Cancel</button>
+        </div>
+        <div id="dialogInfo" class="hidden">
+          <div id="dialogInfoText"></div>
+          <button id="dialogInfoButton" class="confirmButton">Okay</button>
         </div>
       </div>
     </div>
