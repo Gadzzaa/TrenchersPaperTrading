@@ -143,58 +143,6 @@ export function stopLoadingDots(button, interval) {
 }
 
 // Requests from inject.js
-export function requestSymbol() {
-  return new Promise((resolve) => {
-    const requestId = "get-symbol-" + Date.now();
-
-    // Listen for response
-    function handleMessage(event) {
-      const { type, symbol, requestId: responseId } = event.data;
-      if (type === "SYMBOL_RESPONSE" && responseId === requestId) {
-        window.removeEventListener("message", handleMessage);
-        resolve(symbol);
-      }
-    }
-
-    window.addEventListener("message", handleMessage);
-
-    // Send request
-    window.parent.postMessage(
-      {
-        type: "SYMBOL_REQUEST",
-        requestId: requestId,
-      },
-      "*",
-    );
-  });
-}
-
-export function requestPrice() {
-  return new Promise((resolve) => {
-    const requestId = "get-price-" + Date.now();
-
-    // Listen for response
-    function handleMessage(event) {
-      const { type, price, requestId: responseId } = event.data;
-      if (type === "PRICE_RESPONSE" && responseId === requestId) {
-        window.removeEventListener("message", handleMessage);
-        resolve(price);
-      }
-    }
-
-    window.addEventListener("message", handleMessage);
-
-    // Send request
-    window.parent.postMessage(
-      {
-        type: "PRICE_REQUEST",
-        requestId: requestId,
-      },
-      "*",
-    );
-  });
-}
-
 export function requestCurrentContract() {
   return new Promise((resolve) => {
     const requestId = "get-contract-" + Date.now();

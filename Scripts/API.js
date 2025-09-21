@@ -8,7 +8,12 @@ import {
 } from "./utils.js";
 import { getDebugMode } from "../config.js";
 import CONFIG from "../config.js";
-import { clearPositions } from "./pnlHandler.js";
+import {
+  clearPositions,
+  setPnlData,
+  watchPool,
+  unwatchPool,
+} from "./pnlHandler.js";
 const API_BASE_URL = CONFIG.API_BASE_URL;
 const maxAttempts = 3;
 
@@ -33,6 +38,23 @@ export async function checkSession() {
       false,
     );
     return false;
+  }
+}
+
+// PNLHandler.js
+export async function getTradeLog() {
+  try {
+    const response = await fetch(API_BASE_URL + "/api/tradeLog", {
+      method: "GET",
+      headers: await getAuthHeaders(),
+    });
+    if (!response?.ok)
+      throw new Error(`Server responded with status ${response.status}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
   }
 }
 
@@ -69,23 +91,17 @@ export async function fetchPopupData() {
 
 // BuyHandler.js
 export async function buyToken(
-  tokenMint,
+  poolAddress,
   solAmount,
-  tokenPrice,
-  liquidity,
   slippage = slippagePercentage,
   fee = feeAmount,
-  tokenData,
 ) {
   try {
     const payload = {
-      tokenMint,
+      poolAddress,
       solAmount,
-      tokenPrice,
-      liquidity,
       slippage,
       fee,
-      tokenData,
     };
     let response;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -111,11 +127,16 @@ export async function buyToken(
     const result = await response.json();
     if (!result?.success)
       throw new Error(result.error || "Unknown error occured.");
+
+    setPnlData(poolAddress, result.pnlData);
+    watchPool(poolAddress);
+
     return {
       success: result.success,
       tokensReceived: result.tokensReceived,
       solSpent: result.solSpent,
       effectivePrice: result.effectivePrice,
+      tokenData: result.tokenData,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -125,22 +146,22 @@ export async function buyToken(
 }
 
 // SellHandler.js
-export async function sellByPercentage(tokenMint, percentage, price) {
+export async function sellByPercentage(poolAddress, percentage) {
   try {
     const portfolio = await getPortfolio();
     if (!portfolio?.tokens)
       throw new Error(portfolio.error || "No tokens found in portfolio.");
 
-    const totalAmount = portfolio.tokens[tokenMint];
-    if (!totalAmount) throw new Error("No tokens found for this mint.");
+    const totalAmount = portfolio.tokens[poolAddress].amount;
+    if (!totalAmount) throw new Error("No tokens found for this pool.");
 
     const amountToSell = parseFloat(
       (totalAmount * (percentage / 100)).toFixed(9),
     );
-
     if (amountToSell <= 0) throw new Error("No tokens to sell.");
 
-    const result = await sellToken(tokenMint, amountToSell, price);
+    const result = await sellToken(poolAddress, amountToSell);
+    if (percentage === 100) unwatchPool(poolAddress);
     return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -345,22 +366,16 @@ export async function register(username, password, initialBalance) {
 
 // BACKEND FUNCTIONS
 async function sellToken(
-  tokenMint,
+  poolAddress,
   tokenAmount,
-  tokenPrice,
-  liquidity,
   slippage = slippagePercentage,
   fee = feeAmount,
-  tokenData,
 ) {
   const payload = {
-    tokenMint,
+    poolAddress,
     tokenAmount,
-    tokenPrice,
-    liquidity,
     slippage,
     fee,
-    tokenData,
   };
   let response;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -392,6 +407,7 @@ async function sellToken(
     solReceived: result.solReceived,
     tokensSold: result.tokensSold,
     effectivePrice: result.effectivePrice,
+    tokenData: result.tokenData,
   };
 }
 

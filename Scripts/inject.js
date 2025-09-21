@@ -8,8 +8,6 @@ let lastContract = null;
 // 🚀 Start the app
 try {
   monitorRouteChanges();
-  getSolPrice();
-  setInterval(getSolPrice, 60 * 60 * 500);
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   console.error("❌ Error initializing TrenchersPaperTrading:", message);
@@ -19,33 +17,11 @@ window.addEventListener("message", async (event) => {
   const { type, requestId } = event.data;
 
   if (type === "CONTRACT_REQUEST" && requestId) {
-    const contract = extractContractFromImage();
+    const contract = getURLSegmentAfter("meme");
     event.source.postMessage(
       {
         type: "CONTRACT_RESPONSE",
         contract,
-        requestId,
-      },
-      "*",
-    );
-  }
-  if (type === "PRICE_REQUEST" && requestId) {
-    const price = await getPrice();
-    event.source.postMessage(
-      {
-        type: "PRICE_RESPONSE",
-        price,
-        requestId,
-      },
-      "*",
-    );
-  }
-  if (type === "SYMBOL_REQUEST" && requestId) {
-    const symbol = extractSymbol();
-    event.source.postMessage(
-      {
-        type: "SYMBOL_RESPONSE",
-        symbol,
         requestId,
       },
       "*",
@@ -56,60 +32,14 @@ window.addEventListener("message", async (event) => {
   }
 });
 
-function extractContractFromImage() {
-  const links = document.querySelectorAll('a[href*="x.com/search?q="]');
-
-  for (const link of links) {
-    const target = link.getAttribute("target");
-    const rel = link.getAttribute("rel");
-
-    const hasCorrectTarget = target === "_blank";
-    const hasCorrectRel =
-      rel?.split(" ").includes("noopener") &&
-      rel?.split(" ").includes("noreferrer");
-
-    if (!hasCorrectTarget || !hasCorrectRel) continue; // skip if attributes are missing
-
-    try {
-      const url = new URL(link.href);
-      const contract = url.searchParams.get("q");
-
-      // Validate it's a real contract-looking string
-      if (contract && /^[A-Za-z0-9]{32,}$/.test(contract)) {
-        return contract;
-      }
-    } catch (error) {
-      console.error("❌ Error parsing contract from link:", error);
-    }
-  }
-
-  return null;
-}
-
-function extractSymbol() {
-  const xpath =
-    "/html/body/div[1]/div[3]/div/div/div/div/div[1]/div[1]/div/div[1]/div[2]/div/div/div/div[1]/div[2]/div[1]/span[1]";
-  const symbolElement = getElementByXPath(xpath);
-  if (!symbolElement) return null;
-  try {
-    const symbol = symbolElement.innerText;
-    if (symbol && symbol.length > 0) {
-      return symbol.trim();
-    }
-  } catch (error) {
-    console.error("❌ Error parsing symbol from element:", error);
-  }
-}
-
-function getElementByXPath(xpath, context = document) {
-  const result = document.evaluate(
-    xpath,
-    context,
-    null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
-  );
-  return result.singleNodeValue;
+function getURLSegmentAfter(baseSegment) {
+  const parts = new URL(window.location.href).pathname
+    .split("/")
+    .filter(Boolean);
+  const idx = parts.indexOf(baseSegment);
+  return idx >= 0 && parts.length > idx + 1
+    ? decodeURIComponent(parts[idx + 1])
+    : null;
 }
 
 function makeDraggable(target, handle, iframe) {
@@ -542,87 +472,4 @@ function parseCompactNumber(txt) {
   const mult = unit === "K" ? 1e3 : unit === "M" ? 1e6 : unit === "B" ? 1e9 : 1;
 
   return num * mult;
-}
-
-/**
- * Finds the on-page "Supply" label, reads the next span's text,
- * and returns the circulating supply as a Number.
- */
-function getSupply() {
-  return 1000000000; // TODO: Fix this
-  /*
-  // 1. Grab all spans that style numeric values
-  const els = document.querySelectorAll('span.text-textPrimary');
-  // 2. Regex: digits (with optional decimals) ending in K, M, or B
-  const re = /^(\d+(?:\.\d+)?)([KMB])$/;
-
-  for (const el of els) {
-    const txt = el.textContent.trim();
-    const m = txt.match(re);
-    if (m) {
-      // parseCompactNumber is your helper from before
-      const supply = parseCompactNumber(txt);
-      console.log('Parsed supply:', supply);
-      return supply;
-    }
-  }
-  */
-
-  throw new Error("Supply element not found");
-}
-
-function getMarketCapFromTitle() {
-  const title = document.title.trim();
-  // e.g. "MyTokenName → $8.71K | Price: 0.00003 SOL"
-
-  // 1) Split on arrow
-  const arrowParts = title.split("$");
-  if (arrowParts.length < 2) {
-    throw new Error("Title missing arrow separator");
-  }
-
-  // 2) Take right side and split on pipe
-  const rightSide = arrowParts[1].trim(); // "$8.71K | Price:…"
-  const pipeParts = rightSide.split("|");
-  if (pipeParts.length < 1) {
-    throw new Error("Title missing pipe separator");
-  }
-
-  // 3) The first segment is the market cap string
-  const rawCap = pipeParts[0].trim(); // "$8.71K"
-
-  // 4) Parse it
-  const capNumber = parseCompactNumber(rawCap);
-  return capNumber;
-}
-function fetchWithTimeout(url, options = {}, ms = 5000) {
-  const timeout = new Promise((_, rej) =>
-    setTimeout(() => rej(new Error("Request timed out")), ms),
-  );
-  return Promise.race([fetch(url, options), timeout]);
-}
-
-async function getPrice() {
-  try {
-    const tokenSupply = getSupply();
-    const marketCapUsd = getMarketCapFromTitle();
-    const solUsdPrice = localStorage.getItem("solUsdPrice");
-    const tokenPriceUsd = marketCapUsd / tokenSupply;
-
-    return (tokenPriceUsd / solUsdPrice).toFixed(9);
-  } catch (error) {
-    console.error("❌ Error fetching price:", error);
-    return null;
-  }
-}
-async function getSolPrice() {
-  const resp = await fetchWithTimeout(
-    "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
-    {},
-    5000,
-  );
-  if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-  const { solana } = await resp.json();
-  const solUsdPrice = solana.usd;
-  localStorage.setItem("solUsdPrice", solUsdPrice);
 }

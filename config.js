@@ -5,6 +5,7 @@ const CONFIG = {
   API_BASE_URL: USE_LOCAL
     ? "http://localhost:3000"
     : "https://trencherspapertrading.xyz",
+  WS_URL: USE_LOCAL ? "ws://localhost:3000" : "wss://trencherspapertrading.xyz",
 };
 
 export function getDebugMode() {

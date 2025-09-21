@@ -386,8 +386,8 @@ async function loadAPIData() {
   localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
   // TODO: Calculate total PNL
 
-  for (const [mint, token] of Object.entries(portfolio.tokens)) {
-    addToken(mint, token.name, token.symbol, token.amount, token.image);
+  for (const [poolAddress, token] of Object.entries(portfolio.tokens)) {
+    addToken(poolAddress, token.name, token.symbol, token.amount, token.image);
   }
 
   if (accountUser.textContent != username) accountUser.textContent = username;
@@ -444,14 +444,14 @@ function setDisplay(index) {
 }
 
 function addToken(
-  mint,
+  poolAddress,
   name,
   symbol,
   amount,
   imagePath = "Images/solana-sol-logo.png",
 ) {
   const token = {
-    mint,
+    poolAddress,
     name,
     symbol,
     amount,
@@ -477,7 +477,7 @@ function renderToken(token) {
   `;
 
   button.addEventListener("click", () => {
-    window.open(`https://axiom.trade/meme/${token.mint}`, "_blank");
+    window.open(`https://axiom.trade/meme/${token.poolAddress}`, "_blank");
   });
 
   if (!tokenListContainer) console.error("Token list container not found.");

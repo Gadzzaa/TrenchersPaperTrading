@@ -11,17 +11,12 @@ import {
 
 import {
   setActiveToken,
-  recordBuy,
-  recordSell,
-  loadPositions,
   clearPositions,
-  changeDelay,
+  importTradeLog,
 } from "./pnlHandler.js";
 
 import {
   requestCurrentContract,
-  requestSymbol,
-  requestPrice,
   disableAllTradeButtons,
   enableAllTradeButtons,
   showButtonLoading,
@@ -124,6 +119,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const newContract = await requestCurrentContract();
+      console.log("Current Contract:", newContract);
       if (currentContract !== newContract) {
         currentContract = newContract;
         searchPosition(currentContract);
@@ -148,43 +144,38 @@ function handleActionButtonClick(button) {
       disableAllTradeButtons(actionButtons);
       showButtonLoading(button);
 
-      const tokenMint = currentContract;
+      const poolAddress = currentContract;
       const action = button.dataset.action;
       const dataAmount = parseFloat(button.dataset.amount);
-      const price = parseFloat(await requestPrice());
-      const symbol = await requestSymbol();
 
-      if (!tokenMint) throw new Error("No CA loaded.");
+      if (!poolAddress) throw new Error("No pool found.");
       if (!action) throw new Error("No action specified inside the button.");
       if (!dataAmount)
         throw new Error("No amount specified inside the button.");
-      if (!price) throw new Error("Token price not found.");
-      if (!symbol) throw new Error("Symbol not found.");
 
       if (action === "buy") {
-        const result = await buyToken(tokenMint, dataAmount, price);
+        const result = await buyToken(poolAddress, dataAmount);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
-        let solSpent =
-          parseFloat(result.solSpent) - parseFloat(result.fees.protocol);
-        solSpent = parseFloat(solSpent.toFixed(2));
+        let solSpent = parseFloat(result.solSpent.toFixed(2));
         showNotification(
-          `You bought ${solSpent} SOL worth of ${symbol}!`,
+          `You bought ${solSpent} SOL worth of ${result.tokenData.symbol}!`,
           "success",
         );
-        await recordBuy(tokenMint, price, solSpent);
+        await importTradeLog();
+        setActiveToken(poolAddress);
       }
       if (action === "sell") {
-        const result = await sellByPercentage(tokenMint, dataAmount, price);
+        const result = await sellByPercentage(poolAddress, dataAmount);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
         const solReceived = parseFloat(result.solReceived).toFixed(2);
         showNotification(
-          `You sold ${symbol} for ${solReceived} SOL!`,
+          `You sold ${result.tokenData.symbol} for ${solReceived} SOL!`,
           "success",
         );
-        await recordSell(tokenMint, parseFloat(solReceived), dataAmount); // account for fees
-        //await recordSell(tokenMint, price, dataAmount);
+        await importTradeLog();
+        setActiveToken(poolAddress);
       }
     } catch (error) {
       showNotification(error, "error");
@@ -195,8 +186,8 @@ function handleActionButtonClick(button) {
   };
 }
 
-function searchPosition(currentContract) {
-  loadPositions();
+async function searchPosition(currentContract) {
+  await importTradeLog();
   if (!currentContract) throw new Error("No current contract found.");
 
   const storedPositions = localStorage.getItem("openPositions");
@@ -211,9 +202,9 @@ function searchPosition(currentContract) {
 
   window.openPositions = parsed;
 
-  const match = parsed.find((p) => p.mint === currentContract);
+  const match = parsed.find((p) => p.pool === currentContract);
   if (match) {
-    setActiveToken(match.mint);
+    setActiveToken(match.pool);
   }
 }
 
