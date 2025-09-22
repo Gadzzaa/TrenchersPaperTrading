@@ -48,6 +48,7 @@ async function connectWebSocket() {
           console.log("✅ WebSocket connected and authenticated");
           break;
         case "poolUpdate":
+          console.log("Received pool update:", data);
           const pool = watchedPools.get(data.poolAddress);
           if (pool) {
             pool.price = data.price;
@@ -87,7 +88,7 @@ export function watchPool(poolAddress) {
 
     // send watch request to backend
     const data = getPnlData(poolAddress);
-    ws.send(JSON.stringify({ type: "watchPool", poolAddress, data }));
+    ws.send(JSON.stringify({ type: "watchPool", poolAddress, poolData: data }));
   }
 }
 
@@ -126,53 +127,57 @@ export async function updateTotalPnl() {
     const holdText = document.getElementById("holdText");
     const positionEl = document.getElementById("pnlText");
     const sellsTab = document.getElementById("Sells");
+
     if (!isConnected) throw new Error("WebSocket not connected");
     if (!currentPool) throw new Error("No active token set");
-    if (!boughtText) throw new Error("Bought text element not found");
-    if (!soldText) throw new Error("Sold text element not found");
-    if (!holdText) throw new Error("Hold text element not found");
-    if (!positionEl) throw new Error("Position element not found");
-    if (!sellsTab) throw new Error("Sells tab element not found");
+    if (!boughtText || !soldText || !holdText || !positionEl || !sellsTab)
+      throw new Error("Required DOM element missing");
     if (!openPositions || !Array.isArray(openPositions))
       throw new Error("Open positions not found or invalid");
     if (watchedPools.size === 0) throw new Error("No pools are being watched");
-    const idx = openPositions.findIndex((p) => p.pool === currentPool);
-    if (idx < 0)
-      throw new Error("No position found for current pool: " + currentPool);
-    const pos = openPositions[idx];
-    const entryPrice = pos.avgEntry;
-    const realizedPnl = pos.realizedPNL;
-    const totalSpent = pos.totalCost;
-    const totalHeld = pos.quantityHeld;
-    const totalSold = pos.quantitySold;
-    const quantity = totalHeld + totalSold;
 
-    if (
-      Number(parseFloat(quantity).toFixed(9)) <= 0 &&
-      !document.body.classList.contains("edit-mode")
-    )
+    const pos = openPositions.find((p) => p.pool === currentPool);
+    if (!pos)
+      throw new Error("No position found for current pool: " + currentPool);
+
+    const {
+      avgEntry,
+      realizedPNL,
+      quantityHeld,
+      quantitySold,
+      valueBought,
+      valueSold,
+    } = pos;
+
+    // Show/hide sells tab
+    if (quantityHeld <= 0 && !document.body.classList.contains("edit-mode"))
       sellsTab.classList.add("hidden");
     else sellsTab.classList.remove("hidden");
 
-    let currentPrice;
+    // Get current price in SOL
     const pool = watchedPools.get(currentPool);
-    if (pool && pool.price) currentPrice = pool.price;
-    currentPrice = 0;
-    /*
+    let currentPrice = pool?.price || 0;
     if (!currentPrice)
-      throw new Error("Current price not found for pool: " + currentPool);
-    */
+      console.error("Current price not found for pool:", currentPool);
 
-    const pnl = quantity * (currentPrice - entryPrice);
-    const totalPnl = realizedPnl + pnl;
-    const pnlProcent = totalSpent > 0 ? (totalPnl / totalSpent) * 100 : 0;
+    // Unrealized PNL in SOL
+    const unrealizedPNL = quantityHeld * (currentPrice - avgEntry);
 
+    // Total PNL = realized + unrealized
+    const totalPNL = realizedPNL + unrealizedPNL;
+
+    // Percentage relative to total SOL spent buying tokens
+    const totalSpent = valueBought; // use valueBought (SOL spent buying tokens)
+    const pnlPercent = totalSpent > 0 ? (totalPNL / totalSpent) * 100 : 0;
+
+    // Update DOM
     positionEl.classList.remove("positive", "negative");
-    positionEl.textContent = `${totalPnl.toFixed(2)} SOL (${pnlProcent.toFixed(2)}%)`;
-    positionEl.classList.add(totalPnl >= 0 ? "positive" : "negative");
-    boughtText.textContent = `${totalSpent.toFixed(2)}`;
-    soldText.textContent = `${totalSold.toFixed(2)}`;
-    holdText.textContent = `${totalHeld.toFixed(2)}`;
+    positionEl.textContent = `${totalPNL.toFixed(2)} (${pnlPercent.toFixed(2)}%)`;
+    positionEl.classList.add(totalPNL >= 0 ? "positive" : "negative");
+
+    boughtText.textContent = `${valueBought.toFixed(2)}`;
+    soldText.textContent = `${valueSold.toFixed(2)} `;
+    holdText.textContent = `${(quantityHeld * currentPrice).toFixed(2)}`;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(
