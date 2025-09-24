@@ -393,7 +393,7 @@ async function loadAPIData() {
   solBalance.textContent = `${portfolio.solBalance.toFixed(2)} SOL`;
   localStorage.setItem("cachedSolBalance", portfolio.solBalance.toFixed(2));
   localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
-  pnlData.textContent = `${realizedPNL >= 0 ? "+" : ""}${realizedPNL.toFixed(2)} SOL`;
+  pnlData.textContent = `${realizedPNL >= 0 ? "+" : ""}${realizedPNL.toFixed(2)} SOL / 24h`;
 
   for (const [poolAddress, token] of Object.entries(portfolio.tokens)) {
     if (token.amount <= 0) continue;
