@@ -387,6 +387,7 @@ async function loadAPIData() {
   // TODO: Calculate total PNL
 
   for (const [poolAddress, token] of Object.entries(portfolio.tokens)) {
+    if (token.amount <= 0) continue;
     addToken(poolAddress, token.name, token.symbol, token.amount, token.image);
   }
 

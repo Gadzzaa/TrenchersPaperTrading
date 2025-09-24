@@ -134,7 +134,6 @@ export async function updateTotalPnl() {
       throw new Error("Required DOM element missing");
     if (!openPositions || !Array.isArray(openPositions))
       throw new Error("Open positions not found or invalid");
-    if (watchedPools.size === 0) throw new Error("No pools are being watched");
 
     const pos = openPositions.find((p) => p.pool === currentPool);
     if (!pos)

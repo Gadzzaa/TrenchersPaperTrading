@@ -170,12 +170,8 @@ function handleActionButtonClick(button) {
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
         const solReceived = parseFloat(result.solReceived).toFixed(2);
-        showNotification(
-          `You sold ${result.tokenData.symbol} for ${solReceived} SOL!`,
-          "success",
-        );
+        showNotification(`You sold for ${solReceived} SOL!`, "success");
         await importTradeLog();
-        setActiveToken(poolAddress);
       }
     } catch (error) {
       showNotification(error, "error");

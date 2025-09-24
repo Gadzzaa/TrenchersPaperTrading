@@ -155,9 +155,7 @@ export async function sellByPercentage(poolAddress, percentage) {
     const totalAmount = portfolio.tokens[poolAddress].amount;
     if (!totalAmount) throw new Error("No tokens found for this pool.");
 
-    const amountToSell = parseFloat(
-      (totalAmount * (percentage / 100)).toFixed(9),
-    );
+    const amountToSell = parseFloat(totalAmount * (percentage / 100));
     if (amountToSell <= 0) throw new Error("No tokens to sell.");
 
     const result = await sellToken(poolAddress, amountToSell);
@@ -407,7 +405,6 @@ async function sellToken(
     solReceived: result.solReceived,
     tokensSold: result.tokensSold,
     effectivePrice: result.effectivePrice,
-    tokenData: result.tokenData,
   };
 }
 
