@@ -167,6 +167,15 @@ export async function updateTotalPnl() {
       let currentPrice = pool?.price;
       if (!currentPrice) {
         console.error("Current price not found for pool:", currentPool);
+        updateDOM(
+          { positionEl, boughtText, soldText, holdText },
+          realizedPNL,
+          0,
+          totalSOLSpent,
+          amountSold,
+          quantityHeld,
+          0,
+        );
         return;
       }
     }
@@ -180,15 +189,15 @@ export async function updateTotalPnl() {
     // Percentage relative to total SOL spent buying tokens
     const totalSpent = amountBought;
     const pnlPercent = totalSpent > 0 ? (totalPNL / totalSpent) * 100 : 0;
-
-    // Update DOM
-    positionEl.classList.remove("positive", "negative");
-    positionEl.textContent = `${totalPNL.toFixed(2)} (${pnlPercent.toFixed(2)}%)`;
-    positionEl.classList.add(totalPNL >= 0 ? "positive" : "negative");
-
-    boughtText.textContent = `${totalSOLSpent.toFixed(2)}`;
-    soldText.textContent = `${amountSold.toFixed(2)} `;
-    holdText.textContent = `${(quantityHeld * currentPrice).toFixed(2)}`;
+    updateDOM(
+      { positionEl, boughtText, soldText, holdText },
+      totalPNL,
+      pnlPercent,
+      totalSOLSpent,
+      amountSold,
+      quantityHeld,
+      currentPrice,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(
@@ -196,6 +205,25 @@ export async function updateTotalPnl() {
       "error",
     );
   }
+}
+
+function updateDOM(
+  { positionEl, boughtText, soldText, holdText },
+  totalPNL,
+  pnlPercent,
+  totalSOLSpent,
+  amountSold,
+  quantityHeld,
+  currentPrice,
+) {
+  // Update DOM
+  positionEl.classList.remove("positive", "negative");
+  positionEl.textContent = `${totalPNL.toFixed(2)} (${pnlPercent.toFixed(2)}%)`;
+  positionEl.classList.add(totalPNL >= 0 ? "positive" : "negative");
+
+  boughtText.textContent = `${totalSOLSpent.toFixed(2)}`;
+  soldText.textContent = `${amountSold.toFixed(2)} `;
+  holdText.textContent = `${(quantityHeld * currentPrice).toFixed(2)}`;
 }
 
 export async function importTradeLog() {
