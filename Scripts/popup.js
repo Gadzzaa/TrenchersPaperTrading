@@ -26,7 +26,8 @@ let tokenListContainer,
   subscriptionPrice,
   subscriptionMethod,
   versionInfo,
-  defaultButton;
+  defaultButton,
+  pnlData;
 const barWidth = 30;
 const tokens = [];
 const settings = [
@@ -122,6 +123,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const icon = showPasswordButton.querySelector("i");
   usernameText = document.getElementById("usernameText");
   solBalance = document.getElementById("solBalance");
+  pnlData = document.getElementById("pnlData");
   accountUser = document.getElementById("username");
   const themeButtons = document.querySelectorAll(".theme");
   const volumeSlider = document.getElementById("volumeSlider");
@@ -373,8 +375,15 @@ async function loadAPIData() {
   tokenListContainer.innerHTML = "";
   tokens.length = 0;
   const popupData = await fetchPopupData();
-  const { userId, username, resets, portfolio, subscriptionInfo, version } =
-    popupData;
+  const {
+    userId,
+    username,
+    resets,
+    portfolio,
+    subscriptionInfo,
+    version,
+    realizedPNL,
+  } = popupData;
   console.log("Popup Data:", popupData);
   let subscription = subscriptionInfo.subscription;
   if (!userId) throw new Error("No user ID returned from API");
@@ -384,7 +393,7 @@ async function loadAPIData() {
   solBalance.textContent = `${portfolio.solBalance.toFixed(2)} SOL`;
   localStorage.setItem("cachedSolBalance", portfolio.solBalance.toFixed(2));
   localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
-  // TODO: Calculate total PNL
+  pnlData.textContent = `${realizedPNL >= 0 ? "+" : ""}${realizedPNL.toFixed(2)} SOL`;
 
   for (const [poolAddress, token] of Object.entries(portfolio.tokens)) {
     if (token.amount <= 0) continue;
