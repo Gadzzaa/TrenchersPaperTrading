@@ -111,6 +111,11 @@ export function setActiveToken(poolAddress) {
     console.warn("No position found for pool:", poolAddress);
     return;
   }
+  const pool = openPositions[idx];
+  if (pool.posClosed) {
+    console.log(`Pool ${poolAddress} has position closed.`);
+    return;
+  }
 
   chrome.storage.local.get("pnlSlider", (data) => {
     if (!data) data = 500;
@@ -140,12 +145,14 @@ export async function updateTotalPnl() {
       throw new Error("No position found for current pool: " + currentPool);
 
     const {
-      avgEntry,
-      realizedPNL,
       quantityHeld,
       quantitySold,
-      valueBought,
-      valueSold,
+      amountBought,
+      amountSold,
+      avgEntry,
+      realizedPNL,
+      totalSOLSpent,
+      posClosed,
     } = pos;
 
     // Show/hide sells tab
@@ -154,10 +161,15 @@ export async function updateTotalPnl() {
     else sellsTab.classList.remove("hidden");
 
     // Get current price in SOL
-    const pool = watchedPools.get(currentPool);
-    let currentPrice = pool?.price || 0;
-    if (!currentPrice)
-      console.error("Current price not found for pool:", currentPool);
+    let currentPrice = 0;
+    if (!posClosed) {
+      const pool = watchedPools.get(currentPool);
+      let currentPrice = pool?.price;
+      if (!currentPrice) {
+        console.error("Current price not found for pool:", currentPool);
+        return;
+      }
+    }
 
     // Unrealized PNL in SOL
     const unrealizedPNL = quantityHeld * (currentPrice - avgEntry);
@@ -166,7 +178,7 @@ export async function updateTotalPnl() {
     const totalPNL = realizedPNL + unrealizedPNL;
 
     // Percentage relative to total SOL spent buying tokens
-    const totalSpent = valueBought; // use valueBought (SOL spent buying tokens)
+    const totalSpent = amountBought;
     const pnlPercent = totalSpent > 0 ? (totalPNL / totalSpent) * 100 : 0;
 
     // Update DOM
@@ -174,8 +186,8 @@ export async function updateTotalPnl() {
     positionEl.textContent = `${totalPNL.toFixed(2)} (${pnlPercent.toFixed(2)}%)`;
     positionEl.classList.add(totalPNL >= 0 ? "positive" : "negative");
 
-    boughtText.textContent = `${valueBought.toFixed(2)}`;
-    soldText.textContent = `${valueSold.toFixed(2)} `;
+    boughtText.textContent = `${totalSOLSpent.toFixed(2)}`;
+    soldText.textContent = `${amountSold.toFixed(2)} `;
     holdText.textContent = `${(quantityHeld * currentPrice).toFixed(2)}`;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -200,16 +212,11 @@ export async function importTradeLog() {
     localStorage.setItem("openPositions", JSON.stringify(openPositions));
   } catch (err) {
     console.error("Error importing trade log:", err);
-    showNotification(
-      getDebugMode()
-        ? "[pnlHandler.js] Error importing trade log: " + err.message
-        : "Error importing trade log",
-      "error",
-    );
+    return;
   }
 }
 export function isActiveToken() {
-  return currentMint !== null;
+  return currentPool !== null;
 }
 
 export function clearPositions(global = true) {
