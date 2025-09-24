@@ -28,6 +28,10 @@ export async function checkSession() {
       method: "GET",
       headers: await getAuthHeaders(),
     });
+    if (response.status >= 500)
+      throw new Error(
+        "Server is currently unreachable. Please check your connection or try again later.",
+      );
     if (!response?.ok) return false;
     return true;
   } catch (error) {
@@ -48,6 +52,10 @@ export async function getTradeLog() {
       method: "GET",
       headers: await getAuthHeaders(),
     });
+    if (response.status >= 500)
+      throw new Error(
+        "Server is currently unreachable. Please check your connection or try again later.",
+      );
     if (!response?.ok)
       throw new Error(`Server responded with status ${response.status}`);
     const data = await response.json();
@@ -61,7 +69,8 @@ export async function getTradeLog() {
 // PopupData.js
 export async function fetchPopupData() {
   try {
-    let response;
+    let response,
+      networkError = false;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -72,11 +81,16 @@ export async function fetchPopupData() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        if (response.status >= 500) {
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
+        }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        else break;
       } catch (error) {
-        if (attempt === maxAttempts)
+        if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to fetch popup data: " + error.message);
       }
     }
@@ -103,7 +117,8 @@ export async function buyToken(
       slippage,
       fee,
     };
-    let response;
+    let response,
+      networkError = false;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -115,11 +130,16 @@ export async function buyToken(
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        if (response.status >= 500) {
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
+        }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        else break;
       } catch (error) {
-        if (attempt === maxAttempts)
+        if (attempt === maxAttempts || !networkError)
           throw new Error("Buy failed with error: " + error.message);
       }
     }
@@ -146,32 +166,62 @@ export async function buyToken(
 }
 
 // SellHandler.js
-export async function sellByPercentage(poolAddress, percentage) {
-  try {
-    const portfolio = await getPortfolio();
-    if (!portfolio?.tokens)
-      throw new Error(portfolio.error || "No tokens found in portfolio.");
-
-    const totalAmount = portfolio.tokens[poolAddress].amount;
-    if (!totalAmount) throw new Error("No tokens found for this pool.");
-
-    const amountToSell = parseFloat(totalAmount * (percentage / 100));
-    if (amountToSell <= 0) throw new Error("No tokens to sell.");
-
-    const result = await sellToken(poolAddress, amountToSell);
-    if (percentage === 100) unwatchPool(poolAddress);
-    return result;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const errMsg = getDebugMode() ? "[API.js] " + message : message;
-    return { error: errMsg };
+async function sellToken(
+  poolAddress,
+  tokenAmount,
+  slippage = slippagePercentage,
+  fee = feeAmount,
+) {
+  const payload = {
+    poolAddress,
+    tokenAmount,
+    slippage,
+    fee,
+  };
+  let response,
+    networkError = false;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      response = await fetch(API_BASE_URL + "/api/sell", {
+        method: "POST",
+        headers: await getAuthHeaders(),
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (response.status >= 500) {
+        networkError = true;
+        throw new Error(
+          "Server is currently unreachable. Please check your connection or try again later.",
+        );
+      }
+      if (!response?.ok)
+        throw new Error("Server responded with status " + response.status);
+    } catch (error) {
+      if (attempt === maxAttempts || !networkError)
+        throw new Error("Sell failed with error: " + error);
+    }
   }
+
+  const result = await response.json();
+  if (!result?.success)
+    throw new Error(result.error || "Unknown error occured.");
+
+  return {
+    success: result.success,
+    solReceived: result.solReceived,
+    tokensSold: result.tokensSold,
+    effectivePrice: result.effectivePrice,
+  };
 }
 
 // PortfolioHandler.js
 export async function getPortfolio() {
   try {
-    let response;
+    let response,
+      networkError = false;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -182,11 +232,16 @@ export async function getPortfolio() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        if (response.status >= 500) {
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
+        }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        else break;
       } catch (error) {
-        if (attempt === maxAttempts)
+        if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to fetch portfolio: " + error.message);
       }
     }
@@ -202,8 +257,8 @@ export async function getPortfolio() {
 // ResetHandler.js
 export async function resetAccount(amount) {
   try {
-    let response;
-    console.log("Resetting account with amount:", amount, typeof amount);
+    let response,
+      networkError = false;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -215,11 +270,16 @@ export async function resetAccount(amount) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        if (response.status >= 500) {
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
+        }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        else break;
       } catch (error) {
-        if (attempt === maxAttempts || response.status >= 500)
+        if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to reset account: " + error.message);
       }
     }
@@ -241,7 +301,8 @@ export async function resetAccount(amount) {
 // LogoutHandler.js
 export async function logout() {
   try {
-    let response;
+    let response,
+      networkError = false;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -252,11 +313,16 @@ export async function logout() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        if (response.status >= 500) {
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
+        }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        else break;
       } catch (error) {
-        if (attempt === maxAttempts)
+        if (attempt === maxAttempts || !networkError)
           throw new Error("Logout failed with error: " + error.message);
       }
     }
@@ -273,7 +339,8 @@ export async function logout() {
 // LoginHandler.js
 export async function login(username, password) {
   try {
-    let response;
+    let response,
+      networkError = false;
     if (!username || !password)
       throw new Error("Username and password are required.");
 
@@ -290,11 +357,16 @@ export async function login(username, password) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        if (response.status >= 500) {
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
+        }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        else break;
       } catch (error) {
-        if (attempt === maxAttempts)
+        if (attempt === maxAttempts || !networkError)
           throw new Error("Login failed with error: " + error.message);
       }
     }
@@ -318,7 +390,8 @@ export async function login(username, password) {
 export async function register(username, password, initialBalance) {
   try {
     let balance = initialBalance;
-    let response;
+    let response,
+      networkError = false;
     if (!username || !password)
       throw new Error("Username and password are required.");
     if (password.length < 6)
@@ -338,11 +411,16 @@ export async function register(username, password, initialBalance) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        if (response.status >= 500) {
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
+        }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
-        else break;
       } catch (error) {
-        if (attempt === maxAttempts)
+        if (attempt === maxAttempts || !networkError)
           throw new Error("Registration failed with error: " + error.message);
       }
     }
@@ -363,49 +441,26 @@ export async function register(username, password, initialBalance) {
 }
 
 // BACKEND FUNCTIONS
-async function sellToken(
-  poolAddress,
-  tokenAmount,
-  slippage = slippagePercentage,
-  fee = feeAmount,
-) {
-  const payload = {
-    poolAddress,
-    tokenAmount,
-    slippage,
-    fee,
-  };
-  let response;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    try {
-      response = await fetch(API_BASE_URL + "/api/sell", {
-        method: "POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!response?.ok)
-        throw new Error("Server responded with status " + response.status);
-      else break;
-    } catch (error) {
-      if (attempt === maxAttempts)
-        throw new Error("Sell failed with error: " + error);
-    }
+export async function sellByPercentage(poolAddress, percentage) {
+  try {
+    const portfolio = await getPortfolio();
+    if (!portfolio?.tokens)
+      throw new Error(portfolio.error || "No tokens found in portfolio.");
+
+    const totalAmount = portfolio.tokens[poolAddress].amount;
+    if (!totalAmount) throw new Error("No tokens found for this pool.");
+
+    const amountToSell = parseFloat(totalAmount * (percentage / 100));
+    if (amountToSell <= 0) throw new Error("No tokens to sell.");
+
+    const result = await sellToken(poolAddress, amountToSell);
+    if (percentage === 100) unwatchPool(poolAddress);
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const errMsg = getDebugMode() ? "[API.js] " + message : message;
+    return { error: errMsg };
   }
-
-  const result = await response.json();
-  if (!result?.success)
-    throw new Error(result.error || "Unknown error occured.");
-
-  return {
-    success: result.success,
-    solReceived: result.solReceived,
-    tokensSold: result.tokensSold,
-    effectivePrice: result.effectivePrice,
-  };
 }
 
 async function getAuthHeaders() {
