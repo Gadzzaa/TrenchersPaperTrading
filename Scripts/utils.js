@@ -13,6 +13,7 @@ let glowTimeout2;
 const successSound = new Audio(chrome.runtime.getURL("Sounds/success.wav"));
 const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
 let audioVolume;
+let lastNotification = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
@@ -67,13 +68,22 @@ export function showNotification(message, type, sound = true) {
     error: "❌",
     info: "ℹ",
   };
+
+  const fullMessage = typeClasses[type] + " " + message;
+
+  // Prevent duplicate of the last message
+  if (fullMessage === lastNotification) return;
+
+  lastNotification = fullMessage;
+
   window.parent.postMessage(
     {
       type: "SHOW_NOTIFICATION",
-      message: typeClasses[type] + " " + message,
+      message: fullMessage,
     },
     "*",
   );
+
   if (sound)
     switch (type) {
       case "success":
@@ -84,8 +94,7 @@ export function showNotification(message, type, sound = true) {
         console.error(message);
         break;
       case "info":
-        // No sound for info
-        break;
+        break; // No sound
     }
 }
 
