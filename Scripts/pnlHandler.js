@@ -12,6 +12,7 @@ let isConnected = false;
 let pnlIntervalId = null;
 let heartbeatInterval;
 let lastPong = Date.now();
+let reconnectAttempts = 0;
 
 export function setPnlData(poolAddress, pnlData) {
   const idx = pnlDataArray.findIndex(
@@ -61,20 +62,6 @@ export async function connectWebSocket() {
         token: token,
       }),
     );
-    // Start heartbeat (every 15s)
-    heartbeatInterval = setInterval(() => {
-      if (!ws || ws.readyState !== WebSocket.OPEN) return;
-      const now = Date.now();
-
-      // If last pong was more than 60s ago → force reconnect
-      if (now - lastPong > 60 * 1000) {
-        console.warn("⚠️ WebSocket heartbeat timeout, forcing reconnect...");
-        ws.close();
-        return;
-      }
-
-      ws.send(JSON.stringify({ type: "ping" }));
-    }, 15000);
   };
 
   ws.onmessage = (event) => {
@@ -84,6 +71,27 @@ export async function connectWebSocket() {
       switch (data.type) {
         case "authenticated":
           isConnected = true;
+          reconnectAttempts = 0;
+          if (heartbeatInterval) clearInterval(heartbeatInterval);
+          lastPong = Date.now();
+
+          // Start heartbeat (every 15s)
+          heartbeatInterval = setInterval(() => {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+            const now = Date.now();
+            // If last pong was more than 60s ago → force reconnect
+            if (now - lastPong > 60 * 1000) {
+              console.warn(
+                "⚠️ WebSocket heartbeat timeout, forcing reconnect...",
+              );
+              ws.close();
+              return;
+            }
+
+            ws.send(JSON.stringify({ type: "ping" }));
+          }, 15000);
+
           console.log("✅ WebSocket connected and authenticated");
           break;
 
@@ -116,7 +124,11 @@ export async function connectWebSocket() {
     ws = null;
     isConnected = false;
     clearInterval(heartbeatInterval);
-    setTimeout(connectWebSocket, 3000); // reconnect automatically
+    const timeout = Math.min(3000 ** reconnectAttempts, 30_000); // exponential backoff
+    setTimeout(() => {
+      reconnectAttempts++;
+      connectWebSocket();
+    }, timeout);
   };
 
   ws.onerror = (err) => {
