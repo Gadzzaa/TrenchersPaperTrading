@@ -14,13 +14,28 @@ let heartbeatInterval;
 let lastPong = Date.now();
 
 export function setPnlData(poolAddress, pnlData) {
+  const idx = pnlDataArray.findIndex(
+    (p) => p.poolAddress.toString() === poolAddress.toString(),
+  );
   if (idx >= 0) {
     console.warn("Pnl data for pool already exists:", poolAddress);
     return;
   }
   pnlDataArray.push({ poolAddress, ...pnlData });
+  localStorage.setItem("pnlDataArray", JSON.stringify(pnlDataArray));
 }
 function getPnlData(poolAddress) {
+  const stored = localStorage.getItem("pnlDataArray");
+  let arr = [];
+  try {
+    pnlDataArray = stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    console.error("Failed to parse pnlDataArray from localStorage", e);
+    arr = [];
+  }
+  const data = pnlDataArray.find(
+    (p) => p.poolAddress.toString() === poolAddress.toString(),
+  );
   return data || null;
 }
 
