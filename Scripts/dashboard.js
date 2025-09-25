@@ -245,7 +245,7 @@ export async function updateBalanceUI(force = false) {
 
   const result = await getPortfolio();
   if (!result?.solBalance) {
-    showNotification(result.error || "Failed to fetch balance.", "error");
+    console.error("Failed to fetch balance:", result?.error || result);
     return;
   }
   const balance = parseFloat(result.solBalance).toFixed(2);

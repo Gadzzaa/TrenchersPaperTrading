@@ -204,7 +204,10 @@ export async function updateTotalPnl() {
     const positionEl = document.getElementById("pnlText");
     const sellsTab = document.getElementById("Sells");
 
-    if (!isConnected) throw new Error("WebSocket not connected");
+    if (!isConnected) {
+      console.warn("WebSocket not connected, attempting to reconnect...");
+      return;
+    }
     if (!currentPool) throw new Error("No active token set");
     if (!boughtText || !soldText || !holdText || !positionEl || !sellsTab)
       throw new Error("Required DOM element missing");
