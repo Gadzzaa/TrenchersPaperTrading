@@ -32,7 +32,7 @@ export async function checkSession() {
       throw new Error(
         "Server is currently unreachable. Please check your connection or try again later.",
       );
-    if (!response?.ok) return false;
+    if (!response?.ok) throw new Error("Invalid session. Please log in again.");
     return true;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -52,12 +52,22 @@ export async function getTradeLog() {
       method: "GET",
       headers: await getAuthHeaders(),
     });
-    if (response.status >= 500)
-      throw new Error(
-        "Server is currently unreachable. Please check your connection or try again later.",
-      );
+    switch (response.status) {
+      case 401:
+        throw new Error("Unauthorized. Please log in again.");
+      case 404:
+        throw new Error("Trade log not found.");
+      case 429:
+        throw new Error("Too many requests. Please try again later.");
+      case 500:
+      case 501:
+      case 502:
+        throw new Error(
+          "Server is currently unreachable. Please check your connection or try again later.",
+        );
+    }
     if (!response?.ok)
-      throw new Error(`Server responded with status ${response.status}`);
+      throw new Error(`Could not fetch trade log: ${response.status}`);
     const data = await response.json();
     return data;
   } catch (error) {
@@ -81,14 +91,19 @@ export async function fetchPopupData() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (response.status >= 500) {
-          networkError = true;
-          throw new Error(
-            "Server is currently unreachable. Please check your connection or try again later.",
-          );
+        switch (response.status) {
+          case 401:
+            throw new Error("Unauthorized. Please log in again.");
+          case 404:
+            throw new Error("Popup Data not found.");
+          case 429:
+            throw new Error("Too many requests. Please try again later.");
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
         }
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to fetch popup data: " + error.message);
@@ -130,11 +145,18 @@ export async function buyToken(
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (response.status >= 500) {
-          networkError = true;
-          throw new Error(
-            "Server is currently unreachable. Please check your connection or try again later.",
-          );
+        switch (response.status) {
+          case 400:
+            throw new Error("Bad request: ", response.error);
+          case 401:
+            throw new Error("Unauthorized.");
+          case 403:
+            throw new Error("Forbidden:", response.error);
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
         }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
@@ -191,11 +213,16 @@ async function sellToken(
         signal: controller.signal,
       });
       clearTimeout(timeout);
-      if (response.status >= 500) {
-        networkError = true;
-        throw new Error(
-          "Server is currently unreachable. Please check your connection or try again later.",
-        );
+      switch (response.status) {
+        case 400:
+          throw new Error("Bad request: " + response.error);
+        case 401:
+          throw new Error("Unauthorized.");
+        case 500:
+          networkError = true;
+          throw new Error(
+            "Server is currently unreachable. Please check your connection or try again later.",
+          );
       }
       if (!response?.ok)
         throw new Error("Server responded with status " + response.status);
@@ -232,11 +259,16 @@ export async function getPortfolio() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (response.status >= 500) {
-          networkError = true;
-          throw new Error(
-            "Server is currently unreachable. Please check your connection or try again later.",
-          );
+        switch (response.status) {
+          case 401:
+            throw new Error("Unauthorized. Please log in again.");
+          case 404:
+            throw new Error("Portfolio not found.");
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
         }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
@@ -270,11 +302,22 @@ export async function resetAccount(amount) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (response.status >= 500) {
-          networkError = true;
-          throw new Error(
-            "Server is currently unreachable. Please check your connection or try again later.",
-          );
+        switch (response.status) {
+          case 400:
+            throw new Error("Bad request: " + response.error);
+          case 401:
+            throw new Error("Unauthorized. Please log in again.");
+          case 403:
+            throw new Error("Forbidden: " + response.error);
+          case 404:
+            throw new Error("Not found: ", response.error);
+          case 409:
+            throw new Error("Error occured: " + response.error);
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
         }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
@@ -313,11 +356,16 @@ export async function logout() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (response.status >= 500) {
-          networkError = true;
-          throw new Error(
-            "Server is currently unreachable. Please check your connection or try again later.",
-          );
+        switch (response.status) {
+          case 400:
+            throw new Error("Bad request: " + response.error);
+          case 401:
+            throw new Error("Unauthorized. Please log in again.");
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
         }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
@@ -357,11 +405,14 @@ export async function login(username, password) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (response.status >= 500) {
-          networkError = true;
-          throw new Error(
-            "Server is currently unreachable. Please check your connection or try again later.",
-          );
+        switch (response.status) {
+          case 401:
+            throw new Error("Invalid credentials.");
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
         }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
@@ -411,11 +462,16 @@ export async function register(username, password, initialBalance) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
-        if (response.status >= 500) {
-          networkError = true;
-          throw new Error(
-            "Server is currently unreachable. Please check your connection or try again later.",
-          );
+        switch (response.status) {
+          case 400:
+            throw new Error("Bad request: " + response.error);
+          case 409:
+            throw new Error("Username already exists.");
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
         }
         if (!response?.ok)
           throw new Error(`Server responded with status ${response.status}`);
