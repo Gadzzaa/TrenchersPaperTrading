@@ -13,6 +13,7 @@ import {
   setActiveToken,
   clearPositions,
   importTradeLog,
+  connectWebSocket,
 } from "./pnlHandler.js";
 
 import {
@@ -27,6 +28,7 @@ import {
 
 let currentContract = null;
 let currentPreset = null;
+let ws = null;
 
 const settings = [
   {
@@ -71,6 +73,10 @@ async function init() {
   } else applyPreset(currentPreset);
 
   document.body.style.removeProperty("pointer-events");
+  if (!ws)
+    ws = connectWebSocket().catch((error) => {
+      throw new Error("WebSocket connection failed: " + error.message);
+    });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

@@ -10,9 +10,10 @@ const watchedPools = new Map();
 let ws;
 let isConnected = false;
 let pnlIntervalId = null;
+let heartbeatInterval;
+let lastPong = Date.now();
 
 export function setPnlData(poolAddress, pnlData) {
-  const idx = pnlDataArray.findIndex((p) => p.poolAddress === poolAddress);
   if (idx >= 0) {
     console.warn("Pnl data for pool already exists:", poolAddress);
     return;
@@ -20,11 +21,20 @@ export function setPnlData(poolAddress, pnlData) {
   pnlDataArray.push({ poolAddress, ...pnlData });
 }
 function getPnlData(poolAddress) {
-  const data = pnlDataArray.find((p) => p.poolAddress === poolAddress);
   return data || null;
 }
 
-async function connectWebSocket() {
+export async function connectWebSocket() {
+  if (
+    ws &&
+    (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
+  ) {
+    console.log(
+      "⚠️ WebSocket already open or connecting, skipping new connection",
+    );
+    return ws;
+  }
+
   ws = new WebSocket(CONFIG.WS_URL);
   const token = await getFromStorage("sessionToken");
 
@@ -36,6 +46,20 @@ async function connectWebSocket() {
         token: token,
       }),
     );
+    // Start heartbeat (every 15s)
+    heartbeatInterval = setInterval(() => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      const now = Date.now();
+
+      // If last pong was more than 60s ago → force reconnect
+      if (now - lastPong > 60 * 1000) {
+        console.warn("⚠️ WebSocket heartbeat timeout, forcing reconnect...");
+        ws.close();
+        return;
+      }
+
+      ws.send(JSON.stringify({ type: "ping" }));
+    }, 15000);
   };
 
   ws.onmessage = (event) => {
@@ -47,8 +71,9 @@ async function connectWebSocket() {
           isConnected = true;
           console.log("✅ WebSocket connected and authenticated");
           break;
+
         case "poolUpdate":
-          console.log("Received pool update:", data);
+          console.log("📊 Pool update:", data);
           const pool = watchedPools.get(data.poolAddress);
           if (pool) {
             pool.price = data.price;
@@ -59,7 +84,8 @@ async function connectWebSocket() {
           break;
 
         case "pong":
-          console.log("Received pong from server");
+          lastPong = Date.now();
+          console.log("🏓 Pong received");
           break;
 
         default:
@@ -72,13 +98,17 @@ async function connectWebSocket() {
 
   ws.onclose = () => {
     console.log("🛑 WebSocket disconnected, retrying in 3s...");
+    ws = null;
     isConnected = false;
+    clearInterval(heartbeatInterval);
     setTimeout(connectWebSocket, 3000); // reconnect automatically
   };
 
   ws.onerror = (err) => {
     console.error("❌ WebSocket error:", err);
   };
+
+  return ws;
 }
 
 export function watchPool(poolAddress) {
@@ -99,13 +129,13 @@ export function unwatchPool(poolAddress) {
   }
 }
 
-connectWebSocket();
-
 export function setActiveToken(poolAddress) {
   if (pnlIntervalId) clearInterval(pnlIntervalId);
 
   currentPool = poolAddress;
-  const idx = openPositions.findIndex((p) => p.pool === poolAddress);
+  const idx = openPositions.findIndex(
+    (p) => p.pool.toString() === poolAddress.toString(),
+  );
   if (idx < 0) {
     console.log("openPositions:", openPositions);
     console.warn("No position found for pool:", poolAddress);
@@ -140,7 +170,9 @@ export async function updateTotalPnl() {
     if (!openPositions || !Array.isArray(openPositions))
       throw new Error("Open positions not found or invalid");
 
-    const pos = openPositions.find((p) => p.pool === currentPool);
+    const pos = openPositions.find(
+      (p) => p.pool.toString() === currentPool.toString(),
+    );
     if (!pos)
       throw new Error("No position found for current pool: " + currentPool);
 
@@ -164,7 +196,7 @@ export async function updateTotalPnl() {
     let currentPrice = 0;
     if (!posClosed) {
       const pool = watchedPools.get(currentPool);
-      let currentPrice = pool?.price;
+      currentPrice = pool?.price;
       if (!currentPrice) {
         console.error("Current price not found for pool:", currentPool);
         updateDOM(
