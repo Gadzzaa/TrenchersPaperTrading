@@ -104,6 +104,10 @@ export async function fetchPopupData() {
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${response.error || response.statusText}`,
+        );
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to fetch popup data: " + error.message);
@@ -158,8 +162,10 @@ export async function buyToken(
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${response.error || response.statusText}`,
+        );
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Buy failed with error: " + error.message);
@@ -224,8 +230,10 @@ async function sellToken(
             "Server is currently unreachable. Please check your connection or try again later.",
           );
       }
-      if (!response?.ok)
-        throw new Error("Server responded with status " + response.status);
+      if (response?.ok) break;
+      throw new Error(
+        `Unknown error occured: ${response.error || response.statusText}`,
+      );
     } catch (error) {
       if (attempt === maxAttempts || !networkError)
         throw new Error("Sell failed with error: " + error);
@@ -270,8 +278,10 @@ export async function getPortfolio() {
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${response.error || response.statusText}`,
+        );
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to fetch portfolio: " + error.message);
@@ -319,8 +329,10 @@ export async function resetAccount(amount) {
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${response.error || response.statusText}`,
+        );
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to reset account: " + error.message);
@@ -367,8 +379,10 @@ export async function logout() {
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${response.error || response.statusText}`,
+        );
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Logout failed with error: " + error.message);
@@ -414,8 +428,10 @@ export async function login(username, password) {
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${response.error || response.statusText}`,
+        );
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Login failed with error: " + error.message);
@@ -440,8 +456,8 @@ export async function login(username, password) {
 // RegisterHandler.js
 export async function register(username, password, initialBalance) {
   try {
-    let balance = initialBalance;
-    let response,
+    let balance = initialBalance,
+      response,
       networkError = false;
     if (!username || !password)
       throw new Error("Username and password are required.");
@@ -473,8 +489,10 @@ export async function register(username, password, initialBalance) {
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
-        if (!response?.ok)
-          throw new Error(`Server responded with status ${response.status}`);
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${response.error || response.statusText}`,
+        );
       } catch (error) {
         if (attempt === maxAttempts || !networkError)
           throw new Error("Registration failed with error: " + error.message);
