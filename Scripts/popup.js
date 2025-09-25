@@ -27,7 +27,9 @@ let tokenListContainer,
   subscriptionMethod,
   versionInfo,
   defaultButton,
-  pnlData;
+  pnlData,
+  usernameInput,
+  passwordInput;
 const barWidth = 30;
 const tokens = [];
 const settings = [
@@ -117,8 +119,8 @@ async function init() {
 document.addEventListener("DOMContentLoaded", async () => {
   const footerButtons = document.querySelectorAll(".footerButton");
   const debugButton = document.getElementById("debugButton");
-  const usernameInput = document.getElementById("formUsername");
-  const passwordInput = document.getElementById("formPassword");
+  usernameInput = document.getElementById("formUsername");
+  passwordInput = document.getElementById("formPassword");
   const showPasswordButton = document.getElementById("showPasswordButton");
   const icon = showPasswordButton.querySelector("i");
   usernameText = document.getElementById("usernameText");
@@ -152,6 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await login(usernameInput.value, passwordInput.value)
       .then(async () => {
+        clearInputFields();
         await loadAPIData();
         moveIndicator(defaultButton);
         setDisplay(defaultButton.dataset.index);
@@ -193,6 +196,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const interval = startLoadingDots(registerButton);
         await register(usernameInput.value, passwordInput.value, amount)
           .then(async () => {
+            clearInputFields();
             await loadAPIData();
             moveIndicator(defaultButton);
             setDisplay(defaultButton.dataset.index);
@@ -370,7 +374,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
-
 async function loadAPIData() {
   tokenListContainer.innerHTML = "";
   tokens.length = 0;
@@ -452,7 +455,6 @@ function setDisplay(index) {
       behavior: "smooth",
     });
 }
-
 function addToken(
   poolAddress,
   name,
@@ -492,6 +494,11 @@ function renderToken(token) {
 
   if (!tokenListContainer) console.error("Token list container not found.");
   tokenListContainer.appendChild(button);
+}
+
+function clearInputFields() {
+  if (usernameInput) usernameInput.value = "";
+  if (passwordInput) passwordInput.value = "";
 }
 
 function moveIndicator(el) {
