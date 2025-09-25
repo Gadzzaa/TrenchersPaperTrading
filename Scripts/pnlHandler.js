@@ -126,6 +126,32 @@ export async function connectWebSocket() {
   return ws;
 }
 
+export function disconnectWebSocket() {
+  if (!ws) return;
+
+  console.log("🛑 Disconnecting WebSocket...");
+
+  // Stop any PnL interval
+  if (pnlIntervalId) {
+    clearInterval(pnlIntervalId);
+    pnlIntervalId = null;
+  }
+
+  // Remove all listeners (optional but safer)
+  ws.onopen = null;
+  ws.onmessage = null;
+  ws.onerror = null;
+  ws.onclose = null;
+
+  // Close the WebSocket
+  ws.close();
+
+  // Reset state
+  ws = null;
+  isConnected = false;
+  return ws;
+}
+
 export function watchPool(poolAddress) {
   if (!watchedPools.has(poolAddress)) {
     // add pool to local map with empty data

@@ -14,6 +14,7 @@ import {
   clearPositions,
   importTradeLog,
   connectWebSocket,
+  disconnectWebSocket,
 } from "./pnlHandler.js";
 
 import {
@@ -29,6 +30,7 @@ import {
 let currentContract = null;
 let currentPreset = null;
 let ws = null;
+let updateInterval = null;
 
 const settings = [
   {
@@ -67,16 +69,44 @@ async function init() {
 
   enableUI();
 
-  currentPreset = getUsingPreset();
-  if (currentPreset == null || currentPreset === "undefined") {
-    applyPreset("preset1");
-  } else applyPreset(currentPreset);
-
   document.body.style.removeProperty("pointer-events");
   if (!ws)
     ws = connectWebSocket().catch((error) => {
       throw new Error("WebSocket connection failed: " + error.message);
     });
+
+  updateInterval = setInterval(async () => {
+    currentPreset = document.querySelector(".activePreset")?.id;
+
+    const pendingPresets = localStorage.getItem("pendingPresets");
+    if (pendingPresets) {
+      applyPreset(currentPreset);
+      localStorage.setItem("pendingPresets", false);
+    }
+
+    const newPreset = getUsingPreset();
+    if (currentPreset !== newPreset) {
+      applyPreset(newPreset);
+      currentPreset = newPreset;
+    }
+
+    const newContract = await requestCurrentContract();
+    console.log("Current Contract:", newContract);
+    if (currentContract !== newContract) {
+      currentContract = newContract;
+      searchPosition(currentContract);
+    }
+
+    await updateBalanceUI();
+  }, 1000);
+}
+
+async function logout() {
+  document.body.style.pointerEvents = "none";
+  ws = disconnectWebSocket();
+  clearInterval(updateInterval);
+  clearPositions();
+  disableUI();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -84,6 +114,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const actionButtons = document.querySelectorAll(
       "#buyButtons .buyButton, #sellButtons .sellButton",
     );
+    for (const button of actionButtons) {
+      button.addEventListener("click", handleActionButtonClick(button));
+    }
+    currentPreset = getUsingPreset();
+    if (currentPreset == null || currentPreset === "undefined") {
+      applyPreset("preset1");
+    } else applyPreset(currentPreset);
 
     await init();
 
@@ -104,35 +141,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         changeDelay(changes.updateDelay.newValue);
       }
     });
-
-    for (const button of actionButtons) {
-      button.addEventListener("click", handleActionButtonClick(button));
-    }
-
-    setInterval(async () => {
-      currentPreset = document.querySelector(".activePreset")?.id;
-
-      const pendingPresets = localStorage.getItem("pendingPresets");
-      if (pendingPresets) {
-        applyPreset(currentPreset);
-        localStorage.setItem("pendingPresets", false);
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === "initDashboard") {
+        console.log("User registered, initializing dashboard...");
+        init();
       }
-
-      const newPreset = getUsingPreset();
-      if (currentPreset !== newPreset) {
-        applyPreset(newPreset);
-        currentPreset = newPreset;
+      if (message.type === "logoutDashboard") {
+        console.log("User logged out, disabling dashboard...");
+        logout();
       }
-
-      const newContract = await requestCurrentContract();
-      console.log("Current Contract:", newContract);
-      if (currentContract !== newContract) {
-        currentContract = newContract;
-        searchPosition(currentContract);
-      }
-
-      await updateBalanceUI();
-    }, 1000);
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification("[dashboard.js] " + message, "error");

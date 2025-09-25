@@ -390,6 +390,7 @@ export async function logout() {
     }
     removeFromStorage("sessionToken");
     removeFromStorage("username");
+    chrome.runtime.sendMessage({ type: "logoutDashboard" });
     disableUI();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -445,6 +446,7 @@ export async function login(username, password) {
 
     await setToStorage("sessionToken", result.token);
     await setToStorage("username", result.username);
+    chrome.runtime.sendMessage({ type: "initDashboard" });
     enableUI();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -506,6 +508,7 @@ export async function register(username, password, initialBalance) {
 
     await setToStorage("username", result.username);
     await setToStorage("sessionToken", result.token);
+    chrome.runtime.sendMessage({ type: "initDashboard" });
     enableUI();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
