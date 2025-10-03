@@ -178,6 +178,15 @@ export function requestCurrentContract() {
   });
 }
 
+export function requestHideApp() {
+  window.parent.postMessage(
+    {
+      type: "HIDE_APP",
+    },
+    "*",
+  );
+}
+
 export function getFromStorage(key) {
   return new Promise((resolve) => {
     chrome.storage.local.get([key], (res) => resolve(res[key]));

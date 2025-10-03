@@ -9,8 +9,7 @@ let lastContract = null;
 try {
   monitorRouteChanges();
 } catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error("❌ Error initializing TrenchersPaperTrading:", message);
+  console.error("❌ Error initializing TrenchersPaperTrading:", error);
 }
 
 window.addEventListener("message", async (event) => {
@@ -29,6 +28,10 @@ window.addEventListener("message", async (event) => {
   }
   if (type === "SHOW_NOTIFICATION" && event.data?.message) {
     showNotification(event.data.message);
+  }
+
+  if (type === "HIDE_APP") {
+    hideApp();
   }
 });
 
@@ -135,102 +138,106 @@ function handleRouteChange() {
   const isOnMemePage = currentPath.startsWith("/meme");
   lastFullPath = currentPath;
 
+  const appContainer = document.getElementById("TrenchersPaperTrading");
   if (isOnMemePage) {
-    if (!appInjected) {
-      injectApp();
-      appInjected = true;
-    }
+    if (!appContainer) injectApp();
+    else appContainer.style.display = "block";
   } else {
-    if (appInjected) {
-      removeApp();
-      appInjected = false;
-    }
+    if (appContainer) removeApp();
   }
 }
 
+function hideApp() {
+  const app = document.getElementById("TrenchersPaperTrading");
+  if (app) {
+    app.style.opacity = "0";
+    setTimeout(() => (app.style.display = "none"), 300); // match your fade duration
+  }
+}
 function removeApp() {
   const appContainer = document.getElementById("TrenchersPaperTrading");
   if (appContainer) {
-    appContainer.remove(); // TODO: When outside /meme, hide the app instead of removing it.
+    appContainer.remove();
   }
 }
 
 function injectApp() {
-  const isWithinBounds = (left, top, width, height) => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    return (
-      parseInt(left) + width <= vw &&
-      parseInt(top) + height <= vh &&
-      parseInt(left) >= 0 &&
-      parseInt(top) >= 0
-    );
-  };
+  try {
+    const isWithinBounds = (left, top, width, height) => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      return (
+        parseInt(left) + width <= vw &&
+        parseInt(top) + height <= vh &&
+        parseInt(left) >= 0 &&
+        parseInt(top) >= 0
+      );
+    };
 
-  const appContainer = document.createElement("div");
-  appContainer.id = "TrenchersPaperTrading";
-  Object.assign(appContainer.style, {
-    position: "fixed",
-    top: "100px",
-    left: "100px",
-    width: "350px",
-    height: "285px",
-    zIndex: "99999",
-    background: "transparent",
-    borderRadius: "12px",
-    overflow: "hidden",
-    userSelect: "none",
-    opacity: "0",
-    transition: "opacity 0.3s ease",
-  });
+    const appContainer = document.createElement("div");
+    appContainer.id = "TrenchersPaperTrading";
+    Object.assign(appContainer.style, {
+      position: "fixed",
+      top: "100px",
+      left: "100px",
+      width: "350px",
+      height: "285px",
+      zIndex: "99999",
+      background: "transparent",
+      borderRadius: "12px",
+      overflow: "hidden",
+      userSelect: "none",
+      opacity: "0",
+      transition: "opacity 0.3s ease",
+    });
 
-  const savedLeft = localStorage.getItem("draggableLeft");
-  const savedTop = localStorage.getItem("draggableTop");
+    const savedLeft = localStorage.getItem("draggableLeft");
+    const savedTop = localStorage.getItem("draggableTop");
 
-  chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
-    if (!saveWindowPos) return;
-    if (
-      savedLeft &&
-      savedTop &&
-      isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
-    ) {
-      appContainer.style.left = savedLeft;
-      appContainer.style.top = savedTop;
-    }
-  });
+    chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
+      if (!saveWindowPos) return;
+      if (
+        savedLeft &&
+        savedTop &&
+        isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
+      ) {
+        appContainer.style.left = savedLeft;
+        appContainer.style.top = savedTop;
+      }
+    });
 
-  const appIframe = document.createElement("iframe");
-  appIframe.src = chrome.runtime.getURL("dashboard.html");
-  Object.assign(appIframe.style, {
-    width: "100%",
-    height: "240px",
-    border: "none",
-    borderRadius: "12px",
-    zIndex: "2",
-  });
+    const appIframe = document.createElement("iframe");
+    appIframe.src = chrome.runtime.getURL("dashboard.html");
+    Object.assign(appIframe.style, {
+      width: "100%",
+      height: "240px",
+      border: "none",
+      borderRadius: "12px",
+      zIndex: "2",
+    });
 
-  appContainer.appendChild(appIframe);
-  document.body.appendChild(appContainer);
+    appContainer.appendChild(appIframe);
+    document.body.appendChild(appContainer);
 
-  chrome.storage.local.get("animation", ({ animation }) => {
-    if (!animation) animation = 3;
-    document.documentElement.style.setProperty(
-      "--anim-time",
-      `${animation / 10}s`,
-    );
-  });
-
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.animation) {
+    chrome.storage.local.get("animation", ({ animation }) => {
+      if (!animation) animation = 3;
       document.documentElement.style.setProperty(
         "--anim-time",
-        `${changes.animation.newValue / 10}s`,
+        `${animation / 10}s`,
       );
-    }
-  });
+    });
 
-  const style = document.createElement("style");
-  style.textContent = `
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.animation) {
+        document.documentElement.style.setProperty(
+          "--anim-time",
+          `${changes.animation.newValue / 10}s`,
+        );
+      }
+    });
+
+    const style = document.createElement("style");
+    style.textContent = `
   #TrenchersPaperTrading {
     transition: 
       background var(--anim-time) ease,
@@ -238,7 +245,8 @@ function injectApp() {
       border-color var(--anim-time) ease,
       box-shadow var(--anim-time) ease;
   }
-  #TrenchersPaperTrading[data-theme="dark"]{
+  #TrenchersPaperTrading[data-theme="dark"],
+  #trenchersToggleBtn{
     --base: 30, 30, 46; /* #1e1e2e */
     --mantle: 24, 24, 37; /* #181825 */
     --crust: 17, 17, 27; /* #11111b */
@@ -350,50 +358,121 @@ function injectApp() {
     animation: pop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
   }
+
+#trenchersToggleBtn {
+  position: fixed;
+  bottom: 40px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(var(--base));
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  z-index: 999999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  will-change: transform, opacity;
+}
+
+#trenchersToggleBtn:hover {
+  transform: scale(1.1); /* subtle grow on hover */
+}
+
+#trenchersToggleBtn:active {
+  transform: scale(0.9); /* immediate press-down feel */
+}
+
+@keyframes toggleClick {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+#trenchersToggleBtn.clicked {
+  animation: toggleClick 0.3s ease;
+}
   `;
-  document.head.appendChild(style);
+    document.head.appendChild(style);
 
-  chrome.storage.local.get("theme", ({ theme }) => {
-    if (theme) {
-      appContainer.setAttribute("data-theme", theme);
-    } else appContainer.setAttribute("data-theme", "dark");
-  });
+    chrome.storage.local.get("theme", ({ theme }) => {
+      if (theme) {
+        appContainer.setAttribute("data-theme", theme);
+      } else appContainer.setAttribute("data-theme", "dark");
+    });
 
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "local" && changes.theme) {
-      appContainer.setAttribute("data-theme", changes.theme.newValue);
-    }
-  });
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.theme) {
+        appContainer.setAttribute("data-theme", changes.theme.newValue);
+      }
+    });
 
-  const notification = document.createElement("div");
-  notification.id = "notification";
-  notification.className = "notification";
+    const notification = document.createElement("div");
+    notification.id = "notification";
+    notification.className = "notification";
 
-  // Create span for text
-  const notifText = document.createElement("span");
-  notifText.id = "notifText";
-  notification.appendChild(notifText);
+    // Create span for text
+    const notifText = document.createElement("span");
+    notifText.id = "notifText";
+    notification.appendChild(notifText);
 
-  appContainer.appendChild(notification);
+    appContainer.appendChild(notification);
 
-  const moveHandle = document.createElement("div");
-  Object.assign(moveHandle.style, {
-    position: "absolute",
-    top: "6px",
-    left: "174.5px",
-    width: "12px",
-    height: "8px",
-    cursor: "grab",
-    background: "transparent",
-    zIndex: "999999",
-  });
+    // Toggle Button
+    const toggleButton = document.createElement("button");
+    toggleButton.id = "trenchersToggleBtn";
+    toggleButton.textContent = "📊"; // or your icon
 
-  appContainer.appendChild(moveHandle);
-  makeDraggable(appContainer, moveHandle, appIframe);
+    // Toggle logic
+    toggleButton.addEventListener("click", () => {
+      const app = document.getElementById("TrenchersPaperTrading");
+      if (!app) return;
+      // --- animate button ---
+      toggleButton.classList.remove("clicked"); // reset
+      void toggleButton.offsetWidth; // force reflow so animation restarts
+      toggleButton.classList.add("clicked");
 
-  setTimeout(() => {
-    appContainer.style.opacity = "1";
-  }, 50);
+      if (app.style.display === "none") {
+        app.style.display = "block";
+        setTimeout(() => (app.style.opacity = "1"), 20);
+      } else {
+        hideApp();
+      }
+    });
+
+    document.body.appendChild(toggleButton);
+
+    const moveHandle = document.createElement("div");
+    Object.assign(moveHandle.style, {
+      position: "absolute",
+      top: "6px",
+      left: "174.5px",
+      width: "12px",
+      height: "8px",
+      cursor: "grab",
+      background: "transparent",
+      zIndex: "999999",
+    });
+
+    appContainer.appendChild(moveHandle);
+    makeDraggable(appContainer, moveHandle, appIframe);
+
+    setTimeout(() => {
+      appContainer.style.opacity = "1";
+    }, 50);
+  } catch (error) {
+    throw error;
+  }
 }
 
 function showNotification(message) {

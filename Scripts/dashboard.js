@@ -19,6 +19,7 @@ import {
 
 import {
   requestCurrentContract,
+  requestHideApp,
   disableAllTradeButtons,
   enableAllTradeButtons,
   showButtonLoading,
@@ -117,10 +118,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (const button of actionButtons) {
       button.addEventListener("click", handleActionButtonClick(button));
     }
+
     currentPreset = getUsingPreset();
     if (currentPreset == null || currentPreset === "undefined") {
       applyPreset("preset1");
     } else applyPreset(currentPreset);
+
+    const closeButton = document.getElementById("Close");
+    closeButton.addEventListener("click", () => {
+      requestHideApp();
+    });
 
     await init();
 
