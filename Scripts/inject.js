@@ -431,8 +431,10 @@ function injectApp() {
     // Toggle Button
     const toggleButton = document.createElement("button");
     toggleButton.id = "trenchersToggleBtn";
-    toggleButton.textContent = "📊"; // or your icon
-
+    var toggleButtonImage = document.createElement("img");
+    toggleButtonImage.src = "https://i.imgur.com/ZBbPCG4.png";
+    toggleButtonImage.alt = "Show/Hide TrenchersPT";
+    toggleButton.appendChild(toggleButtonImage);
     // Toggle logic
     toggleButton.addEventListener("click", () => {
       const app = document.getElementById("TrenchersPaperTrading");
