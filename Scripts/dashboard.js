@@ -27,12 +27,14 @@ import {
   enableUI,
   disableUI,
   getFromStorage,
+  internetConnection,
 } from "./utils.js";
 
 let currentContract = null;
 let currentPreset = null;
 let ws = null;
 let updateInterval = null;
+let healthCheckInterval = null;
 
 const settings = [
   {
@@ -64,12 +66,20 @@ async function init() {
 
   if (!(await healthCheck())) {
     console.log("Health check failed, aborting dashboard initialization.");
+    disableUI("no-internet");
+    healthCheckInterval = setInterval(async () => {
+      if (await healthCheck()) {
+        clearInterval(healthCheckInterval);
+        init();
+      }
+    }, 1000);
     return;
   }
+
   const isSessionValid = await checkSession();
   if (!isSessionValid) {
     clearPositions();
-    disableUI();
+    disableUI("no-session");
     return;
   }
 
@@ -97,7 +107,6 @@ async function init() {
     }
 
     const newContract = await requestCurrentContract();
-    console.log("Current Contract:", newContract);
     if (currentContract !== newContract) {
       currentContract = newContract;
       searchPosition(currentContract);
@@ -112,7 +121,7 @@ async function logout() {
   ws = disconnectWebSocket();
   clearInterval(updateInterval);
   clearPositions();
-  disableUI();
+  disableUI("no-session");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -134,8 +143,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       requestHideApp();
     });
 
-    await init();
-
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area === "local" && changes.theme) {
         document.documentElement.setAttribute(
@@ -154,6 +161,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      console.log("[Dashboard] Received:", message);
       if (message.type === "initDashboard") {
         console.log("User registered, initializing dashboard...");
         init();
@@ -163,9 +171,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         logout();
       }
     });
+
+    await init();
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    showNotification("[dashboard.js] " + message, "error");
+    console.error("[TrenchersPT] Initialization error:", error);
   }
 });
 
@@ -241,6 +250,7 @@ async function searchPosition(currentContract) {
 }
 
 export async function updateBalanceUI(force = false) {
+  if (!internetConnection()) return;
   const solBalance = document.getElementById("balanceValue");
   const cache = localStorage.getItem("cachedBalance");
   const lastUpdated = parseInt(

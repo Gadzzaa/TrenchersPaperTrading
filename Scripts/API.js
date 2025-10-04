@@ -121,6 +121,11 @@ export async function fetchPopupData() {
           `Unknown error occured: ${response.error || response.statusText}`,
         );
       } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          disableUI("no-internet");
+          networkError = true;
+        }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to fetch popup data: " + error.message);
       }
@@ -179,6 +184,11 @@ export async function buyToken(
           `Unknown error occured: ${response.error || response.statusText}`,
         );
       } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          disableUI("no-internet");
+          networkError = true;
+        }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Buy failed with error: " + error.message);
       }
@@ -247,6 +257,11 @@ async function sellToken(
         `Unknown error occured: ${response.error || response.statusText}`,
       );
     } catch (error) {
+      if (isNetworkError(error)) {
+        console.warn("⚠️ Network offline or server is unreachable:", error);
+        disableUI("no-internet");
+        networkError = true;
+      }
       if (attempt === maxAttempts || !networkError)
         throw new Error("Sell failed with error: " + error);
     }
@@ -295,6 +310,11 @@ export async function getPortfolio() {
           `Unknown error occured: ${response.error || response.statusText}`,
         );
       } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          disableUI("no-internet");
+          networkError = true;
+        }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to fetch portfolio: " + error.message);
       }
@@ -346,6 +366,11 @@ export async function resetAccount(amount) {
           `Unknown error occured: ${response.error || response.statusText}`,
         );
       } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          disableUI("no-internet");
+          networkError = true;
+        }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to reset account: " + error.message);
       }
@@ -396,6 +421,11 @@ export async function logout() {
           `Unknown error occured: ${response.error || response.statusText}`,
         );
       } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          disableUI("no-internet");
+          networkError = true;
+        }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Logout failed with error: " + error.message);
       }
@@ -403,7 +433,7 @@ export async function logout() {
     removeFromStorage("sessionToken");
     removeFromStorage("username");
     chrome.runtime.sendMessage({ type: "logoutDashboard" });
-    disableUI();
+    disableUI("no-session");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
@@ -446,6 +476,11 @@ export async function login(username, password) {
           `Unknown error occured: ${response.error || response.statusText}`,
         );
       } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          disableUI("no-internet");
+          networkError = true;
+        }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Login failed with error: " + error.message);
       }
@@ -508,6 +543,11 @@ export async function register(username, password, initialBalance) {
           `Unknown error occured: ${response.error || response.statusText}`,
         );
       } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          disableUI("no-internet");
+          networkError = true;
+        }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Registration failed with error: " + error.message);
       }
@@ -561,4 +601,15 @@ async function getAuthHeaders() {
     "Content-Type": "application/json",
     Authorization: `Bearer ${sessionToken}`,
   };
+}
+
+function isNetworkError(error) {
+  return (
+    error.name === "TypeError" &&
+    (error.message.includes("Failed to fetch") ||
+      error.message.includes("NetworkError") ||
+      error.message.includes("ERR_CONNECTION_REFUSED") ||
+      error.message.includes("ERR_INTERNET_DISCONNECTED") ||
+      error.message.includes("The network connection was lost"))
+  );
 }

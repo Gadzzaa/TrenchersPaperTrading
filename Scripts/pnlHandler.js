@@ -1,6 +1,6 @@
 import { showNotification } from "./utils.js";
 import { getDebugMode } from "../config.js";
-import { getFromStorage } from "./utils.js";
+import { getFromStorage, internetConnection } from "./utils.js";
 import { getTradeLog } from "./API.js";
 import CONFIG from "../config.js";
 const openPositions = [];
@@ -119,7 +119,10 @@ export async function connectWebSocket() {
     }
   };
 
-  ws.onclose = () => {
+  ws.onclose = async () => {
+    if (!internetConnection()) {
+      return;
+    }
     console.log("🛑 WebSocket disconnected, retrying in 3s...");
     ws = null;
     isConnected = false;

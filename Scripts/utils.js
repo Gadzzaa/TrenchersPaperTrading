@@ -4,12 +4,6 @@ let spinnerText;
 let notificationPopup;
 let notificationText;
 let notificationInner;
-let dotInterval;
-let slideOutTimeout;
-let popTimeout1;
-let popTimeout2;
-let glowTimeout1;
-let glowTimeout2;
 const successSound = new Audio(chrome.runtime.getURL("Sounds/success.wav"));
 const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
 let audioVolume;
@@ -20,8 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   spinnerText = document.getElementById("spinnerText");
   notificationPopup = document.getElementById("notificationPopup");
   notificationText = document.getElementById("notificationText");
-  notificationInner = document.getElementById("notificationInner");
-
   chrome.storage.local.get("volume", ({ volume }) => {
     if (!volume) volume = 1.0;
     audioVolume = volume;
@@ -32,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
       audioVolume = changes.volume.newValue;
     }
   });
+  notificationInner = document.getElementById("notificationInner");
 });
 
 export function disableAllTradeButtons(allButtons) {
@@ -111,7 +104,7 @@ function safePlay(type) {
       return;
   }
 
-  sound.volume = audioVolume;
+  sound.volume = audioVolume.toFixed(2);
   sound.play().catch((e) => {
     console.error(`${type} sound failed:`, e);
   });
@@ -119,19 +112,42 @@ function safePlay(type) {
 
 // Access blocker
 export function enableUI() {
-  const blocker = document.getElementById("loginBlocker");
+  const blocker = document.getElementById("Blocker");
   const loginPanel = document.getElementById("loginPanel");
-  if (blocker) blocker.style.display = "none";
+  if (blocker) {
+    const noInternetMessage = document.getElementById("noInternetMessage");
+    const noSessionMessage = document.getElementById("noSessionMessage");
+    if (noInternetMessage) noInternetMessage.style.display = "none";
+    if (noSessionMessage) noSessionMessage.style.display = "none";
+    blocker.style.display = "none";
+  }
+
   if (loginPanel) loginPanel.classList.add("loginHidden");
 }
 
-export function disableUI() {
-  const blocker = document.getElementById("loginBlocker");
+export function disableUI(reason) {
+  const blocker = document.getElementById("Blocker");
   const loginPanel = document.getElementById("loginPanel");
-  if (blocker) blocker.style.display = "flex";
+  if (blocker) {
+    const noInternetMessage = document.getElementById("noInternetMessage");
+    const noSessionMessage = document.getElementById("noSessionMessage");
+    switch (reason) {
+      case "no-internet":
+        if (noInternetMessage) noInternetMessage.style.display = "flex";
+        break;
+      case "no-session":
+        if (noSessionMessage) noSessionMessage.style.display = "flex";
+        break;
+    }
+    blocker.style.display = "flex";
+  }
   if (loginPanel) loginPanel.classList.remove("loginHidden");
 }
 
+export function internetConnection() {
+  const noInternetMessage = document.getElementById("noInternetMessage");
+  if (noInternetMessage) return noInternetMessage.style.display === "none";
+}
 export function startLoadingDots(button) {
   let dots = 0;
   button.dataset.originalText = button.textContent; // save original text

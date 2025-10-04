@@ -108,7 +108,7 @@ async function init() {
   });
   const validSession = await checkSession();
   if (!validSession) {
-    disableUI();
+    disableUI("no-session");
   } else {
     enableUI();
     await loadAPIData();
