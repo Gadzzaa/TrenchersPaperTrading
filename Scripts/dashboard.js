@@ -3,6 +3,7 @@ import { applyPreset, getUsingPreset } from "./presetManager.js";
 import { showNotification } from "./utils.js";
 
 import {
+  healthCheck,
   checkSession,
   getPortfolio,
   buyToken,
@@ -61,6 +62,10 @@ async function init() {
     });
   });
 
+  if (!(await healthCheck())) {
+    console.log("Health check failed, aborting dashboard initialization.");
+    return;
+  }
   const isSessionValid = await checkSession();
   if (!isSessionValid) {
     clearPositions();

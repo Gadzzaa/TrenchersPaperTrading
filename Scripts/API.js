@@ -21,6 +21,19 @@ const maxAttempts = 3;
 const slippagePercentage = 0;
 const feeAmount = 0;
 
+export async function healthCheck() {
+  try {
+    const response = await fetch(API_BASE_URL + "/health", {
+      method: "GET",
+    });
+    if (!response.ok) return false;
+    return true;
+  } catch (error) {
+    console.log("Health check failed for backend:", error);
+    return false;
+  }
+}
+
 // SessionChecker.js
 export async function checkSession() {
   try {
@@ -71,8 +84,7 @@ export async function getTradeLog() {
     const data = await response.json();
     return data;
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+    console.log("Error fetching trade log:", error);
   }
 }
 
