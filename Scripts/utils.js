@@ -115,11 +115,15 @@ export function enableUI() {
   const blocker = document.getElementById("Blocker");
   const loginPanel = document.getElementById("loginPanel");
   if (blocker) {
-    const noInternetMessage = document.getElementById("noInternetMessage");
-    const noSessionMessage = document.getElementById("noSessionMessage");
-    if (noInternetMessage) noInternetMessage.style.display = "none";
-    if (noSessionMessage) noSessionMessage.style.display = "none";
-    blocker.style.display = "none";
+    blocker.style.opacity = "0";
+    setTimeout(() => {
+      const noInternetMessage = document.getElementById("noInternetMessage");
+      const noSessionMessage = document.getElementById("noSessionMessage");
+      if (noInternetMessage) noInternetMessage.style.display = "none";
+      if (noSessionMessage) noSessionMessage.style.display = "none";
+
+      blocker.style.display = "none";
+    }, 300);
   }
 
   if (loginPanel) loginPanel.classList.add("loginHidden");
@@ -129,6 +133,7 @@ export function disableUI(reason) {
   const blocker = document.getElementById("Blocker");
   const loginPanel = document.getElementById("loginPanel");
   if (blocker) {
+    blocker.style.display = "flex";
     const noInternetMessage = document.getElementById("noInternetMessage");
     const noSessionMessage = document.getElementById("noSessionMessage");
     switch (reason) {
@@ -139,7 +144,9 @@ export function disableUI(reason) {
         if (noSessionMessage) noSessionMessage.style.display = "flex";
         break;
     }
-    blocker.style.display = "flex";
+    setTimeout(() => {
+      blocker.style.opacity = "1";
+    }, 300);
   }
   if (loginPanel) loginPanel.classList.remove("loginHidden");
 }

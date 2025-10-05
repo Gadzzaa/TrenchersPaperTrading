@@ -541,6 +541,7 @@ body.edit-mode-exit::before {
   font-size: 0.9rem;
   pointer-events: all;
   user-select: none;
+  transition: opacity 0.3s ease;
 }
 
 #noSessionMessage,
