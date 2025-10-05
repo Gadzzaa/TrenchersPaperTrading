@@ -330,6 +330,6 @@ export async function updateBalanceUI(force = false) {
   }
   const balance = parseFloat(result.solBalance).toFixed(2);
   solBalance.innerText = balance;
-  localStorage.setItem("cachedSolBalance", balance);
-  localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
+  localStorage.setItem("cachedBalance", balance);
+  localStorage.setItem("cachedBalanceTime", Date.now().toString());
 }
