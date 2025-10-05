@@ -35,6 +35,9 @@ let currentPreset = null;
 let ws = null;
 let updateInterval = null;
 let healthCheckInterval = null;
+let initializing = false;
+let fetchingBalance = false;
+let reconnectTimeout = null;
 
 const settings = [
   {
@@ -56,7 +59,12 @@ const settings = [
   },
 ];
 
-async function init() {
+async function initDashboard() {
+  if (initializing) return; // prevent re-entrance
+  initializing = true;
+
+  console.log("[TrenchersPT] 🟢 Initializing dashboard...");
+
   settings.forEach(({ key, default: def, apply }) => {
     chrome.storage.local.get(key, ({ [key]: value }) => {
       if (value === undefined) value = def;
@@ -64,62 +72,109 @@ async function init() {
     });
   });
 
-  if (!(await healthCheck())) {
-    console.log("Health check failed, aborting dashboard initialization.");
+  const healthy = await healthCheck();
+  if (!healthy) {
+    console.warn("Health check failed — retrying later.");
     disableUI("no-internet");
-    healthCheckInterval = setInterval(async () => {
-      if (await healthCheck()) {
-        clearInterval(healthCheckInterval);
-        init();
-      }
-    }, 1000);
+    scheduleReconnect();
+    initializing = false;
     return;
   }
 
   const isSessionValid = await checkSession();
   if (!isSessionValid) {
+    console.warn("Session invalid — showing login screen.");
     clearPositions();
     disableUI("no-session");
+    initializing = false;
     return;
   }
 
-  enableUI();
-
   document.body.style.removeProperty("pointer-events");
+
   if (!ws)
-    ws = connectWebSocket().catch((error) => {
+    ws = await connectWebSocket().catch((error) => {
       throw new Error("WebSocket connection failed: " + error.message);
     });
 
+  // Clear any existing intervals before starting new ones
+  clearInterval(updateInterval);
+  clearInterval(healthCheckInterval);
+
   updateInterval = setInterval(async () => {
-    currentPreset = document.querySelector(".activePreset")?.id;
+    if (fetchingBalance) return; // prevent overlap
+    fetchingBalance = true;
 
-    const pendingPresets = localStorage.getItem("pendingPresets");
-    if (pendingPresets) {
-      applyPreset(currentPreset);
-      localStorage.setItem("pendingPresets", false);
+    try {
+      currentPreset = document.querySelector(".activePreset")?.id;
+
+      const pendingPresets = localStorage.getItem("pendingPresets");
+      if (pendingPresets) {
+        applyPreset(currentPreset);
+        localStorage.setItem("pendingPresets", false);
+      }
+
+      const newPreset = getUsingPreset();
+      if (currentPreset !== newPreset) {
+        applyPreset(newPreset);
+        currentPreset = newPreset;
+      }
+
+      const newContract = await requestCurrentContract();
+      if (currentContract !== newContract) {
+        currentContract = newContract;
+        await searchPosition(currentContract);
+      }
+
+      await updateBalanceUI();
+    } catch (err) {
+      console.error("updateInterval error:", err);
+    } finally {
+      fetchingBalance = false;
     }
-
-    const newPreset = getUsingPreset();
-    if (currentPreset !== newPreset) {
-      applyPreset(newPreset);
-      currentPreset = newPreset;
-    }
-
-    const newContract = await requestCurrentContract();
-    if (currentContract !== newContract) {
-      currentContract = newContract;
-      searchPosition(currentContract);
-    }
-
-    await updateBalanceUI();
   }, 1000);
+  enableUI();
+
+  healthCheckInterval = setInterval(async () => {
+    const healthy = await healthCheck();
+    if (!healthy) {
+      console.warn("Lost connection — disconnecting dashboard.");
+      disconnectDashboard();
+    }
+  }, 15000);
+
+  initializing = false;
+}
+
+export async function disconnectDashboard(logout = false) {
+  console.log("[TrenchersPT] 🔴 Disconnecting dashboard...");
+
+  document.body.style.pointerEvents = "none";
+
+  if (updateInterval) clearInterval(updateInterval);
+  if (healthCheckInterval) clearInterval(healthCheckInterval);
+
+  updateInterval = null;
+  healthCheckInterval = null;
+
+  if (ws) {
+    disconnectWebSocket();
+    ws = null;
+  }
+
+  if (!logout) scheduleReconnect();
+}
+
+function scheduleReconnect() {
+  if (reconnectTimeout) return;
+  reconnectTimeout = setTimeout(() => {
+    reconnectTimeout = null;
+    initDashboard();
+  }, 2000);
 }
 
 async function logout() {
-  document.body.style.pointerEvents = "none";
-  ws = disconnectWebSocket();
-  clearInterval(updateInterval);
+  disconnectDashboard(true);
   clearPositions();
   disableUI("no-session");
 }
@@ -161,10 +216,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log("[Dashboard] Received:", message);
       if (message.type === "initDashboard") {
         console.log("User registered, initializing dashboard...");
-        init();
+        initDashboard();
       }
       if (message.type === "logoutDashboard") {
         console.log("User logged out, disabling dashboard...");
@@ -172,7 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    await init();
+    await initDashboard();
   } catch (error) {
     console.error("[TrenchersPT] Initialization error:", error);
   }
@@ -250,7 +304,6 @@ async function searchPosition(currentContract) {
 }
 
 export async function updateBalanceUI(force = false) {
-  if (!internetConnection()) return;
   const solBalance = document.getElementById("balanceValue");
   const cache = localStorage.getItem("cachedBalance");
   const lastUpdated = parseInt(
@@ -265,6 +318,11 @@ export async function updateBalanceUI(force = false) {
     return;
   }
 
+  console.log("Fetching new balance from API...");
+  if (!internetConnection()) {
+    disconnectDashboard();
+    return;
+  }
   const result = await getPortfolio();
   if (!result?.solBalance) {
     console.error("Failed to fetch balance:", result?.error || result);

@@ -120,9 +120,8 @@ export async function connectWebSocket() {
   };
 
   ws.onclose = async () => {
-    if (!internetConnection()) {
-      return;
-    }
+    if (!internetConnection()) return;
+
     console.log("🛑 WebSocket disconnected, retrying in 3s...");
     ws = null;
     isConnected = false;
