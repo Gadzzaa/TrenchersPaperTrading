@@ -81,8 +81,8 @@ export async function getTradeLog() {
     }
     if (!response?.ok)
       throw new Error(`Could not fetch trade log: ${response.status}`);
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
   } catch (error) {
     console.log("Error fetching trade log:", error);
   }
@@ -92,7 +92,8 @@ export async function getTradeLog() {
 export async function fetchPopupData() {
   try {
     let response,
-      networkError = false;
+      networkError = false,
+      result;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -103,6 +104,8 @@ export async function fetchPopupData() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        result = await response.json();
+
         switch (response.status) {
           case 401:
             throw new Error("Unauthorized. Please log in again.");
@@ -118,7 +121,7 @@ export async function fetchPopupData() {
         }
         if (response?.ok) break;
         throw new Error(
-          `Unknown error occured: ${response.error || response.statusText}`,
+          `Unknown error occured: ${result.error || response.statusText}`,
         );
       } catch (error) {
         if (isNetworkError(error)) {
@@ -130,9 +133,8 @@ export async function fetchPopupData() {
           throw new Error("Failed to fetch popup data: " + error.message);
       }
     }
-    const data = await response.json();
-    if (!data) throw new Error("No data received from server");
-    return data;
+    if (!result) throw new Error("No data received from server");
+    return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
@@ -154,7 +156,8 @@ export async function buyToken(
       fee,
     };
     let response,
-      networkError = false;
+      networkError = false,
+      result;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -166,22 +169,25 @@ export async function buyToken(
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        result = await response.json();
+
         switch (response.status) {
           case 400:
-            throw new Error("Bad request: ", response.error);
+            throw new Error("Bad request: " + result.error);
           case 401:
             throw new Error("Unauthorized.");
           case 403:
-            throw new Error("Forbidden:", response.error);
+            throw new Error("Forbidden: " + result.error);
           case 500:
             networkError = true;
             throw new Error(
               "Server is currently unreachable. Please check your connection or try again later.",
             );
         }
+
         if (response?.ok) break;
         throw new Error(
-          `Unknown error occured: ${response.error || response.statusText}`,
+          `Unknown error occured: ${result.error || response.statusText}`,
         );
       } catch (error) {
         if (isNetworkError(error)) {
@@ -194,7 +200,6 @@ export async function buyToken(
       }
     }
 
-    const result = await response.json();
     if (!result?.success)
       throw new Error(result.error || "Unknown error occured.");
 
@@ -229,7 +234,8 @@ async function sellToken(
     fee,
   };
   let response,
-    networkError = false;
+    networkError = false,
+    result;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
@@ -241,9 +247,11 @@ async function sellToken(
         signal: controller.signal,
       });
       clearTimeout(timeout);
+      result = await response.json();
+
       switch (response.status) {
         case 400:
-          throw new Error("Bad request: " + response.error);
+          throw new Error("Bad request: " + result.error);
         case 401:
           throw new Error("Unauthorized.");
         case 500:
@@ -254,7 +262,7 @@ async function sellToken(
       }
       if (response?.ok) break;
       throw new Error(
-        `Unknown error occured: ${response.error || response.statusText}`,
+        `Unknown error occured: ${result.error || response.statusText}`,
       );
     } catch (error) {
       if (isNetworkError(error)) {
@@ -267,7 +275,6 @@ async function sellToken(
     }
   }
 
-  const result = await response.json();
   if (!result?.success)
     throw new Error(result.error || "Unknown error occured.");
 
@@ -283,7 +290,8 @@ async function sellToken(
 export async function getPortfolio() {
   try {
     let response,
-      networkError = false;
+      networkError = false,
+      result;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -294,6 +302,8 @@ export async function getPortfolio() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        result = await response.json();
+
         switch (response.status) {
           case 401:
             throw new Error("Unauthorized. Please log in again.");
@@ -307,7 +317,7 @@ export async function getPortfolio() {
         }
         if (response?.ok) break;
         throw new Error(
-          `Unknown error occured: ${response.error || response.statusText}`,
+          `Unknown error occured: ${result.error || response.statusText}`,
         );
       } catch (error) {
         if (isNetworkError(error)) {
@@ -320,8 +330,7 @@ export async function getPortfolio() {
       }
     }
 
-    const data = await response.json();
-    return data;
+    return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return { error: getDebugMode() ? "[API.js] " + message : message };
@@ -332,7 +341,8 @@ export async function getPortfolio() {
 export async function resetAccount(amount) {
   try {
     let response,
-      networkError = false;
+      networkError = false,
+      result;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -344,17 +354,19 @@ export async function resetAccount(amount) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        result = await response.json();
+
         switch (response.status) {
           case 400:
-            throw new Error("Bad request: " + response.error);
+            throw new Error("Bad request: " + result.error);
           case 401:
             throw new Error("Unauthorized. Please log in again.");
           case 403:
-            throw new Error("Forbidden: " + response.error);
+            throw new Error("Forbidden: " + result.error);
           case 404:
-            throw new Error("Not found: ", response.error);
+            throw new Error("Not found: ", result.error);
           case 409:
-            throw new Error("Error occured: " + response.error);
+            throw new Error("Error occured: " + result.error);
           case 500:
             networkError = true;
             throw new Error(
@@ -363,26 +375,27 @@ export async function resetAccount(amount) {
         }
         if (response?.ok) break;
         throw new Error(
-          `Unknown error occured: ${response.error || response.statusText}`,
+          `Unknown error occured: ${result.error || response.statusText}`,
         );
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
           disableUI("no-internet");
+          chrome.runtime.sendMessage({ type: "no-internet" });
           networkError = true;
         }
         if (attempt === maxAttempts || !networkError)
           throw new Error("Failed to reset account: " + error.message);
       }
     }
-    if (!response.resetsLeft)
+    if (!result.resetsLeft)
       throw new Error("resetsLeft not received from server");
     clearPositions();
     if (document.querySelector("#TrenchersPaperTrading") !== null) {
       const { updateBalanceUI } = await import("./dashboard.js");
       updateBalanceUI(true);
     }
-    return { success: true, resetsRemaining: response.resetsLeft };
+    return { success: true, resetsRemaining: result.resetsLeft };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? `[API.js] ${message}` : message, "error");
@@ -394,7 +407,8 @@ export async function resetAccount(amount) {
 export async function logout() {
   try {
     let response,
-      networkError = false;
+      networkError = false,
+      result;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -405,9 +419,11 @@ export async function logout() {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        result = await response.json();
+
         switch (response.status) {
           case 400:
-            throw new Error("Bad request: " + response.error);
+            throw new Error("Bad request: " + result.error);
           case 401:
             throw new Error("Unauthorized. Please log in again.");
           case 500:
@@ -418,7 +434,7 @@ export async function logout() {
         }
         if (response?.ok) break;
         throw new Error(
-          `Unknown error occured: ${response.error || response.statusText}`,
+          `Unknown error occured: ${result.error || response.statusText}`,
         );
       } catch (error) {
         if (isNetworkError(error)) {
@@ -445,7 +461,8 @@ export async function logout() {
 export async function login(username, password) {
   try {
     let response,
-      networkError = false;
+      networkError = false,
+      result;
     if (!username || !password)
       throw new Error("Username and password are required.");
 
@@ -462,6 +479,8 @@ export async function login(username, password) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        result = await response.json();
+
         switch (response.status) {
           case 401:
             throw new Error("Invalid credentials.");
@@ -473,7 +492,7 @@ export async function login(username, password) {
         }
         if (response?.ok) break;
         throw new Error(
-          `Unknown error occured: ${response.error || response.statusText}`,
+          `Unknown error occured: ${result.error || response.statusText}`,
         );
       } catch (error) {
         if (isNetworkError(error)) {
@@ -485,7 +504,6 @@ export async function login(username, password) {
           throw new Error("Login failed with error: " + error.message);
       }
     }
-    const result = await response.json();
     if (!result?.token)
       throw new Error("No token received from server: " + result.error);
     if (!result?.username)
@@ -507,7 +525,8 @@ export async function register(username, password, initialBalance) {
   try {
     let balance = initialBalance,
       response,
-      networkError = false;
+      networkError = false,
+      result;
     if (!username || !password)
       throw new Error("Username and password are required.");
     if (password.length < 6)
@@ -527,9 +546,10 @@ export async function register(username, password, initialBalance) {
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        result = await response.json();
         switch (response.status) {
           case 400:
-            throw new Error("Bad request: " + response.error);
+            throw new Error("Bad request: " + result.error);
           case 409:
             throw new Error("Username already exists.");
           case 500:
@@ -540,7 +560,7 @@ export async function register(username, password, initialBalance) {
         }
         if (response?.ok) break;
         throw new Error(
-          `Unknown error occured: ${response.error || response.statusText}`,
+          `Unknown error occured: ${result.error || response.statusText}`,
         );
       } catch (error) {
         if (isNetworkError(error)) {
@@ -552,7 +572,6 @@ export async function register(username, password, initialBalance) {
           throw new Error("Registration failed with error: " + error.message);
       }
     }
-    const result = await response.json();
     if (!result?.token)
       throw new Error("No token received from server: " + result.error);
     if (!result?.username)
