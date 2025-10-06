@@ -7,7 +7,6 @@ let notificationInner;
 const successSound = new Audio(chrome.runtime.getURL("Sounds/success.wav"));
 const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
 let audioVolume;
-let lastNotification = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
@@ -63,11 +62,6 @@ export function showNotification(message, type, sound = true) {
   };
 
   const fullMessage = typeClasses[type] + " " + message;
-
-  // Prevent duplicate of the last message
-  if (fullMessage === lastNotification) return;
-
-  lastNotification = fullMessage;
 
   window.parent.postMessage(
     {
