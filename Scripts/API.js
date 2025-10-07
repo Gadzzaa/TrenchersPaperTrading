@@ -41,10 +41,14 @@ export async function checkSession() {
       method: "GET",
       headers: await getAuthHeaders(),
     });
-    if (response.status >= 500)
-      throw new Error(
-        "Server is currently unreachable. Please check your connection or try again later.",
-      );
+    switch (response.status) {
+      case 401:
+        throw new Error("Invalid session. Please log in again.");
+      case 500:
+        throw new Error(
+          "Server is currently unreachable. Please check your connection or try again later.",
+        );
+    }
     if (!response?.ok) throw new Error("Invalid session. Please log in again.");
     return true;
   } catch (error) {
