@@ -130,6 +130,8 @@ export function disableUI(reason) {
     blocker.style.display = "flex";
     const noInternetMessage = document.getElementById("noInternetMessage");
     const noSessionMessage = document.getElementById("noSessionMessage");
+    noInternetMessage.style.display = "none";
+    noSessionMessage.style.display = "none";
     switch (reason) {
       case "no-internet":
         if (noInternetMessage) noInternetMessage.style.display = "flex";
