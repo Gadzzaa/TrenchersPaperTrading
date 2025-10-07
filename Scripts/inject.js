@@ -181,7 +181,7 @@ function injectApp() {
       top: "100px",
       left: "100px",
       width: "350px",
-      height: "285px",
+      height: "500px",
       zIndex: "99999",
       background: "transparent",
       borderRadius: "12px",
