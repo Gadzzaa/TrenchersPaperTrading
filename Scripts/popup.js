@@ -432,7 +432,7 @@ function startCountdown(lastReset) {
     resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
   }
   update(); // initial call
-  setInterval(update, 1000 * 30); // update every minute
+  setInterval(update, 1000 * 5); // update every 5s
 }
 function setDisplay(index) {
   const carousel = document.querySelector(".pageCarousel");
