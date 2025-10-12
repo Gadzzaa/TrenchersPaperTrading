@@ -41,6 +41,7 @@ function getPnlData(poolAddress) {
 }
 
 export async function connectWebSocket() {
+  // If there's already a valid or connecting WebSocket, reuse it
   if (
     ws &&
     (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
@@ -51,99 +52,123 @@ export async function connectWebSocket() {
     return ws;
   }
 
-  ws = new WebSocket(CONFIG.WS_URL);
   const token = await getFromStorage("sessionToken");
+  ws = new WebSocket(CONFIG.WS_URL);
 
-  ws.onopen = () => {
-    console.log("🔄 WebSocket connecting...");
-    ws.send(
-      JSON.stringify({
-        type: "authenticate",
-        token: token,
-      }),
-    );
-  };
+  return new Promise((resolve, reject) => {
+    let authTimeout;
 
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
+    ws.onopen = () => {
+      console.log("🔄 WebSocket connecting...");
+      ws.send(
+        JSON.stringify({
+          type: "authenticate",
+          token,
+        }),
+      );
 
-      switch (data.type) {
-        case "authenticated":
-          isConnected = true;
-          reconnectAttempts = 0;
-          if (heartbeatInterval) clearInterval(heartbeatInterval);
-          lastPong = Date.now();
+      // Set a timeout for authentication (10s)
+      authTimeout = setTimeout(() => {
+        reject(new Error("WebSocket authentication timeout"));
+        ws.close();
+      }, 10000);
+    };
 
-          // Start heartbeat (every 15s)
-          heartbeatInterval = setInterval(() => {
-            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
 
-            const now = Date.now();
-            // If last pong was more than 60s ago → force reconnect
-            if (now - lastPong > 60 * 1000) {
-              console.warn(
-                "⚠️ WebSocket heartbeat timeout, forcing reconnect...",
+        switch (data.type) {
+          case "authenticated":
+            console.log("✅ WebSocket connected and authenticated");
+
+            isConnected = true;
+            reconnectAttempts = 0;
+            lastPong = Date.now();
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+
+            // Heartbeat every 15s
+            heartbeatInterval = setInterval(() => {
+              if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+              const now = Date.now();
+              if (now - lastPong > 60 * 1000) {
+                console.warn(
+                  "⚠️ WebSocket heartbeat timeout, forcing reconnect...",
+                );
+                ws.close();
+                return;
+              }
+
+              ws.send(JSON.stringify({ type: "ping" }));
+            }, 15000);
+
+            clearTimeout(authTimeout);
+            resolve(ws);
+            break;
+
+          case "poolUpdate":
+            console.log("📊 Pool update:", data);
+            const pool = watchedPools.get(data.poolAddress);
+            if (pool) {
+              pool.price = data.price;
+              pool.liquidity = data.liquidity;
+            } else {
+              ws.send(
+                JSON.stringify({
+                  type: "unwatchPool",
+                  poolAddress: data.poolAddress,
+                }),
               );
-              ws.close();
-              return;
             }
+            break;
 
-            ws.send(JSON.stringify({ type: "ping" }));
-          }, 15000);
+          case "pong":
+            lastPong = Date.now();
+            console.log("🏓 Pong received");
+            break;
 
-          console.log("✅ WebSocket connected and authenticated");
-          break;
-
-        case "poolUpdate":
-          console.log("📊 Pool update:", data);
-          const pool = watchedPools.get(data.poolAddress);
-          if (pool) {
-            pool.price = data.price;
-            pool.liquidity = data.liquidity;
-          } else {
-            ws.send(JSON.stringify({ type: "unwatchPool", poolAddress }));
-          }
-          break;
-
-        case "pong":
-          lastPong = Date.now();
-          console.log("🏓 Pong received");
-          break;
-
-        default:
-          console.warn("Unknown message type:", data.type, data);
+          default:
+            console.warn("Unknown message type:", data.type, data);
+        }
+      } catch (err) {
+        console.error("Error parsing WS message:", err);
       }
-    } catch (err) {
-      console.error("Error parsing WS message:", err);
-    }
-  };
+    };
 
-  ws.onclose = async () => {
-    if (!internetConnection()) return;
+    ws.onclose = async () => {
+      console.log("🛑 WebSocket disconnected, reconnecting...");
+      ws = null;
+      isConnected = false;
+      clearInterval(heartbeatInterval);
+      clearTimeout(authTimeout);
 
-    console.log("🛑 WebSocket disconnected, retrying in 3s...");
-    ws = null;
-    isConnected = false;
-    clearInterval(heartbeatInterval);
-    const timeout = Math.min(3000 ** reconnectAttempts, 30_000); // exponential backoff
-    setTimeout(() => {
-      reconnectAttempts++;
-      connectWebSocket();
-    }, timeout);
-  };
+      if (reconnectAttempts < 2) {
+        setTimeout(() => {
+          reconnectAttempts++;
+          connectWebSocket();
+        }, 500);
+      } else {
+        const { disconnectDashboard } = await import("./dashboard.js");
+        disconnectDashboard();
+      }
+    };
 
-  ws.onerror = (err) => {
-    console.error("❌ WebSocket error:", err);
-  };
-
-  return ws;
+    ws.onerror = (err) => {
+      console.error("❌ WebSocket error:", err);
+      clearTimeout(authTimeout);
+      reject(err);
+    };
+  });
 }
 
 export function disconnectWebSocket() {
   if (!ws) return;
 
   console.log("🛑 Disconnecting WebSocket...");
+
+  if (currentPool) unwatchPool(currentPool);
+  currentPool = null;
 
   // Stop any PnL interval
   if (pnlIntervalId) {
@@ -163,6 +188,7 @@ export function disconnectWebSocket() {
   // Reset state
   ws = null;
   isConnected = false;
+  reconnectAttempts = 0;
   return ws;
 }
 
@@ -170,11 +196,11 @@ export function watchPool(poolAddress) {
   if (!watchedPools.has(poolAddress)) {
     // add pool to local map with empty data
     watchedPools.set(poolAddress, { price: null, liquidity: null });
-
-    // send watch request to backend
-    const data = getPnlData(poolAddress);
-    ws.send(JSON.stringify({ type: "watchPool", poolAddress, poolData: data }));
   }
+
+  // send watch request to backend
+  const data = getPnlData(poolAddress);
+  ws.send(JSON.stringify({ type: "watchPool", poolAddress, poolData: data }));
 }
 
 export function unwatchPool(poolAddress) {
@@ -198,6 +224,7 @@ export function setActiveToken(poolAddress) {
   }
   const pool = openPositions[idx];
   if (pool.posClosed) {
+    updateTotalPnl();
     console.log(`Pool ${poolAddress} has position closed.`);
     return;
   }
@@ -220,6 +247,10 @@ export async function updateTotalPnl() {
 
     if (!isConnected) {
       console.warn("WebSocket not connected, attempting to reconnect...");
+      if (pnlIntervalId) {
+        clearInterval(pnlIntervalId);
+        pnlIntervalId = null;
+      }
       return;
     }
     if (!currentPool) throw new Error("No active token set");
@@ -251,34 +282,26 @@ export async function updateTotalPnl() {
     else sellsTab.classList.remove("hidden");
 
     // Get current price in SOL
-    let currentPrice = 0;
+    let currentPrice = 0,
+      totalPNL,
+      unrealizedPNL = 0,
+      totalSpent,
+      pnlPercent;
+
     if (!posClosed) {
       const pool = watchedPools.get(currentPool);
       currentPrice = pool?.price;
-      if (!currentPrice) {
+      if (!currentPrice)
         console.error("Current price not found for pool:", currentPool);
-        updateDOM(
-          { positionEl, boughtText, soldText, holdText },
-          realizedPNL,
-          0,
-          totalSOLSpent,
-          amountSold,
-          quantityHeld,
-          0,
-        );
-        return;
-      }
+      else unrealizedPNL = quantityHeld * (currentPrice - avgEntry);
     }
 
-    // Unrealized PNL in SOL
-    const unrealizedPNL = quantityHeld * (currentPrice - avgEntry);
-
     // Total PNL = realized + unrealized
-    const totalPNL = realizedPNL + unrealizedPNL;
+    totalPNL = realizedPNL + unrealizedPNL;
 
     // Percentage relative to total SOL spent buying tokens
-    const totalSpent = amountBought;
-    const pnlPercent = totalSpent > 0 ? (totalPNL / totalSpent) * 100 : 0;
+    totalSpent = totalSOLSpent;
+    pnlPercent = totalSpent > 0 ? (totalPNL / totalSpent) * 100 : 0;
     updateDOM(
       { positionEl, boughtText, soldText, holdText },
       totalPNL,
@@ -339,8 +362,10 @@ export function isActiveToken() {
 
 export function clearPositions(global = true) {
   const positionEl = document.getElementById("pnlText");
-  if (positionEl == null)
-    throw new Error("[pnlHandler.js]: position element not found");
+  if (positionEl == null) {
+    console.warn("Position element not found in DOM");
+    return;
+  }
   if (pnlIntervalId) {
     clearInterval(pnlIntervalId);
     pnlIntervalId = null;
