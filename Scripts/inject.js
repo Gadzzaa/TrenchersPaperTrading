@@ -6,20 +6,23 @@ let lastFullPath = location.pathname;
 let lastContract = null;
 
 // 🚀 Start the app
-try {
-  monitorRouteChanges();
-  getSolPrice();
-  setInterval(getSolPrice, 60 * 60 * 500);
-} catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error("❌ Error initializing TrenchersPaperTrading:", message);
-}
 
+(async () => {
+  try {
+    await waitForBody(); // wait for body to exist
+    await onPageReady(); // wait for DOM ready
+
+    // Now safe to start monitoring routes
+    monitorRouteChanges();
+  } catch (err) {
+    console.error("❌ Failed to initialize TrenchersPaperTrading:", err);
+  }
+})();
 window.addEventListener("message", async (event) => {
   const { type, requestId } = event.data;
 
   if (type === "CONTRACT_REQUEST" && requestId) {
-    const contract = extractContractFromImage();
+    const contract = getURLSegmentAfter("meme");
     event.source.postMessage(
       {
         type: "CONTRACT_RESPONSE",
@@ -29,87 +32,23 @@ window.addEventListener("message", async (event) => {
       "*",
     );
   }
-  if (type === "PRICE_REQUEST" && requestId) {
-    const price = await getPrice();
-    event.source.postMessage(
-      {
-        type: "PRICE_RESPONSE",
-        price,
-        requestId,
-      },
-      "*",
-    );
-  }
-  if (type === "SYMBOL_REQUEST" && requestId) {
-    const symbol = extractSymbol();
-    event.source.postMessage(
-      {
-        type: "SYMBOL_RESPONSE",
-        symbol,
-        requestId,
-      },
-      "*",
-    );
-  }
   if (type === "SHOW_NOTIFICATION" && event.data?.message) {
     showNotification(event.data.message);
   }
+
+  if (type === "HIDE_APP") {
+    hideApp();
+  }
 });
 
-function extractContractFromImage() {
-  const links = document.querySelectorAll('a[href*="x.com/search?q="]');
-
-  for (const link of links) {
-    const target = link.getAttribute("target");
-    const rel = link.getAttribute("rel");
-
-    const hasCorrectTarget = target === "_blank";
-    const hasCorrectRel =
-      rel?.split(" ").includes("noopener") &&
-      rel?.split(" ").includes("noreferrer");
-
-    if (!hasCorrectTarget || !hasCorrectRel) continue; // skip if attributes are missing
-
-    try {
-      const url = new URL(link.href);
-      const contract = url.searchParams.get("q");
-
-      // Validate it's a real contract-looking string
-      if (contract && /^[A-Za-z0-9]{32,}$/.test(contract)) {
-        return contract;
-      }
-    } catch (error) {
-      console.error("❌ Error parsing contract from link:", error);
-    }
-  }
-
-  return null;
-}
-
-function extractSymbol() {
-  const xpath =
-    "/html/body/div[1]/div[3]/div/div/div/div/div[1]/div[1]/div/div[1]/div[2]/div/div/div/div[1]/div[2]/div[1]/span[1]";
-  const symbolElement = getElementByXPath(xpath);
-  if (!symbolElement) return null;
-  try {
-    const symbol = symbolElement.innerText;
-    if (symbol && symbol.length > 0) {
-      return symbol.trim();
-    }
-  } catch (error) {
-    console.error("❌ Error parsing symbol from element:", error);
-  }
-}
-
-function getElementByXPath(xpath, context = document) {
-  const result = document.evaluate(
-    xpath,
-    context,
-    null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
-  );
-  return result.singleNodeValue;
+function getURLSegmentAfter(baseSegment) {
+  const parts = new URL(window.location.href).pathname
+    .split("/")
+    .filter(Boolean);
+  const idx = parts.indexOf(baseSegment);
+  return idx >= 0 && parts.length > idx + 1
+    ? decodeURIComponent(parts[idx + 1])
+    : null;
 }
 
 function makeDraggable(target, handle, iframe) {
@@ -205,94 +144,177 @@ function handleRouteChange() {
   const isOnMemePage = currentPath.startsWith("/meme");
   lastFullPath = currentPath;
 
+  const appContainer = document.getElementById("TrenchersPaperTrading");
   if (isOnMemePage) {
-    if (!appInjected) {
-      injectApp();
-      appInjected = true;
-    }
+    if (!appContainer) injectApp();
+    else appContainer.style.display = "block";
   } else {
-    if (appInjected) {
-      removeApp();
-      appInjected = false;
-    }
+    if (appContainer) removeApp();
   }
 }
 
+function hideApp() {
+  const app = document.getElementById("TrenchersPaperTrading");
+  if (app) {
+    app.style.opacity = "0";
+    setTimeout(() => (app.style.display = "none"), 300); // match your fade duration
+  }
+}
 function removeApp() {
   const appContainer = document.getElementById("TrenchersPaperTrading");
   if (appContainer) {
-    appContainer.remove(); // TODO: When outside /meme, hide the app instead of removing it.
+    appContainer.remove();
   }
 }
 
 function injectApp() {
-  const isWithinBounds = (left, top, width, height) => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    return (
-      parseInt(left) + width <= vw &&
-      parseInt(top) + height <= vh &&
-      parseInt(left) >= 0 &&
-      parseInt(top) >= 0
-    );
-  };
+  try {
+    const isWithinBounds = (left, top, width, height) => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      return (
+        parseInt(left) + width <= vw &&
+        parseInt(top) + height <= vh &&
+        parseInt(left) >= 0 &&
+        parseInt(top) >= 0
+      );
+    };
 
-  const appContainer = document.createElement("div");
-  appContainer.id = "TrenchersPaperTrading";
-  Object.assign(appContainer.style, {
-    position: "fixed",
-    top: "100px",
-    left: "100px",
-    width: "350px",
-    height: "285px",
-    zIndex: "99999",
-    background: "transparent",
-    borderRadius: "12px",
-    overflow: "hidden",
-    userSelect: "none",
-    opacity: "0",
-    transition: "opacity 0.3s ease",
-  });
+    const appContainer = document.createElement("div");
+    appContainer.id = "TrenchersPaperTrading";
+    Object.assign(appContainer.style, {
+      position: "fixed",
+      top: "100px",
+      left: "100px",
+      width: "350px",
+      height: "500px",
+      zIndex: "99999",
+      background: "transparent",
+      borderRadius: "12px",
+      overflow: "hidden",
+      userSelect: "none",
+      opacity: "0",
+      transition: "opacity 0.3s ease",
+    });
 
-  const savedLeft = localStorage.getItem("draggableLeft");
-  const savedTop = localStorage.getItem("draggableTop");
+    const savedLeft = localStorage.getItem("draggableLeft");
+    const savedTop = localStorage.getItem("draggableTop");
 
-  if (
-    savedLeft &&
-    savedTop &&
-    isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
-  ) {
-    appContainer.style.left = savedLeft;
-    appContainer.style.top = savedTop;
-  }
+    chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
+      if (!saveWindowPos) return;
+      if (
+        savedLeft &&
+        savedTop &&
+        isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
+      ) {
+        appContainer.style.left = savedLeft;
+        appContainer.style.top = savedTop;
+      }
+    });
 
-  const appIframe = document.createElement("iframe");
-  appIframe.src = chrome.runtime.getURL("dashboard.html");
-  Object.assign(appIframe.style, {
-    width: "100%",
-    height: "240px",
-    border: "none",
-    borderRadius: "12px",
-    zIndex: "2",
-  });
+    const appIframe = document.createElement("iframe");
+    appIframe.src = chrome.runtime.getURL("dashboard.html");
+    Object.assign(appIframe.style, {
+      width: "100%",
+      height: "240px",
+      border: "none",
+      borderRadius: "12px",
+      zIndex: "2",
+    });
 
-  appContainer.appendChild(appIframe);
-  document.body.appendChild(appContainer);
+    appContainer.appendChild(appIframe);
+    document.body.appendChild(appContainer);
 
-  const style = document.createElement("style");
-  style.textContent = `
+    chrome.storage.local.get("animation", ({ animation }) => {
+      if (!animation) animation = 3;
+      document.documentElement.style.setProperty(
+        "--anim-time",
+        `${animation / 10}s`,
+      );
+    });
 
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.animation) {
+        document.documentElement.style.setProperty(
+          "--anim-time",
+          `${changes.animation.newValue / 10}s`,
+        );
+      }
+    });
+
+    const style = document.createElement("style");
+    style.textContent = `
   #TrenchersPaperTrading {
-    --background: #1e1e2e;
-    --footerbg: #181825;
-    --green: #a6e3a1;
-    --red: #f38ba8;
-    --text: #cdd6f4;
-    --active: #89b4fa;
-    --surface: #45475a;
+    transition: 
+      background var(--anim-time) ease,
+      color var(--anim-time) ease,
+      border-color var(--anim-time) ease,
+      box-shadow var(--anim-time) ease;
+  }
+  #TrenchersPaperTrading[data-theme="dark"],
+  #trenchersToggleBtn{
+    --base: 30, 30, 46; /* #1e1e2e */
+    --mantle: 24, 24, 37; /* #181825 */
+    --crust: 17, 17, 27; /* #11111b */
+    --text: 205, 214, 244; /* #cdd6f4 */
+    --subtext0: 166, 173, 200; /* #a6adc8 */
+    --subtext1: 186, 194, 222; /* #bac2de */
+    --overlay0: 108, 112, 134; /* #6c7086 */
+    --overlay1: 127, 132, 156; /* #7f849c */
+    --overlay2: 147, 153, 178; /* #9399b2 */
+    --surface0: 49, 50, 68; /* #313244 */
+    --surface1: 69, 71, 90; /* #45475a */
+    --surface2: 88, 91, 112; /* #585b70 */
+  
+    /* Catppuccin Mocha palette additions */
+    --rosewater: 245, 224, 220; /* #f5e0dc */
+    --flamingo: 242, 205, 205; /* #f2cdcd */
+    --pink: 245, 194, 231; /* #f5c2e7 */
+    --mauve: 203, 166, 247; /* #cba6f7 */
+    --red: 243, 139, 168; /* #f38ba8 */
+    --maroon: 235, 160, 172; /* #eba0ac */
+    --peach: 250, 179, 135; /* #fab387  */
+    --yellow: 250, 224, 129; /* #f9e2af */
+    --green: 166, 227, 161; /* #a6e3a1 */
+    --teal: 148, 226, 213; /* #94e2d5 */
+    --sky: 137, 220, 235; /* #89dceb */
+    --sapphire: 115, 160, 250; /* #74c7ec */
+    --blue: 137, 180, 250; /* #89b4fa */
+    --lavender: 180, 190, 254; /* #b4befe */
   }
 
-
+  #TrenchersPaperTrading[data-theme="light"]{
+      --base: 239, 241, 245; /* #eff1f5 */
+      --mantle: 230, 233, 239; /* #e6e9ef */
+      --crust: 220, 224, 232; /* #dce0e8 */
+      --text: 76, 79, 105; /* #4c4f69 */
+      --subtext0: 108, 111, 133; /* #6c6f85 */
+      --subtext1: 92, 95, 119; /* #5c5f77 */
+      --overlay0: 156, 160, 176; /* #9ca0b0 */
+      --overlay1: 140, 143, 161; /* #8c8fa1 */
+      --overlay2: 124, 127, 147; /* #7c7f93 */
+      --surface0: 204, 208, 218; /* #ccd0da */
+      --surface1: 188, 192, 204; /* #bcc0cc */
+      --surface2: 172, 176, 190; /* #acb0be */
+    
+      /* Catppuccin Mocha palette additions */
+      --rosewater: 220, 138, 120; /* #dc8a78 */
+      --flamingo: 221, 120, 120; /* #dd7878 */
+      --pink: 234, 118, 203; /* #ea76cb */
+      --mauve: 136, 57, 239; /* #8839ef */
+      --red: 210, 15, 57; /* #d20f39 */
+      --maroon: 230, 69, 83; /* #e64553 */
+      --peach: 254, 100, 11; /* #fe640b  */
+      --yellow: 223, 142, 29; /* #df8e1d */
+      --green: 64, 160, 43; /* #40a02b */
+      --teal: 23, 146, 153; /* #179299 */
+      --sky: 4, 165, 229; /* #04a5e5 */
+      --sapphire: 32, 159, 181; /* #209fb5 */
+      --blue: 30, 102, 245; /* #1e66f5 */
+      --lavender: 114, 135, 253; /* #7287fd */
+    
+    }
+  
   .notification {
     position: absolute;
     will-change: transform, opacity;
@@ -303,8 +325,8 @@ function injectApp() {
     white-space: normal;
     overflow-wrap: break-word;
     word-break: break-word;
-    background: var(--background, #222);
-    color: var(--text, #fff);
+    background: rgb(var(--base));
+    color: rgb(var(--text));
     padding: 16px 32px;
     border-radius: 0 0 12px 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
@@ -313,8 +335,8 @@ function injectApp() {
     text-align: center;
     z-index: -1;
     transition:
-      transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.3s;
+      transform var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
+      opacity var(--anim-time);
     pointer-events: none;
     opacity: 0.97;
   }
@@ -342,38 +364,123 @@ function injectApp() {
     animation: pop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
   }
+
+#trenchersToggleBtn {
+  position: fixed;
+  bottom: 40px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(var(--base));
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  z-index: 999999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  will-change: transform, opacity;
+}
+
+#trenchersToggleBtn:hover {
+  transform: scale(1.1); /* subtle grow on hover */
+}
+
+#trenchersToggleBtn:active {
+  transform: scale(0.9); /* immediate press-down feel */
+}
+
+@keyframes toggleClick {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+#trenchersToggleBtn.clicked {
+  animation: toggleClick 0.3s ease;
+}
   `;
-  document.head.appendChild(style);
+    document.head.appendChild(style);
 
-  const notification = document.createElement("div");
-  notification.id = "notification";
-  notification.className = "notification";
+    chrome.storage.local.get("theme", ({ theme }) => {
+      if (theme) {
+        appContainer.setAttribute("data-theme", theme);
+      } else appContainer.setAttribute("data-theme", "dark");
+    });
 
-  // Create span for text
-  const notifText = document.createElement("span");
-  notifText.id = "notifText";
-  notification.appendChild(notifText);
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.theme) {
+        appContainer.setAttribute("data-theme", changes.theme.newValue);
+      }
+    });
 
-  appContainer.appendChild(notification);
+    const notification = document.createElement("div");
+    notification.id = "notification";
+    notification.className = "notification";
 
-  const moveHandle = document.createElement("div");
-  Object.assign(moveHandle.style, {
-    position: "absolute",
-    top: "6px",
-    left: "174.5px",
-    width: "12px",
-    height: "8px",
-    cursor: "grab",
-    background: "transparent",
-    zIndex: "999999",
-  });
+    // Create span for text
+    const notifText = document.createElement("span");
+    notifText.id = "notifText";
+    notification.appendChild(notifText);
 
-  appContainer.appendChild(moveHandle);
-  makeDraggable(appContainer, moveHandle, appIframe);
+    appContainer.appendChild(notification);
 
-  setTimeout(() => {
-    appContainer.style.opacity = "1";
-  }, 50);
+    // Toggle Button
+    const toggleButton = document.createElement("button");
+    toggleButton.id = "trenchersToggleBtn";
+    var toggleButtonImage = document.createElement("img");
+    toggleButtonImage.src = "https://i.imgur.com/ZBbPCG4.png";
+    toggleButtonImage.alt = "Show/Hide TrenchersPT";
+    toggleButton.appendChild(toggleButtonImage);
+    // Toggle logic
+    toggleButton.addEventListener("click", () => {
+      const app = document.getElementById("TrenchersPaperTrading");
+      if (!app) return;
+      // --- animate button ---
+      toggleButton.classList.remove("clicked"); // reset
+      void toggleButton.offsetWidth; // force reflow so animation restarts
+      toggleButton.classList.add("clicked");
+
+      if (app.style.display === "none") {
+        app.style.display = "block";
+        setTimeout(() => (app.style.opacity = "1"), 20);
+      } else {
+        hideApp();
+      }
+    });
+
+    document.body.appendChild(toggleButton);
+
+    const moveHandle = document.createElement("div");
+    Object.assign(moveHandle.style, {
+      position: "absolute",
+      top: "6px",
+      left: "174.5px",
+      width: "12px",
+      height: "8px",
+      cursor: "grab",
+      background: "transparent",
+      zIndex: "999999",
+    });
+
+    appContainer.appendChild(moveHandle);
+    makeDraggable(appContainer, moveHandle, appIframe);
+
+    setTimeout(() => {
+      appContainer.style.opacity = "1";
+    }, 50);
+  } catch (error) {
+    throw error;
+  }
 }
 
 function showNotification(message) {
@@ -454,85 +561,30 @@ function parseCompactNumber(txt) {
   return num * mult;
 }
 
-/**
- * Finds the on-page "Supply" label, reads the next span's text,
- * and returns the circulating supply as a Number.
- */
-function getSupply() {
-  return 1000000000; // TODO: Fix this
-  /*
-  // 1. Grab all spans that style numeric values
-  const els = document.querySelectorAll('span.text-textPrimary');
-  // 2. Regex: digits (with optional decimals) ending in K, M, or B
-  const re = /^(\d+(?:\.\d+)?)([KMB])$/;
+function waitForBody() {
+  return new Promise((resolve) => {
+    if (document.body) return resolve();
+    const observer = new MutationObserver((mutations, obs) => {
+      if (document.body) {
+        obs.disconnect();
+        resolve();
+      }
+    });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  });
+}
 
-  for (const el of els) {
-    const txt = el.textContent.trim();
-    const m = txt.match(re);
-    if (m) {
-      // parseCompactNumber is your helper from before
-      const supply = parseCompactNumber(txt);
-      console.log('Parsed supply:', supply);
-      return supply;
+function onPageReady() {
+  return new Promise((resolve) => {
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "interactive"
+    ) {
+      return resolve();
     }
-  }
-  */
-
-  throw new Error("Supply element not found");
-}
-
-function getMarketCapFromTitle() {
-  const title = document.title.trim();
-  // e.g. "MyTokenName → $8.71K | Price: 0.00003 SOL"
-
-  // 1) Split on arrow
-  const arrowParts = title.split("$");
-  if (arrowParts.length < 2) {
-    throw new Error("Title missing arrow separator");
-  }
-
-  // 2) Take right side and split on pipe
-  const rightSide = arrowParts[1].trim(); // "$8.71K | Price:…"
-  const pipeParts = rightSide.split("|");
-  if (pipeParts.length < 1) {
-    throw new Error("Title missing pipe separator");
-  }
-
-  // 3) The first segment is the market cap string
-  const rawCap = pipeParts[0].trim(); // "$8.71K"
-
-  // 4) Parse it
-  const capNumber = parseCompactNumber(rawCap);
-  return capNumber;
-}
-function fetchWithTimeout(url, options = {}, ms = 5000) {
-  const timeout = new Promise((_, rej) =>
-    setTimeout(() => rej(new Error("Request timed out")), ms),
-  );
-  return Promise.race([fetch(url, options), timeout]);
-}
-
-async function getPrice() {
-  try {
-    const tokenSupply = getSupply();
-    const marketCapUsd = getMarketCapFromTitle();
-    const solUsdPrice = localStorage.getItem("solUsdPrice");
-    const tokenPriceUsd = marketCapUsd / tokenSupply;
-
-    return (tokenPriceUsd / solUsdPrice).toFixed(9);
-  } catch (error) {
-    console.error("❌ Error fetching price:", error);
-    return null;
-  }
-}
-async function getSolPrice() {
-  const resp = await fetchWithTimeout(
-    "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
-    {},
-    5000,
-  );
-  if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-  const { solana } = await resp.json();
-  const solUsdPrice = solana.usd;
-  localStorage.setItem("solUsdPrice", solUsdPrice);
+    window.addEventListener("DOMContentLoaded", resolve, { once: true });
+  });
 }

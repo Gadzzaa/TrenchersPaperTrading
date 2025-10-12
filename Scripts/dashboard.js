@@ -3,6 +3,7 @@ import { applyPreset, getUsingPreset } from "./presetManager.js";
 import { showNotification } from "./utils.js";
 
 import {
+  healthCheck,
   checkSession,
   getPortfolio,
   buyToken,
@@ -11,63 +12,100 @@ import {
 
 import {
   setActiveToken,
-  recordBuy,
-  recordSell,
-  loadPositions,
   clearPositions,
+  importTradeLog,
+  connectWebSocket,
+  disconnectWebSocket,
 } from "./pnlHandler.js";
 
 import {
   requestCurrentContract,
-  requestSymbol,
-  requestPrice,
+  requestHideApp,
   disableAllTradeButtons,
   enableAllTradeButtons,
   showButtonLoading,
   enableUI,
   disableUI,
+  getFromStorage,
+  internetConnection,
 } from "./utils.js";
-
-// LOCAL ONLY:
-import { login, register } from "./API.js";
-
-import CONFIG, { USE_LOCAL } from "../config.js";
 
 let currentContract = null;
 let currentPreset = null;
+let ws = null;
+let updateInterval = null;
+let healthCheckInterval = null;
+let initializing = false;
+let fetchingBalance = false;
+let reconnectTimeout = null;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    // PROD ONLY:
-    if (USE_LOCAL) {
-      //localStorage.clear();
-      //register("TestingUser", "Parola");
-      login("TestingUser", "Parola");
-    }
+const settings = [
+  {
+    key: "theme",
+    default: "dark",
+    apply: (value) => {
+      document.documentElement.setAttribute("data-theme", value);
+    },
+  },
+  {
+    key: "animation",
+    default: 3,
+    apply: (value) => {
+      document.documentElement.style.setProperty(
+        "--anim-time",
+        `${value / 10}s`,
+      );
+    },
+  },
+];
 
-    const sessionToken = localStorage.getItem("sessionToken");
-    const username = localStorage.getItem("username");
+async function initDashboard() {
+  if (initializing) return; // prevent re-entrance
+  initializing = true;
 
-    if (!sessionToken) {
-      clearPositions();
-      disableUI();
-      throw new Error("Session token not found.");
-    }
+  console.log("[TrenchersPT] 🟢 Initializing dashboard...");
 
-    const isSessionValid = await checkSession();
-    if (!isSessionValid) {
-      clearPositions();
-      localStorage.removeItem("sessionToken");
-      disableUI();
-      throw new Error("Session token is invalid.");
-    }
+  settings.forEach(({ key, default: def, apply }) => {
+    chrome.storage.local.get(key, ({ [key]: value }) => {
+      if (value === undefined) value = def;
+      apply(value);
+    });
+  });
 
-    currentPreset = getUsingPreset();
-    if (currentPreset == null || currentPreset === "undefined") {
-      applyPreset("preset1");
-    } else applyPreset(currentPreset);
+  const healthy = await healthCheck();
+  if (!healthy) {
+    console.warn("Health check failed — retrying later.");
+    disableUI("no-internet");
+    scheduleReconnect();
+    initializing = false;
+    return;
+  }
 
-    setInterval(async () => {
+  const isSessionValid = await checkSession();
+  if (!isSessionValid) {
+    console.warn("Session invalid — showing login screen.");
+    clearPositions();
+    disableUI("no-session");
+    initializing = false;
+    return;
+  }
+
+  document.body.style.removeProperty("pointer-events");
+
+  if (!ws)
+    ws = await connectWebSocket().catch((error) => {
+      throw new Error("WebSocket connection failed: " + error.message);
+    });
+
+  // Clear any existing intervals before starting new ones
+  clearInterval(updateInterval);
+  clearInterval(healthCheckInterval);
+
+  updateInterval = setInterval(async () => {
+    if (fetchingBalance) return; // prevent overlap
+    fetchingBalance = true;
+
+    try {
       currentPreset = document.querySelector(".activePreset")?.id;
 
       const pendingPresets = localStorage.getItem("pendingPresets");
@@ -85,21 +123,114 @@ document.addEventListener("DOMContentLoaded", async () => {
       const newContract = await requestCurrentContract();
       if (currentContract !== newContract) {
         currentContract = newContract;
-        searchPosition(currentContract);
+        await searchPosition(currentContract);
       }
 
       await updateBalanceUI();
-    }, 1000);
+    } catch (err) {
+      console.error("updateInterval error:", err);
+    } finally {
+      fetchingBalance = false;
+    }
+  }, 1000);
+  enableUI();
 
+  healthCheckInterval = setInterval(async () => {
+    const healthy = await healthCheck();
+    if (!healthy) {
+      console.warn("Lost connection — disconnecting dashboard.");
+      disconnectDashboard();
+    }
+  }, 5000);
+
+  initializing = false;
+}
+
+export async function disconnectDashboard(logout = false) {
+  console.log("[TrenchersPT] 🔴 Disconnecting dashboard...");
+
+  document.body.style.pointerEvents = "none";
+
+  if (updateInterval) clearInterval(updateInterval);
+  if (healthCheckInterval) clearInterval(healthCheckInterval);
+
+  updateInterval = null;
+  healthCheckInterval = null;
+
+  currentContract = null;
+
+  if (ws) {
+    disconnectWebSocket();
+    ws = null;
+  }
+
+  if (!logout) scheduleReconnect();
+}
+
+function scheduleReconnect() {
+  if (reconnectTimeout) return;
+  reconnectTimeout = setTimeout(() => {
+    reconnectTimeout = null;
+    initDashboard();
+  }, 2000);
+}
+
+async function logout() {
+  disconnectDashboard(true);
+  clearPositions();
+  disableUI("no-session");
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
     const actionButtons = document.querySelectorAll(
       "#buyButtons .buyButton, #sellButtons .sellButton",
     );
     for (const button of actionButtons) {
       button.addEventListener("click", handleActionButtonClick(button));
     }
+
+    currentPreset = getUsingPreset();
+    if (currentPreset == null || currentPreset === "undefined") {
+      applyPreset("preset1");
+    } else applyPreset(currentPreset);
+
+    const closeButton = document.getElementById("Close");
+    closeButton.addEventListener("click", () => {
+      requestHideApp();
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.theme) {
+        document.documentElement.setAttribute(
+          "data-theme",
+          changes.theme.newValue,
+        );
+      }
+      if (area === "local" && changes.animation) {
+        document.documentElement.style.setProperty(
+          "--anim-time",
+          `${changes.animation.newValue / 10}s`,
+        );
+      }
+      if (area === "local" && changes.pnlSlider) {
+        changeDelay(changes.updateDelay.newValue);
+      }
+    });
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === "initDashboard") {
+        console.log("User registered, initializing dashboard...");
+        initDashboard();
+      }
+      if (message.type === "logoutDashboard") {
+        console.log("User logged out, disabling dashboard...");
+        logout();
+      }
+    });
+
+    await initDashboard();
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    showNotification("[dashboard.js] " + message, "error");
+    console.error("[TrenchersPT] Initialization error:", error);
   }
 });
 
@@ -114,43 +245,34 @@ function handleActionButtonClick(button) {
       disableAllTradeButtons(actionButtons);
       showButtonLoading(button);
 
-      const tokenMint = currentContract;
+      const poolAddress = currentContract;
       const action = button.dataset.action;
       const dataAmount = parseFloat(button.dataset.amount);
-      const price = parseFloat(await requestPrice());
-      const symbol = await requestSymbol();
 
-      if (!tokenMint) throw new Error("No CA loaded.");
+      if (!poolAddress) throw new Error("No pool found.");
       if (!action) throw new Error("No action specified inside the button.");
       if (!dataAmount)
         throw new Error("No amount specified inside the button.");
-      if (!price) throw new Error("Token price not found.");
-      if (!symbol) throw new Error("Symbol not found.");
 
       if (action === "buy") {
-        const result = await buyToken(tokenMint, dataAmount, price);
+        const result = await buyToken(poolAddress, dataAmount);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
-        let solSpent =
-          parseFloat(result.solSpent) - parseFloat(result.fees.protocol);
-        solSpent = parseFloat(solSpent.toFixed(2));
+        let solSpent = parseFloat(result.solSpent.toFixed(2));
         showNotification(
-          `You bought ${solSpent} SOL worth of ${symbol}!`,
+          `You bought ${solSpent} SOL worth of ${result.tokenData.symbol}!`,
           "success",
         );
-        await recordBuy(tokenMint, price, solSpent);
+        await importTradeLog();
+        setActiveToken(poolAddress);
       }
       if (action === "sell") {
-        const result = await sellByPercentage(tokenMint, dataAmount, price);
+        const result = await sellByPercentage(poolAddress, dataAmount);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
         const solReceived = parseFloat(result.solReceived).toFixed(2);
-        showNotification(
-          `You sold ${symbol} for ${solReceived} SOL!`,
-          "success",
-        );
-        await recordSell(tokenMint, parseFloat(solReceived), dataAmount); // account for fees
-        //await recordSell(tokenMint, price, dataAmount);
+        showNotification(`You sold for ${solReceived} SOL!`, "success");
+        await importTradeLog();
       }
     } catch (error) {
       showNotification(error, "error");
@@ -161,8 +283,8 @@ function handleActionButtonClick(button) {
   };
 }
 
-function searchPosition(currentContract) {
-  loadPositions();
+async function searchPosition(currentContract) {
+  await importTradeLog();
   if (!currentContract) throw new Error("No current contract found.");
 
   const storedPositions = localStorage.getItem("openPositions");
@@ -177,9 +299,9 @@ function searchPosition(currentContract) {
 
   window.openPositions = parsed;
 
-  const match = parsed.find((p) => p.mint === currentContract);
+  const match = parsed.find((p) => p.pool === currentContract);
   if (match) {
-    setActiveToken(match.mint);
+    setActiveToken(match.pool);
   }
 }
 
@@ -192,19 +314,24 @@ export async function updateBalanceUI(force = false) {
   );
   const now = Date.now();
 
-  const maxAge = 1000 * 60 * 5; // 5 mins
+  const maxAge = 1000 * 60 * 10; // 5 mins
   if (!force && cache && now - lastUpdated < maxAge) {
     solBalance.innerText = parseFloat(cache).toFixed(2);
     return;
   }
 
+  console.log("Fetching new balance from API...");
+  if (!internetConnection()) {
+    disconnectDashboard();
+    return;
+  }
   const result = await getPortfolio();
   if (!result?.solBalance) {
-    showNotification(result.error || "Failed to fetch balance.", "error");
+    console.error("Failed to fetch balance:", result?.error || result);
     return;
   }
   const balance = parseFloat(result.solBalance).toFixed(2);
   solBalance.innerText = balance;
-  localStorage.setItem("cachedSolBalance", balance);
-  localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
+  localStorage.setItem("cachedBalance", balance);
+  localStorage.setItem("cachedBalanceTime", Date.now().toString());
 }

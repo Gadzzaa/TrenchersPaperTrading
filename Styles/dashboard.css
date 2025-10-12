@@ -1,13 +1,5 @@
 html,
 body {
-  --background: #1e1e2e;
-  --footerbg: #181825;
-  --green: #a6e3a1;
-  --red: #f38ba8;
-  --text: #cdd6f4;
-  --active: #89b4fa;
-  --surface: #45475a;
-
   /* Standardized spacing scale */
   --spacing-xs: 0.25rem;
   /* 4px */
@@ -32,14 +24,13 @@ body {
   --radius-xl: 1rem;
   /* 16px */
 
-  --anim-time: 0.3s;
-
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 body.edit-mode #Container {
-  box-shadow: 0 0 10px 2px var(--active);
+  box-shadow: 0 0 10px 2px rgb(var(--blue));
   animation: glowPulse 1.2s ease-in-out infinite alternate;
 }
 
@@ -49,13 +40,13 @@ body.edit-mode::before {
   top: -40px;
   left: 52%;
   transform: translateX(-52%);
-  background-color: var(--active);
-  color: var(--background);
+  background-color: rgb(var(--blue));
+  color: rgb(var(--base));
   font-size: 0.65rem;
   font-weight: bold;
   padding: 2px 8px;
   border-radius: 6px;
-  z-index: 10000;
+  z-index: 25;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   font-family: "Poppins", sans-serif;
   animation: slideDown 0.4s ease-out forwards;
@@ -68,11 +59,11 @@ body.edit-mode::after {
   right: 6px;
   width: 12px;
   height: 12px;
-  background-color: var(--active);
+  background-color: rgb(var(--blue));
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--active);
+  box-shadow: 0 0 8px rgb(var(--blue));
   animation: pulseDot 1.2s infinite ease-in-out;
-  z-index: 9999;
+  z-index: 25;
 }
 
 body.edit-mode-exit::before {
@@ -91,11 +82,11 @@ body.edit-mode-exit::before {
 }
 
 .positive {
-  color: var(--green);
+  color: rgb(var(--green));
 }
 
 .negative {
-  color: var(--red);
+  color: rgb(var(--red));
 }
 
 #solanaLogo {
@@ -107,7 +98,7 @@ body.edit-mode-exit::before {
 #Container {
   width: 350px;
   height: 240px;
-  background-color: var(--background);
+  background-color: rgb(var(--base));
   font-family: "Poppins", sans-serif;
   display: flex;
   flex-direction: column;
@@ -117,7 +108,7 @@ body.edit-mode-exit::before {
 }
 
 #Move {
-  color: var(--text);
+  color: rgb(var(--text));
   opacity: 0.5;
   cursor: grab;
   margin: auto;
@@ -129,6 +120,7 @@ body.edit-mode-exit::before {
   text-align: center;
   display: inline-block;
   overflow: hidden;
+  z-index: 50;
 }
 
 #Header {
@@ -163,7 +155,7 @@ body.edit-mode-exit::before {
   height: 18px;
   border: none;
   background: transparent;
-  color: var(--text);
+  color: rgb(var(--text));
   text-align: center;
   padding: 0;
   cursor: pointer;
@@ -176,7 +168,7 @@ body.edit-mode-exit::before {
 }
 
 .activePreset {
-  color: var(--active);
+  color: rgb(var(--blue));
 }
 
 #RightHeader {
@@ -200,19 +192,21 @@ body.edit-mode-exit::before {
 #balanceValue {
   font-size: var(--spacing-md);
   font-weight: 400;
-  color: var(--text);
+  color: rgb(var(--text));
 }
 
 #Close {
   width: var(--spacing-md);
   height: var(--spacing-md);
   border-radius: 50%;
-  background: var(--red);
+  background: rgb(var(--red));
   border: none;
   cursor: pointer;
   margin: auto;
   position: relative;
   transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  pointer-events: auto !important;
 }
 
 #closeMark {
@@ -227,7 +221,7 @@ body.edit-mode-exit::before {
 }
 
 .separator {
-  border: 0.25px solid var(--surface);
+  border: 0.25px solid rgb(var(--surface1));
 }
 
 #separatorDiv {
@@ -269,7 +263,7 @@ body.edit-mode-exit::before {
   margin: 0;
   font-size: var(--spacing-md);
   font-style: normal;
-  color: var(--text);
+  color: rgb(var(--text));
   opacity: 0.75;
 }
 
@@ -295,23 +289,23 @@ body.edit-mode-exit::before {
 }
 
 .buyButton {
-  color: var(--green);
-  border-color: var(--green);
+  color: rgb(var(--green));
+  border-color: rgb(var(--green));
 }
 
 .sellButton {
-  color: var(--red);
-  border-color: var(--red);
+  color: rgb(var(--red));
+  border-color: rgb(var(--red));
 }
 
 #footerSeparator {
-  border: 0.75px solid var(--surface);
+  border: 0.75px solid rgb(var(--surface1));
   margin: 0;
   padding: 0;
 }
 
 #footerInfoSep {
-  border: 0.25px solid var(--surface);
+  border: 0.25px solid rgb(var(--surface1));
   height: 75%;
   margin: 0;
   padding: 0;
@@ -320,7 +314,7 @@ body.edit-mode-exit::before {
 
 #footerData {
   height: 30px;
-  background-color: var(--footerbg);
+  background-color: rgb(var(--mantle));
   font-size: var(--spacing-md);
   font-style: normal;
   display: flex;
@@ -334,29 +328,29 @@ body.edit-mode-exit::before {
 .footerInfo {
   display: flex;
   flex-direction: row;
-  color: var(--text);
+  color: rgb(var(--text));
   text-align: center;
   gap: var(--spacing-xs);
   padding: 0;
 }
 
 #boughtText {
-  color: var(--green);
+  color: rgb(var(--green));
 }
 
 #soldText {
-  color: var(--red);
+  color: rgb(var(--red));
 }
 
 #holdText {
-  color: var(--text);
+  color: rgb(var(--text));
 }
 
 /* Animations and events */
 
 #editPresets:hover #editIcon {
   transform: translateY(-1px);
-  color: var(--active);
+  color: rgb(var(--blue));
 }
 
 #editPresets:active #editIcon {
@@ -380,7 +374,7 @@ body.edit-mode-exit::before {
 }
 
 .preset:hover {
-  text-shadow: 0 0 6px var(--text);
+  text-shadow: 0 0 6px rgb(var(--text));
   transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -390,8 +384,8 @@ body.edit-mode-exit::before {
 }
 
 .buyButton:hover {
-  background: var(--green);
-  color: var(--background);
+  background: rgb(var(--green));
+  color: rgb(var(--background));
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(166, 227, 161, 0.3);
 }
@@ -402,8 +396,8 @@ body.edit-mode-exit::before {
 }
 
 .sellButton:hover {
-  background: var(--red);
-  color: var(--background);
+  background: rgb(var(--red));
+  color: rgb(var(--background));
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(243, 139, 168, 0.3);
 }
@@ -416,8 +410,8 @@ body.edit-mode-exit::before {
 /* Custom Tooltip Styles */
 .tooltip {
   position: absolute;
-  background: var(--surface);
-  color: var(--text);
+  background: rgb(var(--surface1));
+  color: rgb(var(--text));
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-size: 0.65rem;
@@ -425,14 +419,14 @@ body.edit-mode-exit::before {
   font-family: "Poppins", sans-serif;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 10000;
+  z-index: 100;
   opacity: 0;
   transform: translateY(5px);
   transition:
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--surface);
+  border: 1px solid rgb(var(--surface1));
   backdrop-filter: blur(8px);
   max-width: 130px;
   word-wrap: break-word;
@@ -460,20 +454,20 @@ body.edit-mode-exit::before {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--green);
-  color: var(--background);
+  background: rgb(var(--green));
+  color: rgb(var(--base));
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-sm);
   font-size: 0.7rem;
   white-space: nowrap;
-  z-index: 1000;
+  z-index: 25;
   margin-bottom: var(--spacing-xs);
   opacity: 0;
   animation: tooltipFadeIn 0.2s ease forwards;
 }
 
 .sellButton[data-tooltip]:hover::after {
-  background: var(--red);
+  background: rgb(var(--red));
 }
 
 .notification {
@@ -484,8 +478,8 @@ body.edit-mode-exit::before {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  background: var(--surface, #222);
-  color: var(--text, #fff);
+  background: rgb(var(--surface1, #222));
+  color: rgb(var(--text, #fff));
   padding: 16px 32px;
   border-radius: 0 0 16px 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
@@ -531,31 +525,37 @@ body.edit-mode-exit::before {
   animation-delay: 0.4s;
 }
 
-#loginBlocker {
+#Blocker {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(30, 30, 46, 0.92);
-  color: var(--text);
+  background-color: rgba(var(--base), 0.92);
+  color: rgb(var(--text));
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999;
+  z-index: 25;
   font-family: "Poppins", sans-serif;
   font-size: 0.9rem;
   pointer-events: all;
   user-select: none;
+  transition: opacity 0.3s ease;
 }
 
-#loginMessage {
+#noSessionMessage,
+#noInternetMessage {
   padding: 16px 24px;
-  background: var(--surface);
-  border: 1px solid var(--active);
+  background: rgb(var(--surface1));
+  border: 1px solid rgb(var(--blue));
   border-radius: var(--radius-md);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   text-align: center;
+  display: none;
+}
+#noInternetMessage {
+  z-index: 40;
 }
 
 @keyframes loadingBounce {
@@ -607,10 +607,10 @@ body.edit-mode-exit::before {
 
 @keyframes glowPulse {
   0% {
-    box-shadow: 0 0 8px 2px var(--active);
+    box-shadow: 0 0 8px 2px rgb(var(--blue));
   }
   100% {
-    box-shadow: 0 0 16px 4px var(--active);
+    box-shadow: 0 0 16px 4px rgb(var(--blue));
   }
 }
 

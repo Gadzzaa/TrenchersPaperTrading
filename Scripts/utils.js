@@ -4,23 +4,25 @@ let spinnerText;
 let notificationPopup;
 let notificationText;
 let notificationInner;
-let dotInterval;
-let slideOutTimeout;
-let popTimeout1;
-let popTimeout2;
-let glowTimeout1;
-let glowTimeout2;
-let lastPlay = 0;
 const successSound = new Audio(chrome.runtime.getURL("Sounds/success.wav"));
 const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
-successSound.volume = 0.4;
-failSound.volume = 0.4;
+let audioVolume;
 
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
   spinnerText = document.getElementById("spinnerText");
   notificationPopup = document.getElementById("notificationPopup");
   notificationText = document.getElementById("notificationText");
+  chrome.storage.local.get("volume", ({ volume }) => {
+    if (!volume) volume = 1.0;
+    audioVolume = volume;
+  });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.volume) {
+      audioVolume = changes.volume.newValue;
+    }
+  });
   notificationInner = document.getElementById("notificationInner");
 });
 
@@ -52,107 +54,123 @@ export function showButtonLoading(button) {
 }
 
 // NotificationSystem.js
-export function showNotification(message, type) {
+export function showNotification(message, type, sound = true) {
   const typeClasses = {
     success: "✅",
     error: "❌",
     info: "ℹ",
   };
+
+  const fullMessage = typeClasses[type] + " " + message;
+
   window.parent.postMessage(
     {
       type: "SHOW_NOTIFICATION",
-      message: typeClasses[type] + " " + message,
+      message: fullMessage,
     },
     "*",
   );
-  switch (type) {
-    case "success":
-      safePlay(successSound);
-      break;
-    case "error":
-      safePlay(failSound);
-      console.error(message);
-      break;
-    case "info":
-      // No sound for info
-      break;
-  }
+
+  if (sound)
+    switch (type) {
+      case "success":
+        safePlay(type);
+        break;
+      case "error":
+        safePlay(type);
+        console.error(message);
+        break;
+      case "info":
+        break; // No sound
+    }
 }
 
-function safePlay(audio) {
-  const now = Date.now();
-  //  if (now - lastPlay > 50) {
-  lastPlay = now;
-  audio.play().catch((e) => {
-    throw new Error(`${audio} sound failed:`, e);
+function safePlay(type) {
+  let sound;
+  switch (type) {
+    case "success":
+      sound = new Audio(successSound.src);
+      break;
+    case "error":
+      sound = new Audio(failSound.src);
+      break;
+    default:
+      return;
+  }
+
+  sound.volume = audioVolume.toFixed(2);
+  sound.play().catch((e) => {
+    console.error(`${type} sound failed:`, e);
   });
-  // }
 }
 
 // Access blocker
 export function enableUI() {
-  const blocker = document.getElementById("loginBlocker");
-  if (blocker) blocker.style.display = "none";
+  const blocker = document.getElementById("Blocker");
+  const loginPanel = document.getElementById("loginPanel");
+  if (blocker) {
+    blocker.style.opacity = "0";
+    setTimeout(() => {
+      const noInternetMessage = document.getElementById("noInternetMessage");
+      const noSessionMessage = document.getElementById("noSessionMessage");
+      if (noInternetMessage) noInternetMessage.style.display = "none";
+      if (noSessionMessage) noSessionMessage.style.display = "none";
+
+      blocker.style.display = "none";
+    }, 300);
+  }
+
+  if (loginPanel) loginPanel.classList.add("loginHidden");
 }
 
-export function disableUI() {
-  const blocker = document.getElementById("loginBlocker");
-  if (blocker) blocker.style.display = "flex";
+export function disableUI(reason) {
+  const blocker = document.getElementById("Blocker");
+  const loginPanel = document.getElementById("loginPanel");
+  if (blocker) {
+    blocker.style.display = "flex";
+    const noInternetMessage = document.getElementById("noInternetMessage");
+    const noSessionMessage = document.getElementById("noSessionMessage");
+    noInternetMessage.style.display = "none";
+    noSessionMessage.style.display = "none";
+    switch (reason) {
+      case "no-internet":
+        if (noInternetMessage) noInternetMessage.style.display = "flex";
+        break;
+      case "no-session":
+        if (noSessionMessage) noSessionMessage.style.display = "flex";
+        break;
+    }
+    setTimeout(() => {
+      blocker.style.opacity = "1";
+    }, 300);
+  }
+  if (loginPanel) loginPanel.classList.remove("loginHidden");
+}
+
+export function internetConnection() {
+  const noInternetMessage = document.getElementById("noInternetMessage");
+  if (noInternetMessage) return noInternetMessage.style.display === "none";
+}
+export function startLoadingDots(button) {
+  let dots = 0;
+  button.dataset.originalText = button.textContent; // save original text
+  document.body.style.pointerEvents = "none";
+
+  const interval = setInterval(() => {
+    dots = (dots + 1) % 4; // 0 → 1 → 2 → 3 → 0
+    button.textContent = ".".repeat(dots);
+  }, 250);
+
+  return interval; // return interval ID so you can clear it later
+}
+
+export function stopLoadingDots(button, interval) {
+  clearInterval(interval);
+  button.textContent = button.dataset.originalText;
+  document.body.style.pointerEvents = "auto";
 }
 
 // Requests from inject.js
-export function requestSymbol() {
-  return new Promise((resolve) => {
-    const requestId = "get-symbol-" + Date.now();
-
-    // Listen for response
-    function handleMessage(event) {
-      const { type, symbol, requestId: responseId } = event.data;
-      if (type === "SYMBOL_RESPONSE" && responseId === requestId) {
-        window.removeEventListener("message", handleMessage);
-        resolve(symbol);
-      }
-    }
-
-    window.addEventListener("message", handleMessage);
-
-    // Send request
-    window.parent.postMessage(
-      {
-        type: "SYMBOL_REQUEST",
-        requestId: requestId,
-      },
-      "*",
-    );
-  });
-}
-
-export function requestPrice() {
-  return new Promise((resolve) => {
-    const requestId = "get-price-" + Date.now();
-
-    // Listen for response
-    function handleMessage(event) {
-      const { type, price, requestId: responseId } = event.data;
-      if (type === "PRICE_RESPONSE" && responseId === requestId) {
-        window.removeEventListener("message", handleMessage);
-        resolve(price);
-      }
-    }
-
-    window.addEventListener("message", handleMessage);
-
-    // Send request
-    window.parent.postMessage(
-      {
-        type: "PRICE_REQUEST",
-        requestId: requestId,
-      },
-      "*",
-    );
-  });
-}
-
 export function requestCurrentContract() {
   return new Promise((resolve) => {
     const requestId = "get-contract-" + Date.now();
@@ -176,5 +194,32 @@ export function requestCurrentContract() {
       },
       "*",
     );
+  });
+}
+
+export function requestHideApp() {
+  window.parent.postMessage(
+    {
+      type: "HIDE_APP",
+    },
+    "*",
+  );
+}
+
+export function getFromStorage(key) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([key], (res) => resolve(res[key]));
+  });
+}
+
+export function setToStorage(key, value) {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [key]: value }, () => resolve());
+  });
+}
+
+export function removeFromStorage(key) {
+  return new Promise((resolve) => {
+    chrome.storage.local.remove([key], () => resolve());
   });
 }
