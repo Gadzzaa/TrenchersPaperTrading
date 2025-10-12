@@ -14,7 +14,6 @@ import {
   startLoadingDots,
   stopLoadingDots,
 } from "./utils.js";
-import { handleReconnect } from "./connectionManager.js";
 let tokenListContainer,
   indicator,
   usernameText,
@@ -32,6 +31,10 @@ let tokenListContainer,
   pnlData,
   usernameInput,
   passwordInput;
+let healthCheckInterval = null;
+let reconnectTimeout = null;
+let countdownResets = null;
+let initializing = false;
 const barWidth = 30;
 const tokens = [];
 const settings = [
@@ -102,6 +105,8 @@ const settings = [
 ];
 
 async function init() {
+  if (initializing) return;
+  initializing = true;
   settings.forEach(({ key, default: def, apply }) => {
     chrome.storage.local.get(key, ({ [key]: value }) => {
       if (value === undefined) value = def;
@@ -112,19 +117,51 @@ async function init() {
   const healthy = await healthCheck();
   if (!healthy) {
     await disableUI("no-internet");
-    handleReconnect(init, "popup");
+    scheduleReconnect();
+    initializing = false;
     return;
   }
+
+  if (healthCheckInterval) clearInterval(healthCheckInterval);
+  healthCheckInterval = setInterval(async () => {
+    const healthy = await healthCheck();
+    console.log("Health check:", healthy ? "OK" : "FAILED");
+    if (!healthy) {
+      console.warn("Lost connection — disconnecting popup.");
+      disconnectPopup();
+    }
+  }, 5000);
 
   const validSession = await checkSession();
   if (!validSession) {
     await disableUI("no-session");
+    initializing = false;
     return;
   }
   await loadAPIData();
 
   await enableUI();
   document.body.style.removeProperty("pointer-events");
+
+  initializing = false;
+}
+
+function scheduleReconnect() {
+  if (reconnectTimeout) return;
+  reconnectTimeout = setTimeout(() => {
+    reconnectTimeout = null;
+    init();
+  }, 2000);
+}
+
+function disconnectPopup(logout = false) {
+  if (countdownResets) clearInterval(countdownResets);
+  if (healthCheckInterval) clearInterval(healthCheckInterval);
+
+  countdownResets = null;
+  healthCheckInterval = null;
+
+  if (!logout) scheduleReconnect();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -231,6 +268,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .then(() => {
         moveIndicator(defaultButton);
         setDisplay(defaultButton.dataset.index);
+        disconnectPopup(true);
       })
       .catch((err) => {
         showDialog({
@@ -443,7 +481,7 @@ function startCountdown(lastReset) {
     resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
   }
   update(); // initial call
-  setInterval(update, 1000 * 5); // update every 5s
+  countdownResets = setInterval(update, 1000 * 5); // update every 5s
 }
 function setDisplay(index) {
   const carousel = document.querySelector(".pageCarousel");
@@ -567,12 +605,19 @@ export function showDialog({ title, message, type }) {
     dialogBody.textContent = message;
 
     // Show the dialog
+    dialogOverlay.style.opacity = "0";
     dialogOverlay.classList.remove("hidden");
+    setTimeout(() => {
+      dialogOverlay.style.opacity = "1";
+    }, 300);
 
     // Prevent inputs
     document.body.style.pointerEvents = "none";
 
     let baseCleanup = () => {
+      setTimeout(() => {
+        dialogOverlay.style.opacity = "0";
+      }, 300); // slight delay to avoid flicker
       dialogOverlay.classList.add("hidden");
       dialogHeader.textContent = "";
       dialogBody.textContent = "";
@@ -640,28 +685,6 @@ export function showDialog({ title, message, type }) {
 
         okayButton.addEventListener("click", onConfirm);
         break;
-      case "Offline":
-        dialogLoading.classList.remove("hidden");
-
-        // Prevent interactions
-        document.body.style.pointerEvents = "none";
-
-        // Return a function reference to manually close it later
-        resolve(() => {
-          baseCleanup();
-          hideLoadingDialog();
-        });
-        break;
     }
   });
-}
-export function hideLoadingDialog() {
-  const dialogOverlay = document.getElementById("dialogOverlay");
-  const dialogLoading = document.getElementById("dialogLoading");
-
-  if (dialogLoading) dialogLoading.classList.add("hidden");
-  if (dialogOverlay) dialogOverlay.classList.add("hidden");
-
-  // Re-enable interactions
-  document.body.style.removeProperty("pointer-events");
 }

@@ -122,8 +122,13 @@ export async function enableUI() {
   }
   if (popup) {
     const loginPanel = document.getElementById("loginPanel");
-    const { hideLoadingDialog } = await import("./popup.js");
-    hideLoadingDialog();
+    const noInternet = document.getElementById("noInternet");
+    if (!noInternet?.classList.contains("hidden")) {
+      noInternet.style.opacity = "0";
+      setTimeout(() => {
+        noInternet.classList.add("hidden");
+      }, 300);
+    }
     if (loginPanel) loginPanel.classList.add("loginHidden");
   }
 }
@@ -151,18 +156,22 @@ export async function disableUI(reason) {
   }
   if (popup) {
     const loginPanel = document.getElementById("loginPanel");
-    const { showDialog, hideLoadingDialog } = await import("./popup.js");
-    hideLoadingDialog();
-    if (loginPanel) loginPanel.classList.add("loginHidden");
+    const noInternet = document.getElementById("noInternet");
     switch (reason) {
       case "no-internet":
-        hidePopupFn = await showDialog({
-          title: "Offline",
-          message: "Lost connection to the server. Reconnecting...",
-          type: "Offline",
-        });
+        if (noInternet?.classList.contains("hidden")) {
+          noInternet.style.opacity = "0";
+          noInternet.classList.remove("hidden");
+          noInternet.style.opacity = "1";
+        }
         break;
       case "no-session":
+        if (!noInternet?.classList.contains("hidden")) {
+          noInternet.style.opacity = "0";
+          setTimeout(() => {
+            noInternet.classList.add("hidden");
+          }, 300);
+        }
         if (loginPanel) loginPanel.classList.remove("loginHidden");
         break;
     }

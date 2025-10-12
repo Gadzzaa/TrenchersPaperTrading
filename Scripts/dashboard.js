@@ -29,7 +29,6 @@ import {
   getFromStorage,
   internetConnection,
 } from "./utils.js";
-import { handleReconnect } from "./connectionManager.js";
 
 let currentContract = null;
 let currentPreset = null;
@@ -38,6 +37,7 @@ let updateInterval = null;
 let healthCheckInterval = null;
 let initializing = false;
 let fetchingBalance = false;
+let reconnectTimeout = null;
 
 const settings = [
   {
@@ -76,10 +76,19 @@ async function initDashboard() {
   if (!healthy) {
     console.warn("Health check failed — retrying later.");
     await disableUI("no-internet");
-    handleReconnect(initDashboard, "dashboard");
+    scheduleReconnect();
     initializing = false;
     return;
   }
+
+  clearInterval(healthCheckInterval);
+  healthCheckInterval = setInterval(async () => {
+    const healthy = await healthCheck();
+    if (!healthy) {
+      console.warn("Lost connection — disconnecting dashboard.");
+      disconnectDashboard();
+    }
+  }, 5000);
 
   const isSessionValid = await checkSession();
   if (!isSessionValid) {
@@ -90,17 +99,14 @@ async function initDashboard() {
     return;
   }
 
-  document.body.style.removeProperty("pointer-events");
-
   if (!ws)
     ws = await connectWebSocket().catch((error) => {
       throw new Error("WebSocket connection failed: " + error.message);
     });
 
-  // Clear any existing intervals before starting new ones
-  clearInterval(updateInterval);
-  clearInterval(healthCheckInterval);
+  document.body.style.removeProperty("pointer-events");
 
+  clearInterval(updateInterval);
   updateInterval = setInterval(async () => {
     if (fetchingBalance) return; // prevent overlap
     fetchingBalance = true;
@@ -133,16 +139,8 @@ async function initDashboard() {
       fetchingBalance = false;
     }
   }, 1000);
+
   await enableUI();
-
-  healthCheckInterval = setInterval(async () => {
-    const healthy = await healthCheck();
-    if (!healthy) {
-      console.warn("Lost connection — disconnecting dashboard.");
-      disconnectDashboard();
-    }
-  }, 5000);
-
   initializing = false;
 }
 
@@ -164,7 +162,15 @@ export async function disconnectDashboard(logout = false) {
     ws = null;
   }
 
-  if (!logout) handleReconnect();
+  if (!logout) scheduleReconnect();
+}
+
+function scheduleReconnect() {
+  if (reconnectTimeout) return;
+  reconnectTimeout = setTimeout(() => {
+    reconnectTimeout = null;
+    initDashboard();
+  }, 2000);
 }
 
 async function logout() {

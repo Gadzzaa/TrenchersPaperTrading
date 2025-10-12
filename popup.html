@@ -16,6 +16,18 @@
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
   <body id="popupTrenchersPT" style="pointer-events: none">
+    <div id="noInternet" class="hidden">
+      <div id="noInternetBG"></div>
+      <div id="noInternetBox">
+        <div id="noInternetHeader">Offline</div>
+        <div id="noInternetBody">
+          Lost connection to the server. Reconnecting...
+        </div>
+        <div id="noInternetLoading">
+          <div id="noInternetSpinner"></div>
+        </div>
+      </div>
+    </div>
     <div id="dialogOverlay" class="hidden">
       <div id="dialogBackground"></div>
       <div id="dialogBox">
@@ -36,9 +48,6 @@
         </div>
         <div id="dialogInfo" class="hidden">
           <button id="dialogInfoButton" class="confirmButton">Okay</button>
-        </div>
-        <div id="dialogLoading" class="hidden">
-          <div id="dialogSpinner"></div>
         </div>
       </div>
     </div>

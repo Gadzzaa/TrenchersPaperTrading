@@ -30,7 +30,8 @@ button.no-shadow {
   pointer-events: none; /* prevent clicks during fade out */
 }
 
-#dialogOverlay {
+#dialogOverlay,
+#noInternet {
   pointer-events: auto !important;
   position: absolute;
   width: 100%;
@@ -39,14 +40,21 @@ button.no-shadow {
   justify-content: center;
   border-radius: 20px;
   display: flex;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#noInternet {
+  z-index: 40;
+}
+#noInternetBox {
+  z-index: 50;
 }
 #dialogOverlay,
 #dialogOverlay * {
   z-index: 50;
 }
-#dialogBackground {
+#dialogBackground,
+#noInternetBG {
   position: fixed;
   top: 0;
   left: 0;
@@ -54,7 +62,8 @@ button.no-shadow {
   height: 100%;
   background-color: rgba(var(--mantle), 0.75);
 }
-#dialogBox {
+#dialogBox,
+#noInternetBox {
   display: flex;
   flex-direction: column;
   margin: 0 20px;
@@ -65,13 +74,15 @@ button.no-shadow {
   border-radius: 20px;
   gap: 20px;
 }
-#dialogHeader {
+#dialogHeader,
+#noInternetHeader {
   font-size: 16px;
   color: rgb(var(--subtext1));
   text-align: center;
   font-weight: 500;
 }
-#dialogBody {
+#dialogBody,
+#noInternetBody {
   text-align: center;
   font-size: 14px;
   color: rgb(var(--text));
@@ -205,7 +216,7 @@ input[type="number"] {
   box-shadow: 0 1px 3px rgba(var(--red), 0.5);
 }
 
-#dialogLoading {
+#noInternetLoading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -214,7 +225,7 @@ input[type="number"] {
   pointer-events: none;
 }
 
-#dialogSpinner {
+#noInternetSpinner {
   width: 40px;
   height: 40px;
   border: 4px solid rgba(var(--subtext1), 0.2);
