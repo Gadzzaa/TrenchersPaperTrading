@@ -41,17 +41,17 @@ export async function checkSession() {
       method: "GET",
       headers: await getAuthHeaders(),
     });
-    switch (response.status) {
-      case 401:
-        throw new Error("Invalid session. Please log in again.");
-      case 500:
-        throw new Error(
-          "Server is currently unreachable. Please check your connection or try again later.",
-        );
-    }
-    if (!response?.ok) throw new Error("Invalid session. Please log in again.");
+    const result = await response.json();
+    if (response.status === 401 || !response?.ok)
+      throw new Error(
+        "Unauthorized: " + result.error || "Please log in again.",
+      );
     return true;
   } catch (error) {
+    if (isNetworkError(error)) {
+      console.warn("⚠️ Network offline or server is unreachable:", error);
+      disableUI("no-internet");
+    }
     const message = error instanceof Error ? error.message : String(error);
     showNotification(
       getDebugMode() ? "[API.js] " + message : message,
@@ -208,7 +208,6 @@ export async function buyToken(
       throw new Error(result.error || "Unknown error occured.");
 
     setPnlData(poolAddress, result.pnlData);
-    watchPool(poolAddress);
 
     return {
       success: result.success,
