@@ -6,12 +6,18 @@ let lastFullPath = location.pathname;
 let lastContract = null;
 
 // 🚀 Start the app
-try {
-  monitorRouteChanges();
-} catch (error) {
-  console.error("❌ Error initializing TrenchersPaperTrading:", error);
-}
 
+(async () => {
+  try {
+    await waitForBody(); // wait for body to exist
+    await onPageReady(); // wait for DOM ready
+
+    // Now safe to start monitoring routes
+    monitorRouteChanges();
+  } catch (err) {
+    console.error("❌ Failed to initialize TrenchersPaperTrading:", err);
+  }
+})();
 window.addEventListener("message", async (event) => {
   const { type, requestId } = event.data;
 
@@ -553,4 +559,32 @@ function parseCompactNumber(txt) {
   const mult = unit === "K" ? 1e3 : unit === "M" ? 1e6 : unit === "B" ? 1e9 : 1;
 
   return num * mult;
+}
+
+function waitForBody() {
+  return new Promise((resolve) => {
+    if (document.body) return resolve();
+    const observer = new MutationObserver((mutations, obs) => {
+      if (document.body) {
+        obs.disconnect();
+        resolve();
+      }
+    });
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  });
+}
+
+function onPageReady() {
+  return new Promise((resolve) => {
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "interactive"
+    ) {
+      return resolve();
+    }
+    window.addEventListener("DOMContentLoaded", resolve, { once: true });
+  });
 }
