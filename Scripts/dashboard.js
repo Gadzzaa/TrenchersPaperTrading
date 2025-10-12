@@ -141,7 +141,7 @@ async function initDashboard() {
       console.warn("Lost connection — disconnecting dashboard.");
       disconnectDashboard();
     }
-  }, 15000);
+  }, 5000);
 
   initializing = false;
 }
@@ -156,6 +156,8 @@ export async function disconnectDashboard(logout = false) {
 
   updateInterval = null;
   healthCheckInterval = null;
+
+  currentContract = null;
 
   if (ws) {
     disconnectWebSocket();
