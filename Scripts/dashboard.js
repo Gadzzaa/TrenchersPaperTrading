@@ -29,6 +29,7 @@ import {
   getFromStorage,
   internetConnection,
 } from "./utils.js";
+import { handleReconnect } from "./connectionManager.js";
 
 let currentContract = null;
 let currentPreset = null;
@@ -37,7 +38,6 @@ let updateInterval = null;
 let healthCheckInterval = null;
 let initializing = false;
 let fetchingBalance = false;
-let reconnectTimeout = null;
 
 const settings = [
   {
@@ -75,8 +75,8 @@ async function initDashboard() {
   const healthy = await healthCheck();
   if (!healthy) {
     console.warn("Health check failed — retrying later.");
-    disableUI("no-internet");
-    scheduleReconnect();
+    await disableUI("no-internet");
+    handleReconnect(initDashboard, "dashboard");
     initializing = false;
     return;
   }
@@ -85,7 +85,7 @@ async function initDashboard() {
   if (!isSessionValid) {
     console.warn("Session invalid — showing login screen.");
     clearPositions();
-    disableUI("no-session");
+    await disableUI("no-session");
     initializing = false;
     return;
   }
@@ -133,7 +133,7 @@ async function initDashboard() {
       fetchingBalance = false;
     }
   }, 1000);
-  enableUI();
+  await enableUI();
 
   healthCheckInterval = setInterval(async () => {
     const healthy = await healthCheck();
@@ -164,21 +164,13 @@ export async function disconnectDashboard(logout = false) {
     ws = null;
   }
 
-  if (!logout) scheduleReconnect();
-}
-
-function scheduleReconnect() {
-  if (reconnectTimeout) return;
-  reconnectTimeout = setTimeout(() => {
-    reconnectTimeout = null;
-    initDashboard();
-  }, 2000);
+  if (!logout) handleReconnect();
 }
 
 async function logout() {
   disconnectDashboard(true);
   clearPositions();
-  disableUI("no-session");
+  await disableUI("no-session");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -301,6 +293,7 @@ async function searchPosition(currentContract) {
 
   const match = parsed.find((p) => p.pool === currentContract);
   if (match) {
+    console.log("Setting active token to:", match.pool);
     setActiveToken(match.pool);
   }
 }

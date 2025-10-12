@@ -5,6 +5,7 @@ import {
   logout,
   checkSession,
   fetchPopupData,
+  healthCheck,
 } from "./API.js";
 import { getDebugMode, setDebugMode } from "../config.js";
 import {
@@ -13,6 +14,7 @@ import {
   startLoadingDots,
   stopLoadingDots,
 } from "./utils.js";
+import { handleReconnect } from "./connectionManager.js";
 let tokenListContainer,
   indicator,
   usernameText,
@@ -106,13 +108,22 @@ async function init() {
       apply(value);
     });
   });
+
+  const healthy = await healthCheck();
+  if (!healthy) {
+    await disableUI("no-internet");
+    handleReconnect(init, "popup");
+    return;
+  }
+
   const validSession = await checkSession();
   if (!validSession) {
-    disableUI("no-session");
-  } else {
-    enableUI();
-    await loadAPIData();
+    await disableUI("no-session");
+    return;
   }
+  await loadAPIData();
+
+  await enableUI();
   document.body.style.removeProperty("pointer-events");
 }
 
@@ -537,7 +548,7 @@ function setQualityPreset(qualityValue) {
   }
 }
 
-function showDialog({ title, message, type }) {
+export function showDialog({ title, message, type }) {
   return new Promise((resolve) => {
     const dialogOverlay = document.getElementById("dialogOverlay");
     const dialogHeader = document.getElementById("dialogHeader");
@@ -545,6 +556,7 @@ function showDialog({ title, message, type }) {
     const dialogInput = document.getElementById("dialogInput");
     const dialogButtons = document.getElementById("dialogButtons");
     const dialogInfo = document.getElementById("dialogInfo");
+    const dialogLoading = document.getElementById("dialogLoading");
 
     // Reset and hide all conditional parts
     dialogInput.classList.add("hidden");
@@ -567,61 +579,89 @@ function showDialog({ title, message, type }) {
       document.body.style.removeProperty("pointer-events");
     };
 
-    if (type === "Input") {
-      dialogInput.classList.remove("hidden");
-      const inputField = document.getElementById("dialogTextInput");
-      const inputConfirmButton = document.getElementById("inputConfirmButton");
+    let cleanup;
+    switch (type) {
+      case "Input":
+        dialogInput.classList.remove("hidden");
+        const inputField = document.getElementById("dialogTextInput");
+        const inputConfirmButton =
+          document.getElementById("inputConfirmButton");
 
-      let cleanup = () => {
-        dialogInput.classList.add("hidden");
-        inputConfirmButton.removeEventListener("click", onInputConfirm);
-        inputField.value = "";
-      };
+        cleanup = () => {
+          dialogInput.classList.add("hidden");
+          inputConfirmButton.removeEventListener("click", onInputConfirm);
+          inputField.value = "";
+        };
 
-      var onInputConfirm = () => {
-        baseCleanup();
-        resolve(inputField.value);
-        cleanup();
-      };
-      inputConfirmButton.addEventListener("click", onInputConfirm);
-    } else if (type === "Confirm") {
-      dialogButtons.classList.remove("hidden");
-      const confirmButton = document.getElementById("dialogConfirmButton");
-      const cancelButton = document.getElementById("dialogCancelButton");
+        var onInputConfirm = () => {
+          baseCleanup();
+          resolve(inputField.value);
+          cleanup();
+        };
+        inputConfirmButton.addEventListener("click", onInputConfirm);
+        break;
+      case "Confirm":
+        dialogButtons.classList.remove("hidden");
+        const confirmButton = document.getElementById("dialogConfirmButton");
+        const cancelButton = document.getElementById("dialogCancelButton");
 
-      let cleanup = () => {
-        dialogButtons.classList.add("hidden");
-        confirmButton.removeEventListener("click", onConfirm);
-        cancelButton.removeEventListener("click", onCancel);
-      };
-      var onConfirm = () => {
-        baseCleanup();
-        cleanup();
-        resolve(true);
-      };
-      var onCancel = () => {
-        baseCleanup();
-        cleanup();
-        resolve(false);
-      };
+        cleanup = () => {
+          dialogButtons.classList.add("hidden");
+          confirmButton.removeEventListener("click", onConfirm);
+          cancelButton.removeEventListener("click", onCancel);
+        };
+        var onConfirm = () => {
+          baseCleanup();
+          cleanup();
+          resolve(true);
+        };
+        var onCancel = () => {
+          baseCleanup();
+          cleanup();
+          resolve(false);
+        };
 
-      confirmButton.addEventListener("click", onConfirm);
-      cancelButton.addEventListener("click", onCancel);
-    } else if (type === "Info") {
-      dialogInfo.classList.remove("hidden");
-      const okayButton = document.getElementById("dialogInfoButton");
+        confirmButton.addEventListener("click", onConfirm);
+        cancelButton.addEventListener("click", onCancel);
+        break;
+      case "Info":
+        dialogInfo.classList.remove("hidden");
+        const okayButton = document.getElementById("dialogInfoButton");
 
-      let cleanup = () => {
-        dialogInfo.classList.add("hidden");
-        okayButton.removeEventListener("click", onConfirm);
-      };
+        cleanup = () => {
+          dialogInfo.classList.add("hidden");
+          okayButton.removeEventListener("click", onConfirm);
+        };
 
-      var onConfirm = () => {
-        baseCleanup();
-        cleanup();
-      };
+        var onConfirm = () => {
+          baseCleanup();
+          cleanup();
+        };
 
-      okayButton.addEventListener("click", onConfirm);
+        okayButton.addEventListener("click", onConfirm);
+        break;
+      case "Offline":
+        dialogLoading.classList.remove("hidden");
+
+        // Prevent interactions
+        document.body.style.pointerEvents = "none";
+
+        // Return a function reference to manually close it later
+        resolve(() => {
+          baseCleanup();
+          hideLoadingDialog();
+        });
+        break;
     }
   });
+}
+export function hideLoadingDialog() {
+  const dialogOverlay = document.getElementById("dialogOverlay");
+  const dialogLoading = document.getElementById("dialogLoading");
+
+  if (dialogLoading) dialogLoading.classList.add("hidden");
+  if (dialogOverlay) dialogOverlay.classList.add("hidden");
+
+  // Re-enable interactions
+  document.body.style.removeProperty("pointer-events");
 }

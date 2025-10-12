@@ -15,12 +15,14 @@
     />
     <link rel="stylesheet" href="Styles/popup.css" />
   </head>
-  <body style="pointer-events: none">
+  <body id="popupTrenchersPT" style="pointer-events: none">
     <div id="dialogOverlay" class="hidden">
       <div id="dialogBackground"></div>
       <div id="dialogBox">
-        <div id="dialogHeader"></div>
-        <div id="dialogBody"></div>
+        <div id="dialogHeader">Offline</div>
+        <div id="dialogBody">
+          Lost connection to the server. Reconnecting...
+        </div>
         <div id="dialogInput" class="hidden">
           <span id="warning" class="hidden"></span>
           <input type="number" id="dialogTextInput" min="0" max="100" />
@@ -33,8 +35,10 @@
           <button id="dialogCancelButton" class="cancelButton">Cancel</button>
         </div>
         <div id="dialogInfo" class="hidden">
-          <div id="dialogInfoText"></div>
           <button id="dialogInfoButton" class="confirmButton">Okay</button>
+        </div>
+        <div id="dialogLoading" class="hidden">
+          <div id="dialogSpinner"></div>
         </div>
       </div>
     </div>

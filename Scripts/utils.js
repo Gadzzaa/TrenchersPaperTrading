@@ -7,6 +7,7 @@ let notificationInner;
 const successSound = new Audio(chrome.runtime.getURL("Sounds/success.wav"));
 const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
 let audioVolume;
+let hidePopupFn;
 
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
@@ -105,9 +106,9 @@ function safePlay(type) {
 }
 
 // Access blocker
-export function enableUI() {
+export async function enableUI() {
   const blocker = document.getElementById("Blocker");
-  const loginPanel = document.getElementById("loginPanel");
+  const popup = document.getElementById("popupTrenchersPT");
   if (blocker) {
     blocker.style.opacity = "0";
     setTimeout(() => {
@@ -119,13 +120,17 @@ export function enableUI() {
       blocker.style.display = "none";
     }, 300);
   }
-
-  if (loginPanel) loginPanel.classList.add("loginHidden");
+  if (popup) {
+    const loginPanel = document.getElementById("loginPanel");
+    const { hideLoadingDialog } = await import("./popup.js");
+    hideLoadingDialog();
+    if (loginPanel) loginPanel.classList.add("loginHidden");
+  }
 }
 
-export function disableUI(reason) {
+export async function disableUI(reason) {
   const blocker = document.getElementById("Blocker");
-  const loginPanel = document.getElementById("loginPanel");
+  const popup = document.getElementById("popupTrenchersPT");
   if (blocker) {
     blocker.style.display = "flex";
     const noInternetMessage = document.getElementById("noInternetMessage");
@@ -144,7 +149,24 @@ export function disableUI(reason) {
       blocker.style.opacity = "1";
     }, 300);
   }
-  if (loginPanel) loginPanel.classList.remove("loginHidden");
+  if (popup) {
+    const loginPanel = document.getElementById("loginPanel");
+    const { showDialog, hideLoadingDialog } = await import("./popup.js");
+    hideLoadingDialog();
+    if (loginPanel) loginPanel.classList.add("loginHidden");
+    switch (reason) {
+      case "no-internet":
+        hidePopupFn = await showDialog({
+          title: "Offline",
+          message: "Lost connection to the server. Reconnecting...",
+          type: "Offline",
+        });
+        break;
+      case "no-session":
+        if (loginPanel) loginPanel.classList.remove("loginHidden");
+        break;
+    }
+  }
 }
 
 export function internetConnection() {

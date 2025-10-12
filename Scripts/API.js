@@ -1,6 +1,5 @@
 import {
   showNotification,
-  enableUI,
   disableUI,
   getFromStorage,
   setToStorage,
@@ -50,7 +49,7 @@ export async function checkSession() {
   } catch (error) {
     if (isNetworkError(error)) {
       console.warn("⚠️ Network offline or server is unreachable:", error);
-      disableUI("no-internet");
+      await disableUI("no-internet");
     }
     const message = error instanceof Error ? error.message : String(error);
     showNotification(
@@ -130,7 +129,7 @@ export async function fetchPopupData() {
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
-          disableUI("no-internet");
+          await disableUI("no-internet");
           networkError = true;
         }
         if (attempt === maxAttempts || !networkError)
@@ -196,7 +195,7 @@ export async function buyToken(
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
-          disableUI("no-internet");
+          await disableUI("no-internet");
           networkError = true;
         }
         if (attempt === maxAttempts || !networkError)
@@ -270,7 +269,7 @@ async function sellToken(
     } catch (error) {
       if (isNetworkError(error)) {
         console.warn("⚠️ Network offline or server is unreachable:", error);
-        disableUI("no-internet");
+        await disableUI("no-internet");
         networkError = true;
       }
       if (attempt === maxAttempts || !networkError)
@@ -325,7 +324,7 @@ export async function getPortfolio() {
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
-          disableUI("no-internet");
+          await disableUI("no-internet");
           networkError = true;
         }
         if (attempt === maxAttempts || !networkError)
@@ -383,7 +382,7 @@ export async function resetAccount(amount) {
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
-          disableUI("no-internet");
+          await disableUI("no-internet");
           chrome.runtime.sendMessage({ type: "no-internet" });
           networkError = true;
         }
@@ -442,7 +441,7 @@ export async function logout() {
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
-          disableUI("no-internet");
+          await disableUI("no-internet");
           networkError = true;
         }
         if (attempt === maxAttempts || !networkError)
@@ -452,7 +451,7 @@ export async function logout() {
     removeFromStorage("sessionToken");
     removeFromStorage("username");
     chrome.runtime.sendMessage({ type: "logoutDashboard" });
-    disableUI("no-session");
+    await disableUI("no-session");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
@@ -500,7 +499,7 @@ export async function login(username, password) {
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
-          disableUI("no-internet");
+          await disableUI("no-internet");
           networkError = true;
         }
         if (attempt === maxAttempts || !networkError)
@@ -515,7 +514,6 @@ export async function login(username, password) {
     await setToStorage("sessionToken", result.token);
     await setToStorage("username", result.username);
     chrome.runtime.sendMessage({ type: "initDashboard" });
-    enableUI();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
@@ -568,7 +566,7 @@ export async function register(username, password, initialBalance) {
       } catch (error) {
         if (isNetworkError(error)) {
           console.warn("⚠️ Network offline or server is unreachable:", error);
-          disableUI("no-internet");
+          await disableUI("no-internet");
           networkError = true;
         }
         if (attempt === maxAttempts || !networkError)
@@ -583,7 +581,6 @@ export async function register(username, password, initialBalance) {
     await setToStorage("username", result.username);
     await setToStorage("sessionToken", result.token);
     chrome.runtime.sendMessage({ type: "initDashboard" });
-    enableUI();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
