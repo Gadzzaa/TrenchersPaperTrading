@@ -4,17 +4,10 @@ module.exports = {
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     [
-      "@semantic-release/changelog",
-      {
-        changelogFile: "CHANGELOG.md",
-      },
-    ],
-    [
       "@semantic-release/exec",
       {
-        prepareCmd: `
-          node Scripts/update-manifest-version.cjs ${nextRelease.version}
-        `,
+        prepareCmd:
+          "node scripts/update-manifest-version.js ${nextRelease.version}",
       },
     ],
     [
