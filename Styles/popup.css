@@ -31,7 +31,8 @@ button.no-shadow {
 }
 
 #dialogOverlay,
-#noInternet {
+#noInternet,
+#updateReq {
   pointer-events: auto !important;
   position: absolute;
   width: 100%;
@@ -46,15 +47,18 @@ button.no-shadow {
 #noInternet {
   z-index: 40;
 }
-#noInternetBox {
-  z-index: 50;
+#updateReq {
+  z-index: 45;
 }
 #dialogOverlay,
+#noInternetBox,
+#updateReqBox,
 #dialogOverlay * {
   z-index: 50;
 }
 #dialogBackground,
-#noInternetBG {
+#noInternetBG,
+#updateReqBG {
   position: fixed;
   top: 0;
   left: 0;
@@ -63,7 +67,8 @@ button.no-shadow {
   background-color: rgba(var(--mantle), 0.75);
 }
 #dialogBox,
-#noInternetBox {
+#noInternetBox,
+#updateReqBox {
   display: flex;
   flex-direction: column;
   margin: 0 20px;
@@ -75,14 +80,16 @@ button.no-shadow {
   gap: 20px;
 }
 #dialogHeader,
-#noInternetHeader {
+#noInternetHeader,
+#updateReqHeader {
   font-size: 16px;
   color: rgb(var(--subtext1));
   text-align: center;
   font-weight: 500;
 }
 #dialogBody,
-#noInternetBody {
+#noInternetBody,
+#updateReqBody {
   text-align: center;
   font-size: 14px;
   color: rgb(var(--text));

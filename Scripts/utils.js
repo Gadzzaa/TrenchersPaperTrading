@@ -123,10 +123,17 @@ export async function enableUI() {
   if (popup) {
     const loginPanel = document.getElementById("loginPanel");
     const noInternet = document.getElementById("noInternet");
+    const updateReq = document.getElementById("updateReq");
     if (!noInternet?.classList.contains("hidden")) {
       noInternet.style.opacity = "0";
       setTimeout(() => {
         noInternet.classList.add("hidden");
+      }, 300);
+    }
+    if (!updateReq?.classList.contains("hidden")) {
+      updateReq.style.opacity = "0";
+      setTimeout(() => {
+        updateReq.classList.add("hidden");
       }, 300);
     }
     if (loginPanel) loginPanel.classList.add("loginHidden");
@@ -157,8 +164,16 @@ export async function disableUI(reason) {
   if (popup) {
     const loginPanel = document.getElementById("loginPanel");
     const noInternet = document.getElementById("noInternet");
+    const updateReq = document.getElementById("updateReq");
     switch (reason) {
       case "no-internet":
+        if (!updateReq?.classList.contains("hidden")) {
+          updateReq.style.opacity = "0";
+          setTimeout(() => {
+            updateReq.classList.add("hidden");
+          }, 300);
+        }
+
         if (noInternet?.classList.contains("hidden")) {
           noInternet.style.opacity = "0";
           noInternet.classList.remove("hidden");
@@ -172,7 +187,27 @@ export async function disableUI(reason) {
             noInternet.classList.add("hidden");
           }, 300);
         }
+        if (!updateReq?.classList.contains("hidden")) {
+          updateReq.style.opacity = "0";
+          setTimeout(() => {
+            updateReq.classList.add("hidden");
+          }, 300);
+        }
         if (loginPanel) loginPanel.classList.remove("loginHidden");
+        break;
+      case "outdated":
+        if (!noInternet?.classList.contains("hidden")) {
+          noInternet.style.opacity = "0";
+          setTimeout(() => {
+            noInternet.classList.add("hidden");
+          }, 300);
+        }
+
+        if (updateReq?.classList.contains("hidden")) {
+          updateReq.style.opacity = "0";
+          updateReq.classList.remove("hidden");
+          updateReq.style.opacity = "1";
+        }
         break;
     }
   }

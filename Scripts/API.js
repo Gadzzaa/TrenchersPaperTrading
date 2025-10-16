@@ -20,18 +20,20 @@ const maxAttempts = 3;
 const slippagePercentage = 0;
 const feeAmount = 0;
 
-let lastHealthCheckTime = Date.now();
+let lastHealthCheckTime;
 let healthCheckInterval = 15;
 let lastHealthCheckStatus = false;
 
 export async function healthCheck() {
   if (Date.now() - lastHealthCheckTime < healthCheckInterval)
     return lastHealthCheckStatus;
+
   try {
     const response = await fetch(API_BASE_URL + "/health", {
       method: "GET",
     });
     lastHealthCheckStatus = response.ok;
+    lastHealthCheckTime = Date.now();
     return lastHealthCheckStatus;
   } catch (error) {
     console.log("Health check failed for backend:", error);
