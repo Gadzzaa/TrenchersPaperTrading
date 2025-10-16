@@ -7,7 +7,7 @@ module.exports = {
       "@semantic-release/exec",
       {
         prepareCmd:
-          "node scripts/update-manifest-version.cjs ${nextRelease.version}",
+          "node Scripts/update-manifest-version.cjs ${nextRelease.version}",
       },
     ],
     [
