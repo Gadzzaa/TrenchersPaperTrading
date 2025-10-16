@@ -67,6 +67,36 @@ export async function checkSession() {
   }
 }
 
+export async function isLatestVersion() {
+  try {
+    const manifest = chrome.runtime.getManifest();
+    const version = manifest.version;
+
+    const response = await fetch(`${API_BASE_URL}/latest?version=${version}`, {
+      method: "GET",
+    });
+
+    const result = await response.json();
+    console.log("Latest version check:", result);
+    if (response.status === 401 || !response?.ok)
+      throw new Error("Invalid version: " + result.error);
+
+    return true;
+  } catch (error) {
+    if (isNetworkError(error)) {
+      console.warn("⚠️ Network offline or server is unreachable:", error);
+      await disableUI("no-internet");
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(
+      getDebugMode() ? "[API.js] " + message : message,
+      "error",
+      false,
+    );
+    return false;
+  }
+}
+
 // PNLHandler.js
 export async function getTradeLog() {
   try {

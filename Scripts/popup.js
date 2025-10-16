@@ -6,6 +6,7 @@ import {
   checkSession,
   fetchPopupData,
   healthCheck,
+  isLatestVersion,
 } from "./API.js";
 import { getDebugMode, setDebugMode } from "../config.js";
 import {
@@ -131,6 +132,14 @@ async function init() {
       disconnectPopup();
     }
   }, 5000);
+
+  const validVersion = await isLatestVersion();
+  if (!validVersion) {
+    console.log("Outdated version detected.");
+    await disableUI("outdated");
+    initializing = false;
+    return;
+  }
 
   const validSession = await checkSession();
   if (!validSession) {
