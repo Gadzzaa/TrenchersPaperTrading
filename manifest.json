@@ -1,7 +1,7 @@
 {
   "name": "TrenchersPaperTrading",
   "description": "An application to simulate paper trading.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "manifest_version": 3,
   "permissions": [
     "storage",
