@@ -5,6 +5,7 @@ import { showNotification } from "./utils.js";
 import {
   healthCheck,
   checkSession,
+  isLatestVersion,
   getPortfolio,
   buyToken,
   sellByPercentage,
@@ -89,6 +90,14 @@ async function initDashboard() {
       disconnectDashboard();
     }
   }, 5000);
+
+  const validVersion = await isLatestVersion();
+  if (!validVersion) {
+    console.warn("Outdated version detected.");
+    await disableUI("outdated");
+    initializing = false;
+    return;
+  }
 
   const isSessionValid = await checkSession();
   if (!isSessionValid) {

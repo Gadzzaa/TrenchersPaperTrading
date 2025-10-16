@@ -79,7 +79,6 @@ export async function isLatestVersion() {
     });
 
     const result = await response.json();
-    console.log("Latest version check:", result);
     if (response.status === 401 || !response?.ok)
       throw new Error("Invalid version: " + result.error);
 

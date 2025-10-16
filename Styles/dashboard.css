@@ -545,7 +545,8 @@ body.edit-mode-exit::before {
 }
 
 #noSessionMessage,
-#noInternetMessage {
+#noInternetMessage,
+#updateReqMessage {
   padding: 16px 24px;
   background: rgb(var(--surface1));
   border: 1px solid rgb(var(--blue));
@@ -556,6 +557,9 @@ body.edit-mode-exit::before {
 }
 #noInternetMessage {
   z-index: 40;
+}
+#updateReqMessage {
+  z-index: 50;
 }
 
 @keyframes loadingBounce {

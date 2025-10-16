@@ -114,8 +114,10 @@ export async function enableUI() {
     setTimeout(() => {
       const noInternetMessage = document.getElementById("noInternetMessage");
       const noSessionMessage = document.getElementById("noSessionMessage");
+      const updateReqMessage = document.getElementById("updateReqMessage");
       if (noInternetMessage) noInternetMessage.style.display = "none";
       if (noSessionMessage) noSessionMessage.style.display = "none";
+      if (updateReqMessage) updateReqMessage.style.display = "none";
 
       blocker.style.display = "none";
     }, 300);
@@ -147,14 +149,19 @@ export async function disableUI(reason) {
     blocker.style.display = "flex";
     const noInternetMessage = document.getElementById("noInternetMessage");
     const noSessionMessage = document.getElementById("noSessionMessage");
+    const updateReqMessage = document.getElementById("updateReqMessage");
     noInternetMessage.style.display = "none";
     noSessionMessage.style.display = "none";
+    updateReqMessage.style.display = "none";
     switch (reason) {
       case "no-internet":
         if (noInternetMessage) noInternetMessage.style.display = "flex";
         break;
       case "no-session":
         if (noSessionMessage) noSessionMessage.style.display = "flex";
+        break;
+      case "outdated":
+        if (updateReqMessage) updateReqMessage.style.display = "flex";
         break;
     }
     setTimeout(() => {

@@ -135,7 +135,7 @@ async function init() {
 
   const validVersion = await isLatestVersion();
   if (!validVersion) {
-    console.log("Outdated version detected.");
+    console.warn("Outdated version detected.");
     await disableUI("outdated");
     initializing = false;
     return;
