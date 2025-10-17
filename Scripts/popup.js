@@ -141,6 +141,7 @@ async function init() {
     return;
   }
 
+  document.body.style.removeProperty("pointer-events");
   const validSession = await checkSession();
   if (!validSession) {
     await disableUI("no-session");
@@ -150,7 +151,6 @@ async function init() {
   await loadAPIData();
 
   await enableUI();
-  document.body.style.removeProperty("pointer-events");
 
   initializing = false;
 }
@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await login(usernameInput.value, passwordInput.value)
       .then(async () => {
         clearInputFields();
-        await loadAPIData();
+        await init();
         moveIndicator(defaultButton);
         setDisplay(defaultButton.dataset.index);
       })
@@ -254,7 +254,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await register(usernameInput.value, passwordInput.value, amount)
           .then(async () => {
             clearInputFields();
-            await loadAPIData();
+            await init();
             moveIndicator(defaultButton);
             setDisplay(defaultButton.dataset.index);
           })
