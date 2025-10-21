@@ -169,12 +169,12 @@ function disconnectPopup(logout = false) {
     clearInterval(countdownResets);
     countdownResets = null;
   }
-  
+
   if (healthCheckInterval) {
     clearInterval(healthCheckInterval);
     healthCheckInterval = null;
   }
-  
+
   if (reconnectTimeout) {
     clearTimeout(reconnectTimeout);
     reconnectTimeout = null;
@@ -242,15 +242,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     showDialog({
       title: "Startup Balance",
       message:
-        "Please enter the amount of SOL you want to start with (minimum 1 SOL, maximum 1000000 SOL):",
+        "Please enter the amount of SOL you want to start with (minimum 1 SOL, maximum 100 SOL):",
       type: "Input",
     }).then(async (input) => {
       if (input === null || input === undefined) return; // User canceled
       const amount = Number(input);
-      if (isNaN(amount) || amount < 1 || amount > 1000000) {
+      if (isNaN(amount) || amount < 1 || amount > 100) {
         showDialog({
           title: "Invalid Amount",
-          message: "Please enter a valid number between 1 and 1000000.",
+          message: "Please enter a valid number between 1 and 100.",
           type: "Info",
         });
         return;
@@ -305,16 +305,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   resetButton.addEventListener("click", async () => {
     showDialog({
       title: "Start balance",
-      message: "With how much balance do you want to start over? (minimum 1 SOL, maximum 1000000 SOL)",
+      message:
+        "With how much balance do you want to start over? (minimum 1 SOL, maximum 100 SOL)",
       type: "Input",
     }).then(async (input) => {
       if (input === null || input === undefined) return; // User canceled
       const amount = parseFloat(input);
       console.log("Reset amount:", amount);
-      if (isNaN(amount) || amount <= 0 || amount > 1000000) {
+      if (isNaN(amount) || amount <= 0 || amount > 100) {
         showDialog({
           title: "Invalid Amount",
-          message: "Please enter a valid number between 1 and 1000000.",
+          message: "Please enter a valid number between 1 and 100.",
           type: "Info",
         });
         return;
@@ -568,7 +569,10 @@ function renderToken(token) {
     // Security: Validate poolAddress before opening URL
     const poolAddressPattern = /^[a-zA-Z0-9]+$/;
     if (poolAddressPattern.test(token.poolAddress)) {
-      window.open(`https://axiom.trade/meme/${encodeURIComponent(token.poolAddress)}`, "_blank");
+      window.open(
+        `https://axiom.trade/meme/${encodeURIComponent(token.poolAddress)}`,
+        "_blank",
+      );
     } else {
       console.error("Invalid pool address:", token.poolAddress);
     }
