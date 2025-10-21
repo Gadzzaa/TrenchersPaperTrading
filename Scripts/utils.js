@@ -31,6 +31,93 @@ export function validateNumericInput(value, min = 0, max = Number.MAX_SAFE_INTEG
   return num;
 }
 
+// Stability: Async error handler wrapper
+export async function safeAsync(fn, fallback = null, errorMessage = 'Operation failed') {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(`${errorMessage}:`, error);
+    if (fallback !== null) {
+      return fallback;
+    }
+    throw error;
+  }
+}
+
+// Stability: Cleanup manager for intervals and timeouts
+const activeTimers = new Set();
+
+export function managedSetInterval(callback, delay) {
+  const id = setInterval(callback, delay);
+  activeTimers.add({ type: 'interval', id });
+  return id;
+}
+
+export function managedSetTimeout(callback, delay) {
+  const id = setTimeout(() => {
+    callback();
+    activeTimers.delete(id);
+  }, delay);
+  activeTimers.add({ type: 'timeout', id });
+  return id;
+}
+
+export function clearManagedInterval(id) {
+  clearInterval(id);
+  for (const timer of activeTimers) {
+    if (timer.type === 'interval' && timer.id === id) {
+      activeTimers.delete(timer);
+      break;
+    }
+  }
+}
+
+export function clearManagedTimeout(id) {
+  clearTimeout(id);
+  for (const timer of activeTimers) {
+    if (timer.type === 'timeout' && timer.id === id) {
+      activeTimers.delete(timer);
+      break;
+    }
+  }
+}
+
+export function clearAllTimers() {
+  for (const timer of activeTimers) {
+    if (timer.type === 'interval') {
+      clearInterval(timer.id);
+    } else if (timer.type === 'timeout') {
+      clearTimeout(timer.id);
+    }
+  }
+  activeTimers.clear();
+}
+
+// Stability: Simple rate limiter
+const rateLimiters = new Map();
+
+export function rateLimit(key, maxCalls = 5, windowMs = 1000) {
+  const now = Date.now();
+  
+  if (!rateLimiters.has(key)) {
+    rateLimiters.set(key, []);
+  }
+  
+  const calls = rateLimiters.get(key);
+  
+  // Remove calls outside the window
+  const validCalls = calls.filter(timestamp => now - timestamp < windowMs);
+  
+  if (validCalls.length >= maxCalls) {
+    return false; // Rate limit exceeded
+  }
+  
+  validCalls.push(now);
+  rateLimiters.set(key, validCalls);
+  
+  return true; // Call allowed
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
   spinnerText = document.getElementById("spinnerText");

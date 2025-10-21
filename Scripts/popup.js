@@ -164,11 +164,20 @@ function scheduleReconnect() {
 }
 
 function disconnectPopup(logout = false) {
-  if (countdownResets) clearInterval(countdownResets);
-  if (healthCheckInterval) clearInterval(healthCheckInterval);
-
-  countdownResets = null;
-  healthCheckInterval = null;
+  if (countdownResets) {
+    clearInterval(countdownResets);
+    countdownResets = null;
+  }
+  
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval);
+    healthCheckInterval = null;
+  }
+  
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout);
+    reconnectTimeout = null;
+  }
 
   if (!logout) scheduleReconnect();
 }

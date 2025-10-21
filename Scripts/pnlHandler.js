@@ -13,6 +13,8 @@ let pnlIntervalId = null;
 let heartbeatInterval;
 let lastPong = Date.now();
 let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const BASE_RECONNECT_DELAY = 500; // milliseconds
 
 export function setPnlData(poolAddress, pnlData) {
   const idx = pnlDataArray.findIndex(
@@ -143,12 +145,19 @@ export async function connectWebSocket() {
       clearInterval(heartbeatInterval);
       clearTimeout(authTimeout);
 
-      if (reconnectAttempts < 2) {
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        // Exponential backoff: delay = baseDelay * 2^attempts
+        const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts);
+        console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
+        
         setTimeout(() => {
           reconnectAttempts++;
-          connectWebSocket();
-        }, 500);
+          connectWebSocket().catch((err) => {
+            console.error("Reconnection failed:", err);
+          });
+        }, delay);
       } else {
+        console.error("Max reconnection attempts reached. Disconnecting dashboard.");
         const { disconnectDashboard } = await import("./dashboard.js");
         disconnectDashboard();
       }
@@ -169,6 +178,12 @@ export function disconnectWebSocket() {
 
   if (currentPool) unwatchPool(currentPool);
   currentPool = null;
+
+  // Stop heartbeat interval
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
 
   // Stop any PnL interval
   if (pnlIntervalId) {
