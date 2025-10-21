@@ -567,15 +567,29 @@ export async function register(username, password, initialBalance) {
       result;
     if (!username || !password)
       throw new Error("Username and password are required.");
-    if (password.length < 6)
-      throw new Error("Password must be at least 6 characters.");
+    if (username.length < 3)
+      throw new Error("Username must be at least 3 characters.");
+    if (username.length > 20)
+      throw new Error("Username must be at most 20 characters.");
+    if (!/^[a-zA-Z0-9_]+$/.test(username))
+      throw new Error("Username can only contain letters, numbers, and underscores.");
+    if (password.length < 8)
+      throw new Error("Password must be at least 8 characters.");
+    if (password.length > 128)
+      throw new Error("Password must be at most 128 characters.");
+    if (!/[A-Z]/.test(password))
+      throw new Error("Password must contain at least one uppercase letter.");
+    if (!/[a-z]/.test(password))
+      throw new Error("Password must contain at least one lowercase letter.");
+    if (!/[0-9]/.test(password))
+      throw new Error("Password must contain at least one number.");
     if (typeof balance != "number") balance = Number(balance);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch("http://localhost:3000/api/create-account", {
+        response = await fetch(API_BASE_URL + "/api/create-account", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

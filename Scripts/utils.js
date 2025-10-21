@@ -9,6 +9,28 @@ const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
 let audioVolume;
 let hidePopupFn;
 
+// Security: Sanitize text to prevent XSS
+export function sanitizeText(text) {
+  if (typeof text !== 'string') {
+    text = String(text);
+  }
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Security: Validate numeric input
+export function validateNumericInput(value, min = 0, max = Number.MAX_SAFE_INTEGER) {
+  const num = parseFloat(value);
+  if (isNaN(num)) {
+    throw new Error('Invalid numeric value');
+  }
+  if (num < min || num > max) {
+    throw new Error(`Value must be between ${min} and ${max}`);
+  }
+  return num;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
   spinnerText = document.getElementById("spinnerText");
@@ -62,14 +84,16 @@ export function showNotification(message, type, sound = true) {
     info: "ℹ",
   };
 
-  const fullMessage = typeClasses[type] + " " + message;
+  // Security: Sanitize message before displaying
+  const sanitizedMessage = sanitizeText(message);
+  const fullMessage = typeClasses[type] + " " + sanitizedMessage;
 
   window.parent.postMessage(
     {
       type: "SHOW_NOTIFICATION",
       message: fullMessage,
     },
-    "*",
+    window.location.origin,
   );
 
   if (sound)
@@ -79,7 +103,7 @@ export function showNotification(message, type, sound = true) {
         break;
       case "error":
         safePlay(type);
-        console.error(message);
+        console.error(sanitizedMessage);
         break;
       case "info":
         break; // No sound
@@ -250,6 +274,11 @@ export function requestCurrentContract() {
 
     // Listen for response
     function handleMessage(event) {
+      // Security: Verify origin
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+      
       const { type, contract, requestId: responseId } = event.data;
       if (type === "CONTRACT_RESPONSE" && responseId === requestId) {
         window.removeEventListener("message", handleMessage);
@@ -265,7 +294,7 @@ export function requestCurrentContract() {
         type: "CONTRACT_REQUEST",
         requestId: requestId,
       },
-      "*",
+      window.location.origin,
     );
   });
 }
@@ -275,7 +304,7 @@ export function requestHideApp() {
     {
       type: "HIDE_APP",
     },
-    "*",
+    window.location.origin,
   );
 }
 

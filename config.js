@@ -1,5 +1,5 @@
 export const USE_LOCAL = false; // toggle manually here
-let debugMode = true;
+let debugMode = false;
 
 const CONFIG = {
   API_BASE_URL: USE_LOCAL

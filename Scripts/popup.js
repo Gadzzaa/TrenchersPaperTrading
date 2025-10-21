@@ -232,17 +232,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     showDialog({
       title: "Startup Balance",
       message:
-        "Please enter the amount of SOL you want to start with (minimum 1 SOL):",
+        "Please enter the amount of SOL you want to start with (minimum 1 SOL, maximum 1000000 SOL):",
       type: "Input",
     }).then(async (input) => {
       if (input === null || input === undefined) return; // User canceled
       const amount = Number(input);
-      if (isNaN(amount) || amount < 1)
+      if (isNaN(amount) || amount < 1 || amount > 1000000) {
         showDialog({
           title: "Invalid Amount",
-          message: "Please enter a valid number greater than or equal to 1.",
+          message: "Please enter a valid number between 1 and 1000000.",
           type: "Info",
         });
+        return;
+      }
       showDialog({
         title: "Register",
         message:
@@ -293,16 +295,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   resetButton.addEventListener("click", async () => {
     showDialog({
       title: "Start balance",
-      message: "With how much balance do you want to start over?",
+      message: "With how much balance do you want to start over? (minimum 1 SOL, maximum 1000000 SOL)",
       type: "Input",
     }).then(async (input) => {
       if (input === null || input === undefined) return; // User canceled
       const amount = parseFloat(input);
       console.log("Reset amount:", amount);
-      if (isNaN(amount) || amount <= 0) {
+      if (isNaN(amount) || amount <= 0 || amount > 1000000) {
         showDialog({
           title: "Invalid Amount",
-          message: "Please enter a valid positive number.",
+          message: "Please enter a valid number between 1 and 1000000.",
           type: "Info",
         });
         return;
