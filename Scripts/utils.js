@@ -180,7 +180,7 @@ export function showNotification(message, type, sound = true) {
       type: "SHOW_NOTIFICATION",
       message: fullMessage,
     },
-    window.location.origin,
+    "https://axiom.trade",
   );
 
   if (sound)
@@ -361,8 +361,8 @@ export function requestCurrentContract() {
 
     // Listen for response
     function handleMessage(event) {
-      // Security: Verify origin
-      if (event.origin !== window.location.origin) {
+      // Security: Verify origin is from axiom.trade (parent page)
+      if (!event.origin.includes('axiom.trade') && event.origin !== window.location.origin) {
         return;
       }
       
@@ -375,13 +375,13 @@ export function requestCurrentContract() {
 
     window.addEventListener("message", handleMessage);
 
-    // Send request
+    // Send request to parent window (axiom.trade page)
     window.parent.postMessage(
       {
         type: "CONTRACT_REQUEST",
         requestId: requestId,
       },
-      window.location.origin,
+      "https://axiom.trade",
     );
   });
 }
@@ -391,7 +391,7 @@ export function requestHideApp() {
     {
       type: "HIDE_APP",
     },
-    window.location.origin,
+    "https://axiom.trade",
   );
 }
 

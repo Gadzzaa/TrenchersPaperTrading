@@ -19,8 +19,11 @@ let lastContract = null;
   }
 })();
 window.addEventListener("message", async (event) => {
-  // Security: Only accept messages from the same origin
-  if (event.origin !== window.location.origin) {
+  // Security: Accept messages from extension iframes and same origin
+  const isExtensionOrigin = event.origin.startsWith('chrome-extension://');
+  const isSameOrigin = event.origin === window.location.origin;
+  
+  if (!isExtensionOrigin && !isSameOrigin) {
     return;
   }
   
