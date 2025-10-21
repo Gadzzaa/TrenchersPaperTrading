@@ -14,6 +14,7 @@ import {
   enableUI,
   startLoadingDots,
   stopLoadingDots,
+  sanitizeText,
 } from "./utils.js";
 let tokenListContainer,
   indicator,
@@ -546,19 +547,31 @@ function renderToken(token) {
   const button = document.createElement("button");
   button.classList.add("tkn");
 
+  // Security: Sanitize user-provided data
+  const safeName = sanitizeText(token.name);
+  const safeSymbol = sanitizeText(token.symbol);
+  const safeAmount = sanitizeText(token.amount);
+  const safeImagePath = sanitizeText(token.imagePath);
+
   button.innerHTML = `
     <div class="tknImage">
-      <img src="${token.imagePath}" class="tknImageFile" />
+      <img src="${safeImagePath}" class="tknImageFile" onerror="this.src='Images/solana-sol-logo.png'" />
     </div>
     <div class="tknInfo">
-      <p class="tknName">${token.name}</p>
-      <p class="tknValue">${token.amount} ${token.symbol}</p>
+      <p class="tknName">${safeName}</p>
+      <p class="tknValue">${safeAmount} ${safeSymbol}</p>
     </div>
     <p class="tknClickTxt">Click to open</p>
   `;
 
   button.addEventListener("click", () => {
-    window.open(`https://axiom.trade/meme/${token.poolAddress}`, "_blank");
+    // Security: Validate poolAddress before opening URL
+    const poolAddressPattern = /^[a-zA-Z0-9]+$/;
+    if (poolAddressPattern.test(token.poolAddress)) {
+      window.open(`https://axiom.trade/meme/${encodeURIComponent(token.poolAddress)}`, "_blank");
+    } else {
+      console.error("Invalid pool address:", token.poolAddress);
+    }
   });
 
   if (!tokenListContainer) console.error("Token list container not found.");
