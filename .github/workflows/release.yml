@@ -97,7 +97,7 @@ jobs:
         run: |
           TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
           ZIP_NAME="extension-${TAG_NAME}.zip"
-          gh release download "$TAG_NAME" -p "$ZIP_NAME"
+          gh release download "$TAG_NAME" -p "$ZIP_NAME" --clobber
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       # --- UPLOAD TO CHROME WEB STORE ---
