@@ -58,9 +58,40 @@ jobs:
             echo "skip_upload=false" >> $GITHUB_OUTPUT
           fi
 
+      # --- CHECK CHROME WEB STORE VERSION ---
+      - name: Check Chrome Web Store Version
+        id: check_webstore_version
+        if: steps.latest_release.outputs.skip_upload != 'true'
+        continue-on-error: true
+        run: |
+          TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
+          VERSION="${TAG_NAME#v}"
+          
+          node Scripts/check-webstore-version.cjs \
+            "${{ secrets.CHROME_EXTENSION_ID }}" \
+            "$VERSION" \
+            "${{ secrets.CHROME_CLIENT_ID }}" \
+            "${{ secrets.CHROME_CLIENT_SECRET }}" \
+            "${{ secrets.CHROME_REFRESH_TOKEN }}"
+          EXIT_CODE=$?
+          
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "Version check passed, proceeding with upload"
+            echo "should_upload=true" >> $GITHUB_OUTPUT
+          elif [ $EXIT_CODE -eq 2 ]; then
+            echo "Version is the same, skipping upload"
+            echo "should_upload=false" >> $GITHUB_OUTPUT
+          elif [ $EXIT_CODE -eq 3 ]; then
+            echo "Version is older, skipping upload"
+            echo "should_upload=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version check inconclusive, proceeding with upload"
+            echo "should_upload=true" >> $GITHUB_OUTPUT
+          fi
+
       # --- DOWNLOAD EXTENSION ZIP ---
       - name: Download Extension ZIP from Release
-        if: steps.latest_release.outputs.skip_upload != 'true'
+        if: steps.latest_release.outputs.skip_upload != 'true' && steps.check_webstore_version.outputs.should_upload != 'false'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -71,7 +102,7 @@ jobs:
 
       # --- UPLOAD TO CHROME WEB STORE ---
       - name: Upload and Publish to Chrome Web Store
-        if: steps.latest_release.outputs.skip_upload != 'true'
+        if: steps.latest_release.outputs.skip_upload != 'true' && steps.check_webstore_version.outputs.should_upload != 'false'
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
           file-path: ${{ env.ZIP_NAME }}
