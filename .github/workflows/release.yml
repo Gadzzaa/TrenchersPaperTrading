@@ -20,7 +20,45 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # --- SEMANTIC RELEASE ---
       - name: Run Semantic Release
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release > semantic_output.log 2>&1 || true
+          echo "Semantic-release finished."
+          VERSION=$(grep -oP '(?<=Published release ).*' semantic_output.log | head -n 1)
+          if [ -z "$VERSION" ]; then
+            echo "No new version published."
+            echo "version=none" >> $GITHUB_OUTPUT
+          else
+            echo "Detected version: $VERSION"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      # --- SKIP IF NO RELEASE ---
+      - name: Stop if no new version
+        if: steps.semantic.outputs.version == 'none'
+        run: echo "No new version, skipping upload."
+
+      # --- ZIP EXTENSION ---
+      - name: Create ZIP excluding listed files
+        if: steps.semantic.outputs.version != 'none'
+        run: |
+          VERSION=${{ steps.semantic.outputs.version }}
+          ZIP_NAME="extension-v${VERSION}.zip"
+          echo "Creating $ZIP_NAME..."
+          zip -r "$ZIP_NAME" * -x @exclude.lst
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      # --- UPLOAD TO CHROME WEB STORE ---
+      - name: Upload to Chrome Web Store
+        if: steps.semantic.outputs.version != 'none'
+        uses: Klemensas/chrome-extension-upload-action@v1.5
+        with:
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          file-name: ${{ env.ZIP_NAME }}
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
