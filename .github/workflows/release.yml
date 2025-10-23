@@ -53,12 +53,12 @@ jobs:
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       # --- UPLOAD TO CHROME WEB STORE ---
-      - name: Upload to Chrome Web Store
+      - name: Upload and Publish to Chrome Web Store
         if: steps.semantic.outputs.version != 'none'
-        uses: Klemensas/chrome-extension-upload-action@v1.5
+        uses: mnao305/chrome-extension-upload@v5.0.0
         with:
-          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          file-path: ${{ env.ZIP_NAME }}
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
           client-id: ${{ secrets.CHROME_CLIENT_ID }}
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
-          file-name: ${{ env.ZIP_NAME }}
-          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
