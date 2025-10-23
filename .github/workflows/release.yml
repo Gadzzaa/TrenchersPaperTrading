@@ -20,41 +20,58 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # --- GET RELEASE INFO BEFORE SEMANTIC RELEASE ---
+      - name: Get Current Latest Release
+        id: pre_release
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          CURRENT_TAG=$(gh release view --json tagName -q '.tagName' 2>/dev/null || echo "none")
+          echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+          echo "Current latest tag: $CURRENT_TAG"
+
       # --- SEMANTIC RELEASE ---
       - name: Run Semantic Release
         id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release
+
+      # --- GET LATEST RELEASE INFO ---
+      - name: Get Latest Release After Semantic Release
+        id: latest_release
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          npx semantic-release > semantic_output.log 2>&1 || true
-          echo "Semantic-release finished."
-          VERSION=$(grep -oP '(?<=Published release ).*' semantic_output.log | head -n 1)
-          if [ -z "$VERSION" ]; then
-            echo "No new version published."
-            echo "version=none" >> $GITHUB_OUTPUT
+          TAG_NAME=$(gh release view --json tagName -q '.tagName' 2>/dev/null || echo "none")
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "Latest tag after semantic-release: $TAG_NAME"
+          
+          # Check if a new release was created
+          if [ "$TAG_NAME" = "none" ] || [ "$TAG_NAME" = "${{ steps.pre_release.outputs.current_tag }}" ]; then
+            echo "No new release created, skipping Chrome Web Store upload"
+            echo "skip_upload=true" >> $GITHUB_OUTPUT
           else
-            echo "Detected version: $VERSION"
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "New release created: $TAG_NAME"
+            echo "skip_upload=false" >> $GITHUB_OUTPUT
           fi
 
-      # --- SKIP IF NO RELEASE ---
-      - name: Stop if no new version
-        if: steps.semantic.outputs.version == 'none'
-        run: echo "No new version, skipping upload."
-
-      # --- ZIP EXTENSION ---
-      - name: Create ZIP excluding listed files
-        if: steps.semantic.outputs.version != 'none'
+      # --- DOWNLOAD EXTENSION ZIP ---
+      - name: Download Extension ZIP from Release
+        if: steps.latest_release.outputs.skip_upload != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          VERSION=${{ steps.semantic.outputs.version }}
-          ZIP_NAME="extension-v${VERSION}.zip"
-          echo "Creating $ZIP_NAME..."
-          zip -r "$ZIP_NAME" * -x @exclude.lst
+          TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
+          ZIP_NAME="extension-${TAG_NAME}.zip"
+          gh release download "$TAG_NAME" -p "$ZIP_NAME"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       # --- UPLOAD TO CHROME WEB STORE ---
       - name: Upload and Publish to Chrome Web Store
-        if: steps.semantic.outputs.version != 'none'
+        if: steps.latest_release.outputs.skip_upload != 'true'
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
           file-path: ${{ env.ZIP_NAME }}
