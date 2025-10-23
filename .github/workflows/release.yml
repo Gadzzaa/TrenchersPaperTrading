@@ -20,6 +20,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # --- GET RELEASE INFO BEFORE SEMANTIC RELEASE ---
+      - name: Get Current Latest Release
+        id: pre_release
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          CURRENT_TAG=$(gh release view --json tagName -q '.tagName' 2>/dev/null || echo "none")
+          echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+          echo "Current latest tag: $CURRENT_TAG"
+
       # --- SEMANTIC RELEASE ---
       - name: Run Semantic Release
         id: semantic
@@ -28,22 +39,22 @@ jobs:
         run: npx semantic-release
 
       # --- GET LATEST RELEASE INFO ---
-      - name: Get Latest Release
+      - name: Get Latest Release After Semantic Release
         id: latest_release
         if: success()
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          RELEASE_DATA=$(gh release view --json tagName,assets)
-          TAG_NAME=$(echo "$RELEASE_DATA" | jq -r '.tagName')
+          TAG_NAME=$(gh release view --json tagName -q '.tagName' 2>/dev/null || echo "none")
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "Latest tag after semantic-release: $TAG_NAME"
           
-          # Check if a release was actually created
-          if [ -z "$TAG_NAME" ] || [ "$TAG_NAME" = "null" ]; then
-            echo "No release found, skipping Chrome Web Store upload"
+          # Check if a new release was created
+          if [ "$TAG_NAME" = "none" ] || [ "$TAG_NAME" = "${{ steps.pre_release.outputs.current_tag }}" ]; then
+            echo "No new release created, skipping Chrome Web Store upload"
             echo "skip_upload=true" >> $GITHUB_OUTPUT
           else
-            echo "Found release: $TAG_NAME"
+            echo "New release created: $TAG_NAME"
             echo "skip_upload=false" >> $GITHUB_OUTPUT
           fi
 
