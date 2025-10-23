@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.5.0...v1.5.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* github actions ([ef12b09](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ef12b095bd41aea7ff267fc8436e15a738ac0f2f))
+
 # [1.5.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.4.0...v1.5.0) (2025-10-23)
 
 
