@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.5.2...v1.6.0) (2025-10-29)
+
+
+### Bug Fixes
+
+* remove rate limit for server calls ([c9d0c2d](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/c9d0c2d133802bc5c09378775ac69cb08b80522d))
+* Server connection endpoints ([b96309f](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/b96309f5e4dfb45814c49e75802561f6631c85be))
+
+
+### Features
+
+* Implement comprehensive security and stability improvements for Chrome extension ([6f0df98](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/6f0df9860d3141da53f8b73e02293cfd0fdc8616))
+
 ## [1.5.2](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.5.1...v1.5.2) (2025-10-23)
 
 
