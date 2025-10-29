@@ -14,6 +14,10 @@ import {
   enableUI,
   startLoadingDots,
   stopLoadingDots,
+  sanitizeText,
+  managedSetInterval,
+  managedSetTimeout,
+  clearAllTimers,
 } from "./utils.js";
 let tokenListContainer,
   indicator,
@@ -124,7 +128,7 @@ async function init() {
   }
 
   if (healthCheckInterval) clearInterval(healthCheckInterval);
-  healthCheckInterval = setInterval(async () => {
+  healthCheckInterval = managedSetInterval(async () => {
     const healthy = await healthCheck();
     console.log("Health check:", healthy ? "OK" : "FAILED");
     if (!healthy) {
@@ -157,18 +161,19 @@ async function init() {
 
 function scheduleReconnect() {
   if (reconnectTimeout) return;
-  reconnectTimeout = setTimeout(() => {
+  reconnectTimeout = managedSetTimeout(() => {
     reconnectTimeout = null;
     init();
   }, 2000);
 }
 
 function disconnectPopup(logout = false) {
-  if (countdownResets) clearInterval(countdownResets);
-  if (healthCheckInterval) clearInterval(healthCheckInterval);
-
+  // Clear all managed timers
+  clearAllTimers();
+  
   countdownResets = null;
   healthCheckInterval = null;
+  reconnectTimeout = null;
 
   if (!logout) scheduleReconnect();
 }
@@ -232,17 +237,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     showDialog({
       title: "Startup Balance",
       message:
-        "Please enter the amount of SOL you want to start with (minimum 1 SOL):",
+        "Please enter the amount of SOL you want to start with (minimum 1 SOL, maximum 100 SOL):",
       type: "Input",
     }).then(async (input) => {
       if (input === null || input === undefined) return; // User canceled
       const amount = Number(input);
-      if (isNaN(amount) || amount < 1)
+      if (isNaN(amount) || amount < 1 || amount > 100) {
         showDialog({
           title: "Invalid Amount",
-          message: "Please enter a valid number greater than or equal to 1.",
+          message: "Please enter a valid number between 1 and 100.",
           type: "Info",
         });
+        return;
+      }
       showDialog({
         title: "Register",
         message:
@@ -293,16 +300,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   resetButton.addEventListener("click", async () => {
     showDialog({
       title: "Start balance",
-      message: "With how much balance do you want to start over?",
+      message:
+        "With how much balance do you want to start over? (minimum 1 SOL, maximum 100 SOL)",
       type: "Input",
     }).then(async (input) => {
       if (input === null || input === undefined) return; // User canceled
       const amount = parseFloat(input);
       console.log("Reset amount:", amount);
-      if (isNaN(amount) || amount <= 0) {
+      if (isNaN(amount) || amount <= 0 || amount > 100) {
         showDialog({
           title: "Invalid Amount",
-          message: "Please enter a valid positive number.",
+          message: "Please enter a valid number between 1 and 100.",
           type: "Info",
         });
         return;
@@ -490,7 +498,7 @@ function startCountdown(lastReset) {
     resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
   }
   update(); // initial call
-  countdownResets = setInterval(update, 1000 * 5); // update every 5s
+  countdownResets = managedSetInterval(update, 1000 * 5); // update every 5s
 }
 function setDisplay(index) {
   const carousel = document.querySelector(".pageCarousel");
@@ -535,19 +543,34 @@ function renderToken(token) {
   const button = document.createElement("button");
   button.classList.add("tkn");
 
+  // Security: Sanitize user-provided data
+  const safeName = sanitizeText(token.name);
+  const safeSymbol = sanitizeText(token.symbol);
+  const safeAmount = sanitizeText(token.amount);
+  const safeImagePath = sanitizeText(token.imagePath);
+
   button.innerHTML = `
     <div class="tknImage">
-      <img src="${token.imagePath}" class="tknImageFile" />
+      <img src="${safeImagePath}" class="tknImageFile" onerror="this.src='Images/solana-sol-logo.png'" />
     </div>
     <div class="tknInfo">
-      <p class="tknName">${token.name}</p>
-      <p class="tknValue">${token.amount} ${token.symbol}</p>
+      <p class="tknName">${safeName}</p>
+      <p class="tknValue">${safeAmount} ${safeSymbol}</p>
     </div>
     <p class="tknClickTxt">Click to open</p>
   `;
 
   button.addEventListener("click", () => {
-    window.open(`https://axiom.trade/meme/${token.poolAddress}`, "_blank");
+    // Security: Validate poolAddress before opening URL
+    const poolAddressPattern = /^[a-zA-Z0-9]+$/;
+    if (poolAddressPattern.test(token.poolAddress)) {
+      window.open(
+        `https://axiom.trade/meme/${encodeURIComponent(token.poolAddress)}`,
+        "_blank",
+      );
+    } else {
+      console.error("Invalid pool address:", token.poolAddress);
+    }
   });
 
   if (!tokenListContainer) console.error("Token list container not found.");

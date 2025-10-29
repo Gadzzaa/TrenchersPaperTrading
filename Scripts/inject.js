@@ -19,6 +19,14 @@ let lastContract = null;
   }
 })();
 window.addEventListener("message", async (event) => {
+  // Security: Accept messages from extension iframes and same origin
+  const isExtensionOrigin = event.origin.startsWith('chrome-extension://');
+  const isSameOrigin = event.origin === window.location.origin;
+  
+  if (!isExtensionOrigin && !isSameOrigin) {
+    return;
+  }
+  
   const { type, requestId } = event.data;
 
   if (type === "CONTRACT_REQUEST" && requestId) {
@@ -29,7 +37,7 @@ window.addEventListener("message", async (event) => {
         contract,
         requestId,
       },
-      "*",
+      event.origin,
     );
   }
   if (type === "SHOW_NOTIFICATION" && event.data?.message) {
@@ -438,7 +446,7 @@ function injectApp() {
     const toggleButton = document.createElement("button");
     toggleButton.id = "trenchersToggleBtn";
     var toggleButtonImage = document.createElement("img");
-    toggleButtonImage.src = "https://i.imgur.com/ZBbPCG4.png";
+    toggleButtonImage.src = chrome.runtime.getURL("Images/logo.png");
     toggleButtonImage.alt = "Show/Hide TrenchersPT";
     toggleButton.appendChild(toggleButtonImage);
     // Toggle logic

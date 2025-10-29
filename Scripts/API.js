@@ -4,9 +4,10 @@ import {
   getFromStorage,
   setToStorage,
   removeFromStorage,
+  rateLimit,
 } from "./utils.js";
 import { getDebugMode } from "../config.js";
-import CONFIG from "../config.js";
+import CONFIG, { USE_LOCAL } from "../config.js";
 import {
   clearPositions,
   setPnlData,
@@ -23,6 +24,13 @@ const feeAmount = 0;
 let lastHealthCheckTime;
 let healthCheckInterval = 15;
 let lastHealthCheckStatus = false;
+
+// Rate limiting configuration
+const RATE_LIMIT_CONFIG = {
+  buy: { maxCalls: 2, windowMs: 1000 }, // 5 buys per 10 seconds
+  sell: { maxCalls: 2, windowMs: 1000 }, // 5 sells per 10 seconds
+  reset: { maxCalls: 2, windowMs: 60000 }, // 2 resets per minute
+};
 
 export async function healthCheck() {
   if (Date.now() - lastHealthCheckTime < healthCheckInterval)
@@ -44,7 +52,7 @@ export async function healthCheck() {
 // SessionChecker.js
 export async function checkSession() {
   try {
-    const response = await fetch(API_BASE_URL + "/api/check-session", {
+    const response = await fetch(API_BASE_URL + "/check-session", {
       method: "GET",
       headers: await getAuthHeaders(),
     });
@@ -70,6 +78,7 @@ export async function checkSession() {
 }
 
 export async function isLatestVersion() {
+  if (USE_LOCAL) return true;
   try {
     const manifest = chrome.runtime.getManifest();
     const version = manifest.version;
@@ -101,7 +110,7 @@ export async function isLatestVersion() {
 // PNLHandler.js
 export async function getTradeLog() {
   try {
-    const response = await fetch(API_BASE_URL + "/api/tradeLog", {
+    const response = await fetch(API_BASE_URL + "/tradeLog", {
       method: "GET",
       headers: await getAuthHeaders(),
     });
@@ -138,7 +147,7 @@ export async function fetchPopupData() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch(API_BASE_URL + "/api/popupData", {
+        response = await fetch(API_BASE_URL + "/popupData", {
           method: "GET",
           headers: await getAuthHeaders(),
           signal: controller.signal,
@@ -189,6 +198,19 @@ export async function buyToken(
   fee = feeAmount,
 ) {
   try {
+    // Rate limiting check
+    if (
+      !rateLimit(
+        "buy",
+        RATE_LIMIT_CONFIG.buy.maxCalls,
+        RATE_LIMIT_CONFIG.buy.windowMs,
+      )
+    ) {
+      throw new Error(
+        "Too many buy requests. Please wait a moment and try again.",
+      );
+    }
+
     const payload = {
       poolAddress,
       solAmount,
@@ -202,7 +224,7 @@ export async function buyToken(
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch(API_BASE_URL + "/api/buy", {
+        response = await fetch(API_BASE_URL + "/buy", {
           method: "POST",
           headers: await getAuthHeaders(),
           body: JSON.stringify(payload),
@@ -266,6 +288,19 @@ async function sellToken(
   slippage = slippagePercentage,
   fee = feeAmount,
 ) {
+  // Rate limiting check
+  if (
+    !rateLimit(
+      "sell",
+      RATE_LIMIT_CONFIG.sell.maxCalls,
+      RATE_LIMIT_CONFIG.sell.windowMs,
+    )
+  ) {
+    throw new Error(
+      "Too many sell requests. Please wait a moment and try again.",
+    );
+  }
+
   const payload = {
     poolAddress,
     tokenAmount,
@@ -279,7 +314,7 @@ async function sellToken(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-      response = await fetch(API_BASE_URL + "/api/sell", {
+      response = await fetch(API_BASE_URL + "/sell", {
         method: "POST",
         headers: await getAuthHeaders(),
         body: JSON.stringify(payload),
@@ -335,7 +370,7 @@ export async function getPortfolio() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch(API_BASE_URL + `/api/portfolio`, {
+        response = await fetch(API_BASE_URL + `/portfolio`, {
           method: "GET",
           headers: await getAuthHeaders(),
           signal: controller.signal,
@@ -379,6 +414,19 @@ export async function getPortfolio() {
 // ResetHandler.js
 export async function resetAccount(amount) {
   try {
+    // Rate limiting check
+    if (
+      !rateLimit(
+        "reset",
+        RATE_LIMIT_CONFIG.reset.maxCalls,
+        RATE_LIMIT_CONFIG.reset.windowMs,
+      )
+    ) {
+      throw new Error(
+        "Too many reset requests. Please wait a moment and try again.",
+      );
+    }
+
     let response,
       networkError = false,
       result;
@@ -386,7 +434,7 @@ export async function resetAccount(amount) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch(API_BASE_URL + `/api/reset`, {
+        response = await fetch(API_BASE_URL + `/reset`, {
           method: "PATCH",
           headers: await getAuthHeaders(),
           body: JSON.stringify({ amount }),
@@ -452,7 +500,7 @@ export async function logout() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch(API_BASE_URL + `/api/logout`, {
+        response = await fetch(API_BASE_URL + `/logout`, {
           method: "DELETE",
           headers: await getAuthHeaders(),
           signal: controller.signal,
@@ -509,7 +557,7 @@ export async function login(username, password) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch(API_BASE_URL + "/api/login", {
+        response = await fetch(API_BASE_URL + "/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -567,15 +615,31 @@ export async function register(username, password, initialBalance) {
       result;
     if (!username || !password)
       throw new Error("Username and password are required.");
-    if (password.length < 6)
-      throw new Error("Password must be at least 6 characters.");
+    if (username.length < 3)
+      throw new Error("Username must be at least 3 characters.");
+    if (username.length > 20)
+      throw new Error("Username must be at most 20 characters.");
+    if (!/^[a-zA-Z0-9_]+$/.test(username))
+      throw new Error(
+        "Username can only contain letters, numbers, and underscores.",
+      );
+    if (password.length < 8)
+      throw new Error("Password must be at least 8 characters.");
+    if (password.length > 128)
+      throw new Error("Password must be at most 128 characters.");
+    if (!/[A-Z]/.test(password))
+      throw new Error("Password must contain at least one uppercase letter.");
+    if (!/[a-z]/.test(password))
+      throw new Error("Password must contain at least one lowercase letter.");
+    if (!/[0-9]/.test(password))
+      throw new Error("Password must contain at least one number.");
     if (typeof balance != "number") balance = Number(balance);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
-        response = await fetch("http://localhost:3000/api/create-account", {
+        response = await fetch(API_BASE_URL + "/create-account", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

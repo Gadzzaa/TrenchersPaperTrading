@@ -9,6 +9,115 @@ const failSound = new Audio(chrome.runtime.getURL("Sounds/fail.wav"));
 let audioVolume;
 let hidePopupFn;
 
+// Security: Sanitize text to prevent XSS
+export function sanitizeText(text) {
+  if (typeof text !== 'string') {
+    text = String(text);
+  }
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Security: Validate numeric input
+export function validateNumericInput(value, min = 0, max = Number.MAX_SAFE_INTEGER) {
+  const num = parseFloat(value);
+  if (isNaN(num)) {
+    throw new Error('Invalid numeric value');
+  }
+  if (num < min || num > max) {
+    throw new Error(`Value must be between ${min} and ${max}`);
+  }
+  return num;
+}
+
+// Stability: Async error handler wrapper
+export async function safeAsync(fn, fallback = null, errorMessage = 'Operation failed') {
+  try {
+    return await fn();
+  } catch (error) {
+    console.error(`${errorMessage}:`, error);
+    if (fallback !== null) {
+      return fallback;
+    }
+    throw error;
+  }
+}
+
+// Stability: Cleanup manager for intervals and timeouts
+const activeTimers = new Set();
+
+export function managedSetInterval(callback, delay) {
+  const id = setInterval(callback, delay);
+  activeTimers.add({ type: 'interval', id });
+  return id;
+}
+
+export function managedSetTimeout(callback, delay) {
+  const id = setTimeout(() => {
+    callback();
+    activeTimers.delete(id);
+  }, delay);
+  activeTimers.add({ type: 'timeout', id });
+  return id;
+}
+
+export function clearManagedInterval(id) {
+  clearInterval(id);
+  for (const timer of activeTimers) {
+    if (timer.type === 'interval' && timer.id === id) {
+      activeTimers.delete(timer);
+      break;
+    }
+  }
+}
+
+export function clearManagedTimeout(id) {
+  clearTimeout(id);
+  for (const timer of activeTimers) {
+    if (timer.type === 'timeout' && timer.id === id) {
+      activeTimers.delete(timer);
+      break;
+    }
+  }
+}
+
+export function clearAllTimers() {
+  for (const timer of activeTimers) {
+    if (timer.type === 'interval') {
+      clearInterval(timer.id);
+    } else if (timer.type === 'timeout') {
+      clearTimeout(timer.id);
+    }
+  }
+  activeTimers.clear();
+}
+
+// Stability: Simple rate limiter
+const rateLimiters = new Map();
+
+export function rateLimit(key, maxCalls = 5, windowMs = 1000) {
+  const now = Date.now();
+  
+  if (!rateLimiters.has(key)) {
+    rateLimiters.set(key, []);
+  }
+  
+  const calls = rateLimiters.get(key);
+  
+  // Remove calls outside the window
+  const validCalls = calls.filter(timestamp => now - timestamp < windowMs);
+  
+  if (validCalls.length >= maxCalls) {
+    return false; // Rate limit exceeded
+  }
+  
+  validCalls.push(now);
+  rateLimiters.set(key, validCalls);
+  
+  return true; // Call allowed
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   spinnerOverlay = document.getElementById("spinnerOverlay");
   spinnerText = document.getElementById("spinnerText");
@@ -62,14 +171,16 @@ export function showNotification(message, type, sound = true) {
     info: "ℹ",
   };
 
-  const fullMessage = typeClasses[type] + " " + message;
+  // Security: Sanitize message before displaying
+  const sanitizedMessage = sanitizeText(message);
+  const fullMessage = typeClasses[type] + " " + sanitizedMessage;
 
   window.parent.postMessage(
     {
       type: "SHOW_NOTIFICATION",
       message: fullMessage,
     },
-    "*",
+    "https://axiom.trade",
   );
 
   if (sound)
@@ -79,7 +190,7 @@ export function showNotification(message, type, sound = true) {
         break;
       case "error":
         safePlay(type);
-        console.error(message);
+        console.error(sanitizedMessage);
         break;
       case "info":
         break; // No sound
@@ -245,27 +356,40 @@ export function stopLoadingDots(button, interval) {
 
 // Requests from inject.js
 export function requestCurrentContract() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const requestId = "get-contract-" + Date.now();
+    let timeoutId = null;
 
     // Listen for response
     function handleMessage(event) {
+      // Security: Verify origin is from axiom.trade (parent page)
+      if (!event.origin.includes('axiom.trade') && event.origin !== window.location.origin) {
+        return;
+      }
+      
       const { type, contract, requestId: responseId } = event.data;
       if (type === "CONTRACT_RESPONSE" && responseId === requestId) {
         window.removeEventListener("message", handleMessage);
+        if (timeoutId) clearTimeout(timeoutId);
         resolve(contract);
       }
     }
 
     window.addEventListener("message", handleMessage);
+    
+    // Add timeout to prevent orphaned listeners
+    timeoutId = setTimeout(() => {
+      window.removeEventListener("message", handleMessage);
+      resolve(null); // Return null instead of rejecting to avoid breaking the flow
+    }, 5000);
 
-    // Send request
+    // Send request to parent window (axiom.trade page)
     window.parent.postMessage(
       {
         type: "CONTRACT_REQUEST",
         requestId: requestId,
       },
-      "*",
+      "https://axiom.trade",
     );
   });
 }
@@ -275,7 +399,7 @@ export function requestHideApp() {
     {
       type: "HIDE_APP",
     },
-    "*",
+    "https://axiom.trade",
   );
 }
 

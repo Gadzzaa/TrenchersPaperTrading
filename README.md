@@ -58,6 +58,19 @@ Without a backend connection, the app will run in a read-only mode.
 
 ---
 
+## 🛡️ Security
+
+This extension implements comprehensive security measures including:
+- Content Security Policy (CSP) for script and network restrictions
+- Input validation and sanitization
+- Rate limiting on API calls
+- Origin validation for cross-frame communication
+- Strong password requirements (8+ chars, mixed case, numbers)
+
+For detailed security information, see [SECURITY.md](SECURITY.md).
+
+---
+
 ## 🎥 Demo Video -- Outdated
 
 A full walkthrough of the extension and backend in action:  

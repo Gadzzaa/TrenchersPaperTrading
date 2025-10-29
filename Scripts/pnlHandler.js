@@ -1,4 +1,4 @@
-import { showNotification } from "./utils.js";
+import { showNotification, managedSetInterval, clearManagedInterval } from "./utils.js";
 import { getDebugMode } from "../config.js";
 import { getFromStorage, internetConnection } from "./utils.js";
 import { getTradeLog } from "./API.js";
@@ -13,6 +13,8 @@ let pnlIntervalId = null;
 let heartbeatInterval;
 let lastPong = Date.now();
 let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const BASE_RECONNECT_DELAY = 500; // milliseconds
 
 export function setPnlData(poolAddress, pnlData) {
   const idx = pnlDataArray.findIndex(
@@ -88,7 +90,7 @@ export async function connectWebSocket() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
 
             // Heartbeat every 15s
-            heartbeatInterval = setInterval(() => {
+            heartbeatInterval = managedSetInterval(() => {
               if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
               const now = Date.now();
@@ -143,12 +145,19 @@ export async function connectWebSocket() {
       clearInterval(heartbeatInterval);
       clearTimeout(authTimeout);
 
-      if (reconnectAttempts < 2) {
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        // Exponential backoff: delay = baseDelay * 2^attempts
+        const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts);
+        console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
+        
         setTimeout(() => {
           reconnectAttempts++;
-          connectWebSocket();
-        }, 500);
+          connectWebSocket().catch((err) => {
+            console.error("Reconnection failed:", err);
+          });
+        }, delay);
       } else {
+        console.error("Max reconnection attempts reached. Disconnecting dashboard.");
         const { disconnectDashboard } = await import("./dashboard.js");
         disconnectDashboard();
       }
@@ -170,9 +179,15 @@ export function disconnectWebSocket() {
   if (currentPool) unwatchPool(currentPool);
   currentPool = null;
 
+  // Stop heartbeat interval
+  if (heartbeatInterval) {
+    clearManagedInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
+
   // Stop any PnL interval
   if (pnlIntervalId) {
-    clearInterval(pnlIntervalId);
+    clearManagedInterval(pnlIntervalId);
     pnlIntervalId = null;
   }
 
@@ -211,7 +226,7 @@ export function unwatchPool(poolAddress) {
 }
 
 export function setActiveToken(poolAddress) {
-  if (pnlIntervalId) clearInterval(pnlIntervalId);
+  if (pnlIntervalId) clearManagedInterval(pnlIntervalId);
 
   currentPool = poolAddress;
   const idx = openPositions.findIndex(
@@ -232,7 +247,7 @@ export function setActiveToken(poolAddress) {
   chrome.storage.local.get("pnlSlider", (data) => {
     if (!data) data = 500;
     watchPool(poolAddress);
-    pnlIntervalId = setInterval(updateTotalPnl, data.pnlSlider);
+    pnlIntervalId = managedSetInterval(updateTotalPnl, data.pnlSlider);
   });
 }
 
