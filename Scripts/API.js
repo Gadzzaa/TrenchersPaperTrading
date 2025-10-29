@@ -27,11 +27,9 @@ let lastHealthCheckStatus = false;
 
 // Rate limiting configuration
 const RATE_LIMIT_CONFIG = {
-  buy: { maxCalls: 5, windowMs: 10000 }, // 5 buys per 10 seconds
-  sell: { maxCalls: 5, windowMs: 10000 }, // 5 sells per 10 seconds
-  portfolio: { maxCalls: 10, windowMs: 5000 }, // 10 portfolio fetches per 5 seconds
+  buy: { maxCalls: 2, windowMs: 1000 }, // 5 buys per 10 seconds
+  sell: { maxCalls: 2, windowMs: 1000 }, // 5 sells per 10 seconds
   reset: { maxCalls: 2, windowMs: 60000 }, // 2 resets per minute
-  login: { maxCalls: 3, windowMs: 60000 }, // 3 login attempts per minute
 };
 
 export async function healthCheck() {
@@ -365,18 +363,6 @@ async function sellToken(
 // PortfolioHandler.js
 export async function getPortfolio() {
   try {
-    // Rate limiting check
-    if (
-      !rateLimit(
-        "portfolio",
-        RATE_LIMIT_CONFIG.portfolio.maxCalls,
-        RATE_LIMIT_CONFIG.portfolio.windowMs,
-      )
-    ) {
-      console.warn("Portfolio fetch rate limit reached, skipping this request");
-      return null;
-    }
-
     let response,
       networkError = false,
       result;
@@ -561,19 +547,6 @@ export async function logout() {
 // LoginHandler.js
 export async function login(username, password) {
   try {
-    // Rate limiting check
-    if (
-      !rateLimit(
-        "login",
-        RATE_LIMIT_CONFIG.login.maxCalls,
-        RATE_LIMIT_CONFIG.login.windowMs,
-      )
-    ) {
-      throw new Error(
-        "Too many login attempts. Please wait a moment and try again.",
-      );
-    }
-
     let response,
       networkError = false,
       result;
