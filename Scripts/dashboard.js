@@ -29,6 +29,9 @@ import {
   disableUI,
   getFromStorage,
   internetConnection,
+  managedSetInterval,
+  managedSetTimeout,
+  clearAllTimers,
 } from "./utils.js";
 
 let currentContract = null;
@@ -39,6 +42,10 @@ let healthCheckInterval = null;
 let initializing = false;
 let fetchingBalance = false;
 let reconnectTimeout = null;
+
+// Event listener tracking for cleanup
+let storageChangeListener = null;
+let runtimeMessageListener = null;
 
 const settings = [
   {
@@ -83,7 +90,7 @@ async function initDashboard() {
   }
 
   clearInterval(healthCheckInterval);
-  healthCheckInterval = setInterval(async () => {
+  healthCheckInterval = managedSetInterval(async () => {
     const healthy = await healthCheck();
     if (!healthy) {
       console.warn("Lost connection — disconnecting dashboard.");
@@ -116,7 +123,7 @@ async function initDashboard() {
   document.body.style.removeProperty("pointer-events");
 
   clearInterval(updateInterval);
-  updateInterval = setInterval(async () => {
+  updateInterval = managedSetInterval(async () => {
     if (fetchingBalance) return; // prevent overlap
     fetchingBalance = true;
 
@@ -158,11 +165,12 @@ export async function disconnectDashboard(logout = false) {
 
   document.body.style.pointerEvents = "none";
 
-  if (updateInterval) clearInterval(updateInterval);
-  if (healthCheckInterval) clearInterval(healthCheckInterval);
-
+  // Clear all managed timers
+  clearAllTimers();
+  
   updateInterval = null;
   healthCheckInterval = null;
+  reconnectTimeout = null;
 
   currentContract = null;
 
@@ -176,7 +184,7 @@ export async function disconnectDashboard(logout = false) {
 
 function scheduleReconnect() {
   if (reconnectTimeout) return;
-  reconnectTimeout = setTimeout(() => {
+  reconnectTimeout = managedSetTimeout(() => {
     reconnectTimeout = null;
     initDashboard();
   }, 2000);
@@ -207,7 +215,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       requestHideApp();
     });
 
-    chrome.storage.onChanged.addListener((changes, area) => {
+    // Remove existing listeners before adding new ones to prevent duplicates
+    if (storageChangeListener) {
+      chrome.storage.onChanged.removeListener(storageChangeListener);
+    }
+    
+    storageChangeListener = (changes, area) => {
       if (area === "local" && changes.theme) {
         document.documentElement.setAttribute(
           "data-theme",
@@ -223,8 +236,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (area === "local" && changes.pnlSlider) {
         changeDelay(changes.updateDelay.newValue);
       }
-    });
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    };
+    chrome.storage.onChanged.addListener(storageChangeListener);
+    
+    // Remove existing listeners before adding new ones to prevent duplicates
+    if (runtimeMessageListener) {
+      chrome.runtime.onMessage.removeListener(runtimeMessageListener);
+    }
+    
+    runtimeMessageListener = (message, sender, sendResponse) => {
       if (message.type === "initDashboard") {
         console.log("User registered, initializing dashboard...");
         initDashboard();
@@ -233,7 +253,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log("User logged out, disabling dashboard...");
         logout();
       }
-    });
+    };
+    chrome.runtime.onMessage.addListener(runtimeMessageListener);
 
     await initDashboard();
   } catch (error) {

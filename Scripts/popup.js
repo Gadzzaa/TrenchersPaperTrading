@@ -15,6 +15,9 @@ import {
   startLoadingDots,
   stopLoadingDots,
   sanitizeText,
+  managedSetInterval,
+  managedSetTimeout,
+  clearAllTimers,
 } from "./utils.js";
 let tokenListContainer,
   indicator,
@@ -125,7 +128,7 @@ async function init() {
   }
 
   if (healthCheckInterval) clearInterval(healthCheckInterval);
-  healthCheckInterval = setInterval(async () => {
+  healthCheckInterval = managedSetInterval(async () => {
     const healthy = await healthCheck();
     console.log("Health check:", healthy ? "OK" : "FAILED");
     if (!healthy) {
@@ -158,27 +161,19 @@ async function init() {
 
 function scheduleReconnect() {
   if (reconnectTimeout) return;
-  reconnectTimeout = setTimeout(() => {
+  reconnectTimeout = managedSetTimeout(() => {
     reconnectTimeout = null;
     init();
   }, 2000);
 }
 
 function disconnectPopup(logout = false) {
-  if (countdownResets) {
-    clearInterval(countdownResets);
-    countdownResets = null;
-  }
-
-  if (healthCheckInterval) {
-    clearInterval(healthCheckInterval);
-    healthCheckInterval = null;
-  }
-
-  if (reconnectTimeout) {
-    clearTimeout(reconnectTimeout);
-    reconnectTimeout = null;
-  }
+  // Clear all managed timers
+  clearAllTimers();
+  
+  countdownResets = null;
+  healthCheckInterval = null;
+  reconnectTimeout = null;
 
   if (!logout) scheduleReconnect();
 }
@@ -503,7 +498,7 @@ function startCountdown(lastReset) {
     resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
   }
   update(); // initial call
-  countdownResets = setInterval(update, 1000 * 5); // update every 5s
+  countdownResets = managedSetInterval(update, 1000 * 5); // update every 5s
 }
 function setDisplay(index) {
   const carousel = document.querySelector(".pageCarousel");

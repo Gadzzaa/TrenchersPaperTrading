@@ -1,4 +1,4 @@
-import { showNotification } from "./utils.js";
+import { showNotification, managedSetInterval, clearManagedInterval } from "./utils.js";
 import { getDebugMode } from "../config.js";
 import { getFromStorage, internetConnection } from "./utils.js";
 import { getTradeLog } from "./API.js";
@@ -90,7 +90,7 @@ export async function connectWebSocket() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
 
             // Heartbeat every 15s
-            heartbeatInterval = setInterval(() => {
+            heartbeatInterval = managedSetInterval(() => {
               if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
               const now = Date.now();
@@ -181,13 +181,13 @@ export function disconnectWebSocket() {
 
   // Stop heartbeat interval
   if (heartbeatInterval) {
-    clearInterval(heartbeatInterval);
+    clearManagedInterval(heartbeatInterval);
     heartbeatInterval = null;
   }
 
   // Stop any PnL interval
   if (pnlIntervalId) {
-    clearInterval(pnlIntervalId);
+    clearManagedInterval(pnlIntervalId);
     pnlIntervalId = null;
   }
 
@@ -226,7 +226,7 @@ export function unwatchPool(poolAddress) {
 }
 
 export function setActiveToken(poolAddress) {
-  if (pnlIntervalId) clearInterval(pnlIntervalId);
+  if (pnlIntervalId) clearManagedInterval(pnlIntervalId);
 
   currentPool = poolAddress;
   const idx = openPositions.findIndex(
@@ -247,7 +247,7 @@ export function setActiveToken(poolAddress) {
   chrome.storage.local.get("pnlSlider", (data) => {
     if (!data) data = 500;
     watchPool(poolAddress);
-    pnlIntervalId = setInterval(updateTotalPnl, data.pnlSlider);
+    pnlIntervalId = managedSetInterval(updateTotalPnl, data.pnlSlider);
   });
 }
 
