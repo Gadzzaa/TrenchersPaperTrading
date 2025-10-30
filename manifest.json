@@ -13,9 +13,6 @@
     "default_popup": "popup.html",
     "default_icon": "Images/logo.png"
   },
-  "host_permissions": [
-    "https://axiom.trade/*"
-  ],
   "content_scripts": [
     {
       "matches": [
@@ -34,7 +31,7 @@
         "Images/*"
       ],
       "matches": [
-        "<all_urls>"
+        "https://axiom.trade/*"
       ]
     }
   ],

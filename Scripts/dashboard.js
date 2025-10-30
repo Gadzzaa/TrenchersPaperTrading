@@ -167,7 +167,7 @@ export async function disconnectDashboard(logout = false) {
 
   // Clear all managed timers
   clearAllTimers();
-  
+
   updateInterval = null;
   healthCheckInterval = null;
   reconnectTimeout = null;
@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (storageChangeListener) {
       chrome.storage.onChanged.removeListener(storageChangeListener);
     }
-    
+
     storageChangeListener = (changes, area) => {
       if (area === "local" && changes.theme) {
         document.documentElement.setAttribute(
@@ -238,12 +238,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     };
     chrome.storage.onChanged.addListener(storageChangeListener);
-    
+
     // Remove existing listeners before adding new ones to prevent duplicates
     if (runtimeMessageListener) {
       chrome.runtime.onMessage.removeListener(runtimeMessageListener);
     }
-    
+
     runtimeMessageListener = (message, sender, sendResponse) => {
       if (message.type === "initDashboard") {
         console.log("User registered, initializing dashboard...");
