@@ -1,3 +1,11 @@
+## [1.6.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.6.0...v1.6.1) (2025-10-30)
+
+
+### Bug Fixes
+
+* Host issues ([7cd8a20](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/7cd8a20a695dad850f998eab5ada81961c1a7c90))
+* permissions ([ecbfdde](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ecbfdde96ab3be6382f3ff414b6e4b7fab32d8c8))
+
 # [1.6.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.5.2...v1.6.0) (2025-10-29)
 
 
