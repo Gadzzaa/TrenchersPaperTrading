@@ -1,3 +1,17 @@
+# [1.7.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.6.1...v1.7.0) (2025-11-24)
+
+
+### Bug Fixes
+
+* Extension injection ([660f0b1](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/660f0b101d983b2b33dabadb2a29b5e811b6d7a8))
+* Overflow in popup ([2906907](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/2906907871176aab3c5362db14fe4e17c9eece41))
+* prevent publishing ([cc4ec15](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/cc4ec1550f74b436f5d32bb3733a9339c1bc8a44))
+
+
+### Features
+
+* new logo ([7bf91c9](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/7bf91c98f999b54724f36d38189db3df64db292a))
+
 ## [1.6.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.6.0...v1.6.1) (2025-10-30)
 
 
