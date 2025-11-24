@@ -1,6 +1,6 @@
 {
   "name": "TrenchersPaperTrading",
-  "description": "A meme coin paper trading platform built for practicing your trading skills before risking real money.",
+  "description": "Trenchers Paper Trading is a meme coin paper trading platform built for practicing your trading skills before risking real money.",
   "version": "1.6.1",
   "manifest_version": 3,
   "permissions": [
@@ -27,8 +27,10 @@
     {
       "resources": [
         "dashboard.html",
-        "Sounds/*.wav",
-        "Images/*"
+        "Styles/*.css",
+        "Scripts/*.js",
+        "Images/*",
+        "Sounds/*.wav"
       ],
       "matches": [
         "https://axiom.trade/*"

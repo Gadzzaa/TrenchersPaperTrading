@@ -12,6 +12,9 @@ let lastContract = null;
     await waitForBody(); // wait for body to exist
     await onPageReady(); // wait for DOM ready
 
+    await new Promise((r) => setTimeout(r, 500));
+    injectStylesheet();
+    injectToggleButton();
     // Now safe to start monitoring routes
     monitorRouteChanges();
   } catch (err) {
@@ -20,13 +23,13 @@ let lastContract = null;
 })();
 window.addEventListener("message", async (event) => {
   // Security: Accept messages from extension iframes and same origin
-  const isExtensionOrigin = event.origin.startsWith('chrome-extension://');
+  const isExtensionOrigin = event.origin.startsWith("chrome-extension://");
   const isSameOrigin = event.origin === window.location.origin;
-  
+
   if (!isExtensionOrigin && !isSameOrigin) {
     return;
   }
-  
+
   const { type, requestId } = event.data;
 
   if (type === "CONTRACT_REQUEST" && requestId) {
@@ -250,8 +253,129 @@ function injectApp() {
       }
     });
 
-    const style = document.createElement("style");
-    style.textContent = `
+    chrome.storage.local.get("theme", ({ theme }) => {
+      if (theme) {
+        appContainer.setAttribute("data-theme", theme);
+      } else appContainer.setAttribute("data-theme", "dark");
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes.theme) {
+        appContainer.setAttribute("data-theme", changes.theme.newValue);
+      }
+    });
+
+    const notification = document.createElement("div");
+    notification.id = "notification";
+    notification.className = "notification";
+
+    // Create span for text
+    const notifText = document.createElement("span");
+    notifText.id = "notifText";
+    notification.appendChild(notifText);
+
+    appContainer.appendChild(notification);
+
+    const moveHandle = document.createElement("div");
+    Object.assign(moveHandle.style, {
+      position: "absolute",
+      top: "6px",
+      left: "174.5px",
+      width: "12px",
+      height: "8px",
+      cursor: "grab",
+      background: "transparent",
+      zIndex: "999999",
+    });
+
+    appContainer.appendChild(moveHandle);
+    makeDraggable(appContainer, moveHandle, appIframe);
+
+    setTimeout(() => {
+      appContainer.style.opacity = "1";
+    }, 50);
+  } catch (error) {
+    throw error;
+  }
+}
+
+function showNotification(message) {
+  const notification = document.getElementById("notification");
+  const notifText = document.getElementById("notifText");
+  if (!notification || !notifText) return;
+
+  clearTimeout(notification._hideTimeout);
+
+  // Update text and trigger pop animation
+  notifText.textContent = message;
+  if (notification.classList.contains("show")) {
+    notifText.classList.remove("pop");
+    void notifText.offsetWidth; // Force reflow to restart animation
+    notifText.classList.add("pop");
+  } else notification.classList.add("show");
+
+  notification._hideTimeout = setTimeout(() => {
+    notification.classList.remove("show");
+  }, 2000);
+}
+
+function monitorRouteChanges() {
+  const observer = new MutationObserver(() => {
+    if (location.pathname !== lastPathname) {
+      lastPathname = location.pathname;
+      handleRouteChange();
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  window.addEventListener("popstate", () => {
+    if (location.pathname !== lastPathname) {
+      lastPathname = location.pathname;
+      handleRouteChange();
+    }
+  });
+
+  window.addEventListener("hashchange", () => {
+    if (location.pathname !== lastPathname) {
+      lastPathname = location.pathname;
+      handleRouteChange();
+    }
+  });
+
+  handleRouteChange();
+}
+
+function injectToggleButton() {
+  const toggleButton = document.createElement("button");
+  toggleButton.id = "trenchersToggleBtn";
+  var toggleButtonImage = document.createElement("img");
+  toggleButtonImage.src = chrome.runtime.getURL("Images/logo.png");
+  toggleButtonImage.alt = "Show/Hide TrenchersPT";
+  toggleButton.appendChild(toggleButtonImage);
+  // Toggle logic
+  toggleButton.addEventListener("click", () => {
+    const app = document.getElementById("TrenchersPaperTrading");
+    if (!app) return;
+    // --- animate button ---
+    toggleButton.classList.remove("clicked"); // reset
+    void toggleButton.offsetWidth; // force reflow so animation restarts
+    toggleButton.classList.add("clicked");
+
+    if (app.style.display === "none") {
+      app.style.display = "block";
+      setTimeout(() => (app.style.opacity = "1"), 20);
+    } else {
+      hideApp();
+    }
+  });
+
+  document.body.appendChild(toggleButton);
+}
+
+function injectStylesheet() {
+  const style = document.createElement("style");
+  style.textContent = `
   #TrenchersPaperTrading {
     transition: 
       background var(--anim-time) ease,
@@ -417,125 +541,7 @@ function injectApp() {
   animation: toggleClick 0.3s ease;
 }
   `;
-    document.head.appendChild(style);
-
-    chrome.storage.local.get("theme", ({ theme }) => {
-      if (theme) {
-        appContainer.setAttribute("data-theme", theme);
-      } else appContainer.setAttribute("data-theme", "dark");
-    });
-
-    chrome.storage.onChanged.addListener((changes, area) => {
-      if (area === "local" && changes.theme) {
-        appContainer.setAttribute("data-theme", changes.theme.newValue);
-      }
-    });
-
-    const notification = document.createElement("div");
-    notification.id = "notification";
-    notification.className = "notification";
-
-    // Create span for text
-    const notifText = document.createElement("span");
-    notifText.id = "notifText";
-    notification.appendChild(notifText);
-
-    appContainer.appendChild(notification);
-
-    // Toggle Button
-    const toggleButton = document.createElement("button");
-    toggleButton.id = "trenchersToggleBtn";
-    var toggleButtonImage = document.createElement("img");
-    toggleButtonImage.src = chrome.runtime.getURL("Images/logo.png");
-    toggleButtonImage.alt = "Show/Hide TrenchersPT";
-    toggleButton.appendChild(toggleButtonImage);
-    // Toggle logic
-    toggleButton.addEventListener("click", () => {
-      const app = document.getElementById("TrenchersPaperTrading");
-      if (!app) return;
-      // --- animate button ---
-      toggleButton.classList.remove("clicked"); // reset
-      void toggleButton.offsetWidth; // force reflow so animation restarts
-      toggleButton.classList.add("clicked");
-
-      if (app.style.display === "none") {
-        app.style.display = "block";
-        setTimeout(() => (app.style.opacity = "1"), 20);
-      } else {
-        hideApp();
-      }
-    });
-
-    document.body.appendChild(toggleButton);
-
-    const moveHandle = document.createElement("div");
-    Object.assign(moveHandle.style, {
-      position: "absolute",
-      top: "6px",
-      left: "174.5px",
-      width: "12px",
-      height: "8px",
-      cursor: "grab",
-      background: "transparent",
-      zIndex: "999999",
-    });
-
-    appContainer.appendChild(moveHandle);
-    makeDraggable(appContainer, moveHandle, appIframe);
-
-    setTimeout(() => {
-      appContainer.style.opacity = "1";
-    }, 50);
-  } catch (error) {
-    throw error;
-  }
-}
-
-function showNotification(message) {
-  const notification = document.getElementById("notification");
-  const notifText = document.getElementById("notifText");
-  if (!notification || !notifText) return;
-
-  clearTimeout(notification._hideTimeout);
-
-  // Update text and trigger pop animation
-  notifText.textContent = message;
-  if (notification.classList.contains("show")) {
-    notifText.classList.remove("pop");
-    void notifText.offsetWidth; // Force reflow to restart animation
-    notifText.classList.add("pop");
-  } else notification.classList.add("show");
-
-  notification._hideTimeout = setTimeout(() => {
-    notification.classList.remove("show");
-  }, 2000);
-}
-
-function monitorRouteChanges() {
-  const observer = new MutationObserver(() => {
-    if (location.pathname !== lastPathname) {
-      lastPathname = location.pathname;
-      handleRouteChange();
-    }
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  window.addEventListener("popstate", () => {
-    if (location.pathname !== lastPathname) {
-      lastPathname = location.pathname;
-      handleRouteChange();
-    }
-  });
-
-  window.addEventListener("hashchange", () => {
-    if (location.pathname !== lastPathname) {
-      lastPathname = location.pathname;
-      handleRouteChange();
-    }
-  });
-
-  handleRouteChange();
+  document.head.appendChild(style);
 }
 
 /**
