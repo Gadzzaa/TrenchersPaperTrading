@@ -10,3 +10,8 @@ release.config.cjs
 Scripts/update-manifest-version.cjs
 .DS_STORE
 exclude.lst
+SECURITY.md
+Scripts/update-config-production.cjs
+Scripts/check-webstore-version.cjs
+CHANGELOG.md
+host_permission_justification.txt

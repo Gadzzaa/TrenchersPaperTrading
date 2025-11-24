@@ -1,0 +1,10 @@
+The host permission for https://axiom.trade/meme/* is required to:
+
+     1. Automatically inject the trading interface when users navigate to meme coin pages
+     2. Extract the token contract address from the URL path (/meme/{contract})
+     3. Provide seamless, in-context paper trading without leaving the axiom.trade platform
+
+     The permission is narrowly scoped to only meme coin trading pages (/meme/* routes),
+     not the entire axiom.trade domain. Without this permission, the extension cannot
+     function as designed - users expect the trading overlay to appear automatically
+     when viewing meme coins, similar to how developer tools or price tracking extensions work.
