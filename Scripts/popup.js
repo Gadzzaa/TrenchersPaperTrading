@@ -170,7 +170,7 @@ function scheduleReconnect() {
 function disconnectPopup(logout = false) {
   // Clear all managed timers
   clearAllTimers();
-  
+
   countdownResets = null;
   healthCheckInterval = null;
   reconnectTimeout = null;
@@ -546,7 +546,7 @@ function renderToken(token) {
   // Security: Sanitize user-provided data
   const safeName = sanitizeText(token.name);
   const safeSymbol = sanitizeText(token.symbol);
-  const safeAmount = sanitizeText(token.amount);
+  const safeAmount = sanitizeText(convertToKMB(token.amount));
   const safeImagePath = sanitizeText(token.imagePath);
 
   button.innerHTML = `
@@ -554,7 +554,7 @@ function renderToken(token) {
       <img src="${safeImagePath}" class="tknImageFile" onerror="this.src='Images/solana-sol-logo.png'" />
     </div>
     <div class="tknInfo">
-      <p class="tknName">${safeName}</p>
+      <p class="tknName" style="overflow: hidden">${safeName}</p>
       <p class="tknValue">${safeAmount} ${safeSymbol}</p>
     </div>
     <p class="tknClickTxt">Click to open</p>
@@ -719,4 +719,16 @@ export function showDialog({ title, message, type }) {
         break;
     }
   });
+}
+
+function convertToKMB(num) {
+  if (num >= 1e9) {
+    return (num / 1e9).toFixed(2) + "B";
+  } else if (num >= 1e6) {
+    return (num / 1e6).toFixed(2) + "M";
+  } else if (num >= 1e3) {
+    return (num / 1e3).toFixed(2) + "K";
+  } else {
+    return num.toFixed(2);
+  }
 }
