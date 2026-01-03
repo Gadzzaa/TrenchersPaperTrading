@@ -107,6 +107,67 @@ export async function isLatestVersion() {
   }
 }
 
+export async function upgradeSubscription() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/create-checkout-session`, {
+      method: "POST",
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({
+        lookup_key: "pro_monthly",
+      }),
+    });
+    switch (response.status) {
+      case 401:
+        throw new Error("Unauthorized. Please log in again.");
+      case 404:
+        throw new Error("Not found.");
+      case 429:
+        throw new Error("Too many requests. Please try again later.");
+      case 500:
+      case 501:
+      case 502:
+        throw new Error(
+          "Server is currently unreachable. Please check your connection or try again later.",
+        );
+    }
+
+    const { url } = await response.json();
+    chrome.tabs.create({ url });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+  }
+}
+
+export async function manageSubscription() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/create-portal-session`, {
+      method: "POST",
+      headers: await getAuthHeaders(),
+    });
+    switch (response.status) {
+      case 401:
+        throw new Error("Unauthorized. Please log in again.");
+      case 404:
+        throw new Error("Not found.");
+      case 429:
+        throw new Error("Too many requests. Please try again later.");
+      case 500:
+      case 501:
+      case 502:
+        throw new Error(
+          "Server is currently unreachable. Please check your connection or try again later.",
+        );
+    }
+
+    const { url } = await response.json();
+    chrome.tabs.create({ url });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+  }
+}
+
 // PNLHandler.js
 export async function getTradeLog() {
   try {

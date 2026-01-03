@@ -7,6 +7,8 @@ import {
   fetchPopupData,
   healthCheck,
   isLatestVersion,
+  upgradeSubscription,
+  manageSubscription,
 } from "./API.js";
 import { getDebugMode, setDebugMode } from "../config.js";
 import {
@@ -35,6 +37,7 @@ let tokenListContainer,
   defaultButton,
   pnlData,
   usernameInput,
+  nextPaymentText,
   passwordInput;
 let healthCheckInterval = null;
 let reconnectTimeout = null;
@@ -200,6 +203,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   accountResets = document.getElementById("resets");
   resetsWhenText = document.getElementById("resetsWhenText");
   subscriptionType = document.getElementById("subscriptionType");
+  nextPaymentText = document.getElementById("nextPaymentText");
   subscriptionNextPayment = document.getElementById("subscriptionStatus");
   subscriptionPrice = document.getElementById("price");
   subscriptionMethod = document.getElementById("method");
@@ -208,6 +212,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const registerButton = document.getElementById("registerButton");
   const logoutButton = document.getElementById("logoutButton");
   const resetButton = document.getElementById("resetButton");
+  const upgradeButton = document.getElementById("upgradeButton");
+  const manageButton = document.getElementById("manageButton");
 
   await init();
 
@@ -355,6 +361,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  upgradeButton.addEventListener("click", async () => {
+    const interval = startLoadingDots(upgradeButton);
+    await upgradeSubscription().catch((err) => {
+      showDialog({
+        title: "Upgrade Failed",
+        message: err.message || "An error occurred during upgrade.",
+        type: "Info",
+      }).finally(() => {
+        stopLoadingDots(upgradeButton, interval);
+      });
+    });
+  });
+
+  manageButton.addEventListener("click", async () => {
+    const interval = startLoadingDots(manageButton);
+    await manageSubscription().catch((err) => {
+      showDialog({
+        title: "Manage Failed.",
+        message: err.message || "An error occurred during manage.",
+        type: "Info",
+      }).finally(() => {
+        stopLoadingDots(manageButton, interval);
+      });
+    });
+  });
+
   // Disable arrow keys
   document.addEventListener("keydown", (e) => {
     const scrollKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
@@ -473,12 +505,25 @@ async function loadAPIData() {
   accountId.textContent = userId;
   accountResets.textContent = resets.resetsNumber + " / 5";
   console.log("Last reset:", resets.lastReset);
-  subscriptionType.textContent = subscription.status;
-  subscriptionNextPayment.textContent = subscription.expiresAt;
+  subscriptionType.textContent = capitalize(subscription.status);
+  subscriptionNextPayment.textContent = "";
+  if (subscription.currentPeriodEnd) {
+    if (subscription.cancelAtPeriodEnd)
+      nextPaymentText.textContent = "Expires: ";
+    subscriptionNextPayment.textContent = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(new Date(subscription.currentPeriodEnd));
+  }
+
   subscriptionPrice.textContent = `${subscription.currency}${parseFloat(subscription.price).toFixed(2)}`;
-  subscriptionMethod.textContent = subscription.paymentMethodType;
+  subscriptionMethod.textContent = capitalize(subscription.paymentMethodType);
   versionInfo.textContent = version;
   startCountdown(resets.lastReset);
+}
+function capitalize(s) {
+  return s && String(s[0]).toUpperCase() + String(s).slice(1);
 }
 function getTimeUntilNextReset(lastReset) {
   const last = new Date(lastReset);
