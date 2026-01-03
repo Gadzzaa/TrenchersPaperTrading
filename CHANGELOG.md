@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.8.0...v1.8.1) (2026-01-03)
+
+
+### Bug Fixes
+
+* Restrict premium features to premium ([4b2a911](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/4b2a911dd17afa48fd182b8ba4126555ddcac9d8))
+
 # [1.8.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.7.0...v1.8.0) (2026-01-03)
 
 

@@ -1,7 +1,7 @@
 {
   "name": "TrenchersPaperTrading",
   "description": "Trenchers Paper Trading is a meme coin paper trading platform built for practicing your trading skills before risking real money.",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "manifest_version": 3,
   "permissions": [
     "storage"
