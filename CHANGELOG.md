@@ -1,3 +1,15 @@
+# [1.8.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.7.0...v1.8.0) (2026-01-03)
+
+
+### Bug Fixes
+
+* Switching accounts doesnt reset text ([b86fc41](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/b86fc4184cc7ef3fd8a1d2ecfbaf79756de21f75))
+
+
+### Features
+
+* Ability to subscribe ([f94617a](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/f94617ab9196dc007462fc5fa90845c5487bd389))
+
 # [1.7.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.6.1...v1.7.0) (2025-11-24)
 
 
