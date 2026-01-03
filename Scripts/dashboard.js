@@ -120,6 +120,16 @@ async function initDashboard() {
       throw new Error("WebSocket connection failed: " + error.message);
     });
 
+  let boughtText = document.getElementById("boughtText");
+  let soldText = document.getElementById("soldText");
+  let holdText = document.getElementById("holdText");
+  let pnlText = document.getElementById("pnlText");
+
+  boughtText.innerText = "0.0";
+  soldText.innerText = "0.0";
+  holdText.innerText = "0.0";
+  pnlText.innerText = "+0.0 (0.00%)";
+
   document.body.style.removeProperty("pointer-events");
 
   clearInterval(updateInterval);
