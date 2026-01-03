@@ -39,6 +39,7 @@ let tokenListContainer,
   usernameInput,
   nextPaymentText,
   passwordInput;
+let isPremium = false;
 let healthCheckInterval = null;
 let reconnectTimeout = null;
 let countdownResets = null;
@@ -485,8 +486,8 @@ async function loadAPIData() {
     version,
     realizedPNL,
   } = popupData;
-  console.log("Popup Data:", popupData);
   let subscription = subscriptionInfo.subscription;
+  isPremium = subscriptionInfo?.premium == true;
   if (!userId) throw new Error("No user ID returned from API");
   if (!username) throw new Error("No username returned from API");
   if (resets == null) throw new Error("No resets count returned from API");
@@ -521,6 +522,7 @@ async function loadAPIData() {
   subscriptionMethod.textContent = capitalize(subscription.paymentMethodType);
   versionInfo.textContent = version;
   startCountdown(resets.lastReset);
+  applyPremiumUI(isPremium);
 }
 function capitalize(s) {
   return s && String(s[0]).toUpperCase() + String(s).slice(1);
@@ -764,6 +766,23 @@ export function showDialog({ title, message, type }) {
         break;
     }
   });
+}
+
+function applyPremiumUI(isPremium) {
+  const saveWindowBox = document.getElementById("saveWindowBox");
+  const pnlSlider = document.getElementById("pnlSlider");
+
+  if (!isPremium) {
+    saveWindowBox.checked = false;
+    saveWindowBox.disabled = true;
+    pnlSlider.disabled = true;
+
+    saveWindowBox.title = "Premium feature";
+    pnlSlider.title = "Premium feature";
+  } else {
+    saveWindowBox.disabled = false;
+    pnlSlider.disabled = false;
+  }
 }
 
 function convertToKMB(num) {
