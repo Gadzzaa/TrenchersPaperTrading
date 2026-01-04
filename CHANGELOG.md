@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.8.1...v1.9.0) (2026-01-04)
+
+
+### Features
+
+* Save Premium settings to DB ([a7f8db5](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/a7f8db57810a6da43bbe3402c3aba6d06b9e38f4))
+
 ## [1.8.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.8.0...v1.8.1) (2026-01-03)
 
 
