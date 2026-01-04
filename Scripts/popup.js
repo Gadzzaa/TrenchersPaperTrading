@@ -9,6 +9,8 @@ import {
   isLatestVersion,
   upgradeSubscription,
   manageSubscription,
+  saveSettings,
+  getSettings,
 } from "./API.js";
 import { getDebugMode, setDebugMode } from "../config.js";
 import {
@@ -83,22 +85,6 @@ const settings = [
         `${value / 10}s`,
       );
       setQualityPreset(value);
-    },
-  },
-  {
-    key: "saveWindowPos",
-    default: false,
-    apply: (value) => {
-      const checkbox = document.getElementById("saveWindowBox");
-      if (checkbox) checkbox.checked = value;
-    },
-  },
-  {
-    key: "pnlSlider",
-    default: 500,
-    apply: (value) => {
-      const slider = document.getElementById("pnlSlider");
-      if (slider) slider.value = value / 100;
     },
   },
   {
@@ -419,12 +405,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     chrome.storage.local.set({ animation: this.value });
   });
 
-  saveWindowBox.addEventListener("change", (e) => {
-    chrome.storage.local.set({ saveWindowPos: e.target.checked });
+  saveWindowBox.addEventListener("change", () => {
+    saveCurrentSettings();
   });
 
   pnlSlider.addEventListener("input", function () {
-    chrome.storage.local.set({ pnlSlider: this.value * 100 });
+    saveCurrentSettings();
   });
 
   debugButton.addEventListener("click", () => {
@@ -521,6 +507,26 @@ async function loadAPIData() {
   subscriptionPrice.textContent = `${subscription.currency}${parseFloat(subscription.price).toFixed(2)}`;
   subscriptionMethod.textContent = capitalize(subscription.paymentMethodType);
   versionInfo.textContent = version;
+
+  //Settings
+  try {
+    const settings = await getSettings();
+    applyPremiumSettings("saveWindowPos", settings.saveWindowPos, false);
+    applyPremiumSettings(
+      "pnlRefreshInterval",
+      settings.pnlRefreshInterval,
+      500,
+    );
+
+    console.log("Settings loaded:", settings);
+  } catch (err) {
+    console.warn("Using default settings due to error:", err);
+
+    // Fallback to defaults if backend fails
+    applyPremiumSettings("saveWindowPos", false);
+    applyPremiumSettings("pnlRefreshInterval", 500);
+  }
+
   startCountdown(resets.lastReset);
   applyPremiumUI(isPremium);
 }
@@ -783,6 +789,46 @@ function applyPremiumUI(isPremium) {
     saveWindowBox.disabled = false;
     pnlSlider.disabled = false;
   }
+}
+
+function applyPremiumSettings(key, value, fallback) {
+  if (value === undefined || value === null) {
+    value = fallback;
+  }
+
+  switch (key) {
+    case "saveWindowPos":
+      value = Boolean(value);
+      const checkbox = document.getElementById("saveWindowBox");
+      if (checkbox) checkbox.checked = value;
+      break;
+
+    case "pnlRefreshInterval":
+      value = Number(value);
+      if (isNaN(value)) value = fallback;
+      const slider = document.getElementById("pnlSlider");
+      if (slider) slider.value = value / 100;
+      break;
+  }
+}
+
+function saveCurrentSettings() {
+  const checkbox = document.getElementById("saveWindowBox");
+  const slider = document.getElementById("pnlSlider");
+  let settings = {
+    saveWindowPos: checkbox ? checkbox.checked : false,
+    pnlRefreshInterval: slider ? slider.value * 100 : 500,
+  };
+  saveSettings(settings)
+    .then(() => {
+      console.log("Settings saved:", settings);
+      Object.entries(settings).forEach(([key, value]) =>
+        chrome.storage.local.set({ [key]: value }),
+      );
+    })
+    .catch((err) => {
+      console.error("Failed to save settings:", err);
+    });
 }
 
 function convertToKMB(num) {

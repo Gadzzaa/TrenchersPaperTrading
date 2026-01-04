@@ -773,6 +773,104 @@ export async function sellByPercentage(poolAddress, percentage) {
   }
 }
 
+export async function saveSettings(settings) {
+  try {
+    let response,
+      result,
+      networkError = false;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        response = await fetch(API_BASE_URL + "/save-settings", {
+          method: "POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify(settings),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        result = await response.json();
+        switch (response.status) {
+          case 400:
+            throw new Error("Bad request: " + result.error);
+          case 401:
+            throw new Error("Unauthorized. Please log in again.");
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
+        }
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${result.error || response.statusText}`,
+        );
+      } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          await disableUI("no-internet");
+          networkError = true;
+        }
+        if (attempt === maxAttempts || !networkError)
+          throw new Error("Could not save settings: " + error.message);
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+    throw error;
+  }
+}
+
+export async function getSettings() {
+  try {
+    let response,
+      result,
+      networkError = false;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        response = await fetch(API_BASE_URL + "/get-settings", {
+          method: "GET",
+          headers: await getAuthHeaders(),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        result = await response.json();
+        switch (response.status) {
+          case 400:
+            throw new Error("Bad request: " + result.error);
+          case 401:
+            throw new Error("Unauthorized. Please log in again.");
+          case 500:
+            networkError = true;
+            throw new Error(
+              "Server is currently unreachable. Please check your connection or try again later.",
+            );
+        }
+        if (response?.ok) break;
+        throw new Error(
+          `Unknown error occured: ${result.error || response.statusText}`,
+        );
+      } catch (error) {
+        if (isNetworkError(error)) {
+          console.warn("⚠️ Network offline or server is unreachable:", error);
+          await disableUI("no-internet");
+          networkError = true;
+        }
+        if (attempt === maxAttempts || !networkError)
+          throw new Error("Could not get settings: " + error.message);
+      }
+    }
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    showNotification(getDebugMode() ? "[API.js] " + message : message, "error");
+    throw error;
+  }
+}
+
 async function getAuthHeaders() {
   const sessionToken = await getFromStorage("sessionToken");
   if (!sessionToken) {
