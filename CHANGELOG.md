@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.9.0...v1.10.0) (2026-01-05)
+
+
+### Features
+
+* Subscription Selector ([498f541](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/498f541a629b0dce6e539855d19b081b2dab50ff))
+
 # [1.9.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.8.1...v1.9.0) (2026-01-04)
 
 
