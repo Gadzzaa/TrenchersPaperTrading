@@ -201,6 +201,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const resetButton = document.getElementById("resetButton");
   const upgradeButton = document.getElementById("upgradeButton");
   const manageButton = document.getElementById("manageButton");
+  const monthlyButton = document.getElementById("monthlyButton");
+  const yearlyButton = document.getElementById("yearlyButton");
 
   await init();
 
@@ -349,14 +351,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   upgradeButton.addEventListener("click", async () => {
-    const interval = startLoadingDots(upgradeButton);
-    await upgradeSubscription().catch((err) => {
+    showSubscriptionDiv();
+  });
+
+  monthlyButton.addEventListener("click", async () => {
+    const interval = startLoadingDots(monthlyButton);
+    await upgradeSubscription("monthly").catch((err) => {
       showDialog({
         title: "Upgrade Failed",
         message: err.message || "An error occurred during upgrade.",
         type: "Info",
       }).finally(() => {
-        stopLoadingDots(upgradeButton, interval);
+        stopLoadingDots(monthlyButton, interval);
+        hideSubscriptionDiv();
+      });
+    });
+  });
+
+  yearlyButton.addEventListener("click", async () => {
+    const interval = startLoadingDots(yearlyButton);
+    await upgradeSubscription("yearly").catch((err) => {
+      showDialog({
+        title: "Upgrade Failed",
+        message: err.message || "An error occurred during upgrade.",
+        type: "Info",
+      }).finally(() => {
+        stopLoadingDots(yearlyButton, interval);
+        hideSubscriptionDiv();
       });
     });
   });
@@ -829,6 +850,18 @@ function saveCurrentSettings() {
     .catch((err) => {
       console.error("Failed to save settings:", err);
     });
+}
+
+function showSubscriptionDiv() {
+  const subDiv = document.getElementById("SubscriptionSelectorDiv");
+  subDiv.classList.remove("hidden");
+  subDiv.style.opacity = "1";
+}
+
+function hideSubscriptionDiv() {
+  const subDiv = document.getElementById("SubscriptionSelectorDiv");
+  subDiv.style.opacity = "0";
+  subDiv.classList.add("hidden");
 }
 
 function convertToKMB(num) {

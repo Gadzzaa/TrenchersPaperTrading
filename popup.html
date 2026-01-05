@@ -207,6 +207,35 @@
       </div>
 
       <div id="Account" class="Category menuItem">
+        <div id="SubscriptionSelectorDiv" class="hidden">
+          <div id="subscriptionBackground"></div>
+          <div id="SubscriptionSelector">
+            <p id="subscriptionText" class="header">Choose your plan:</p>
+            <div id="subOptions">
+              <div id="Monthly">
+                <p class="subscriptionSubText">Monthly Subscription</p>
+                <button id="monthlyButton" class="subscriptionOption">
+                  6.99$ / mo
+                </button>
+              </div>
+              <div id="Yearly">
+                <div>
+                  <p class="subscriptionSubText">Yearly Subscription</p>
+                  <p id="subscriptionDiscountText">Save 15%!</p>
+                </div>
+                <button id="yearlyButton" class="subscriptionOption">
+                  69.99$ / mo
+                </button>
+              </div>
+              <!--
+              <button id="closeSubscriptionButton" class="subscriptionOption">
+                Close
+              </button>
+              -->
+            </div>
+          </div>
+        </div>
+
         <div id="accountDetails" class="header">Account Details</div>
         <div class="accountInfo">
           <p class="accountText">Account</p>
@@ -255,6 +284,7 @@
             <button id="upgradeButton">Upgrade</button>
           </div>
         </div>
+
         <div id="accountFooter">
           <div id="contactInfo">
             <p id="helpText">Need Help?</p>

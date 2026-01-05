@@ -107,13 +107,17 @@ export async function isLatestVersion() {
   }
 }
 
-export async function upgradeSubscription() {
+export async function upgradeSubscription(type) {
   try {
+    let lookup_key = "";
+    if (type == "monthly") lookup_key = "pro_monthly";
+    else lookup_key = "pro_yearly";
+
     const response = await fetch(`${API_BASE_URL}/create-checkout-session`, {
       method: "POST",
       headers: await getAuthHeaders(),
       body: JSON.stringify({
-        lookup_key: "pro_monthly",
+        lookup_key: lookup_key,
       }),
     });
     switch (response.status) {
