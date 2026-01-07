@@ -1,4 +1,4 @@
-import { InjectHelper } from "./injectHelper.js";
+import { InjectHelper } from "./InjectHelper.js";
 
 export class RouteHelper {
   #lastPathname = "";

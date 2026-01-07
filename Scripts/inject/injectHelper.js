@@ -1,4 +1,4 @@
-import { DragHelper } from "./dragHelper.js";
+import { DragHelper } from "./DragHelper.js";
 
 export class InjectHelper {
   #appContainer = null;

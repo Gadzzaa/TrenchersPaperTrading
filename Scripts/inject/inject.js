@@ -1,5 +1,5 @@
-import { InjectUtils } from "./inject_utils.js";
-import { RouteHelper } from "./routeHelper.js";
+import { InjectUtils } from "./InjectUtils.js";
+import { RouteHelper } from "./RouteHelper.js";
 // 🚀 Start the app
 
 let routeHelper;
@@ -11,7 +11,7 @@ let routeHelper;
 
     await new Promise((r) => setTimeout(r, 500));
     InjectUtils.injectStylesheet();
-    
+
     // Now safe to start monitoring routes
     routeHelper = new RouteHelper();
     InjectUtils.injectToggleButton(routeHelper);
