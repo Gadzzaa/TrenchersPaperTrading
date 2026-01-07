@@ -8,8 +8,8 @@ import {
   isLatestVersion,
   getPortfolio,
   buyToken,
-  sellByPercentage,
-} from "./API.js";
+  sellToken,
+} from "./backend/API.js";
 
 import {
   setActiveToken,
@@ -305,7 +305,7 @@ function handleActionButtonClick(button) {
         setActiveToken(poolAddress);
       }
       if (action === "sell") {
-        const result = await sellByPercentage(poolAddress, dataAmount);
+        const result = await sellToken(poolAddress, dataAmount);
         if (!result?.success)
           throw new Error(result.error || "Unknown error occurred.");
         const solReceived = parseFloat(result.solReceived).toFixed(2);
@@ -313,7 +313,7 @@ function handleActionButtonClick(button) {
         await importTradeLog();
       }
     } catch (error) {
-      showNotification(error, "error");
+      handleError(error, "Trade action failed: ");
     } finally {
       await updateBalanceUI(true);
       enableAllTradeButtons(actionButtons);

@@ -11,7 +11,7 @@ import {
   manageSubscription,
   saveSettings,
   getSettings,
-} from "./API.js";
+} from "./backend/API.js";
 import { getDebugMode, setDebugMode } from "../config.js";
 import {
   disableUI,

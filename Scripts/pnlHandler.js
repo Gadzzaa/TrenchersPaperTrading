@@ -1,7 +1,11 @@
-import { showNotification, managedSetInterval, clearManagedInterval } from "./utils.js";
+import {
+  showNotification,
+  managedSetInterval,
+  clearManagedInterval,
+} from "./utils.js";
 import { getDebugMode } from "../config.js";
 import { getFromStorage, internetConnection } from "./utils.js";
-import { getTradeLog } from "./API.js";
+import { getTradeLog } from "./backend/API.js";
 import CONFIG from "../config.js";
 const openPositions = [];
 let currentPool = null;
@@ -148,8 +152,10 @@ export async function connectWebSocket() {
       if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         // Exponential backoff: delay = baseDelay * 2^attempts
         const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts);
-        console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
-        
+        console.log(
+          `Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`,
+        );
+
         setTimeout(() => {
           reconnectAttempts++;
           connectWebSocket().catch((err) => {
@@ -157,7 +163,9 @@ export async function connectWebSocket() {
           });
         }, delay);
       } else {
-        console.error("Max reconnection attempts reached. Disconnecting dashboard.");
+        console.error(
+          "Max reconnection attempts reached. Disconnecting dashboard.",
+        );
         const { disconnectDashboard } = await import("./dashboard.js");
         disconnectDashboard();
       }
