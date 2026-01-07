@@ -1,3 +1,4 @@
+import { getDebugMode } from "../config.js";
 // Constants
 let spinnerOverlay;
 let spinnerText;
@@ -11,19 +12,23 @@ let hidePopupFn;
 
 // Security: Sanitize text to prevent XSS
 export function sanitizeText(text) {
-  if (typeof text !== 'string') {
+  if (typeof text !== "string") {
     text = String(text);
   }
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
 
 // Security: Validate numeric input
-export function validateNumericInput(value, min = 0, max = Number.MAX_SAFE_INTEGER) {
+export function validateNumericInput(
+  value,
+  min = 0,
+  max = Number.MAX_SAFE_INTEGER,
+) {
   const num = parseFloat(value);
   if (isNaN(num)) {
-    throw new Error('Invalid numeric value');
+    throw new Error("Invalid numeric value");
   }
   if (num < min || num > max) {
     throw new Error(`Value must be between ${min} and ${max}`);
@@ -32,7 +37,11 @@ export function validateNumericInput(value, min = 0, max = Number.MAX_SAFE_INTEG
 }
 
 // Stability: Async error handler wrapper
-export async function safeAsync(fn, fallback = null, errorMessage = 'Operation failed') {
+export async function safeAsync(
+  fn,
+  fallback = null,
+  errorMessage = "Operation failed",
+) {
   try {
     return await fn();
   } catch (error) {
@@ -49,7 +58,7 @@ const activeTimers = new Set();
 
 export function managedSetInterval(callback, delay) {
   const id = setInterval(callback, delay);
-  activeTimers.add({ type: 'interval', id });
+  activeTimers.add({ type: "interval", id });
   return id;
 }
 
@@ -58,14 +67,14 @@ export function managedSetTimeout(callback, delay) {
     callback();
     activeTimers.delete(id);
   }, delay);
-  activeTimers.add({ type: 'timeout', id });
+  activeTimers.add({ type: "timeout", id });
   return id;
 }
 
 export function clearManagedInterval(id) {
   clearInterval(id);
   for (const timer of activeTimers) {
-    if (timer.type === 'interval' && timer.id === id) {
+    if (timer.type === "interval" && timer.id === id) {
       activeTimers.delete(timer);
       break;
     }
@@ -75,7 +84,7 @@ export function clearManagedInterval(id) {
 export function clearManagedTimeout(id) {
   clearTimeout(id);
   for (const timer of activeTimers) {
-    if (timer.type === 'timeout' && timer.id === id) {
+    if (timer.type === "timeout" && timer.id === id) {
       activeTimers.delete(timer);
       break;
     }
@@ -84,38 +93,13 @@ export function clearManagedTimeout(id) {
 
 export function clearAllTimers() {
   for (const timer of activeTimers) {
-    if (timer.type === 'interval') {
+    if (timer.type === "interval") {
       clearInterval(timer.id);
-    } else if (timer.type === 'timeout') {
+    } else if (timer.type === "timeout") {
       clearTimeout(timer.id);
     }
   }
   activeTimers.clear();
-}
-
-// Stability: Simple rate limiter
-const rateLimiters = new Map();
-
-export function rateLimit(key, maxCalls = 5, windowMs = 1000) {
-  const now = Date.now();
-  
-  if (!rateLimiters.has(key)) {
-    rateLimiters.set(key, []);
-  }
-  
-  const calls = rateLimiters.get(key);
-  
-  // Remove calls outside the window
-  const validCalls = calls.filter(timestamp => now - timestamp < windowMs);
-  
-  if (validCalls.length >= maxCalls) {
-    return false; // Rate limit exceeded
-  }
-  
-  validCalls.push(now);
-  rateLimiters.set(key, validCalls);
-  
-  return true; // Call allowed
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -124,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
   notificationPopup = document.getElementById("notificationPopup");
   notificationText = document.getElementById("notificationText");
   chrome.storage.local.get("volume", ({ volume }) => {
-    if (!volume) volume = 1.0;
+    if (!volume) volume = 0.2; // TODO: Temporary until i fix the get volume from storage
     audioVolume = volume;
   });
 
@@ -163,8 +147,22 @@ export function showButtonLoading(button) {
   `;
 }
 
+export function handleError(
+  error,
+  context = "An error occurred",
+  notif = {
+    show: true,
+    sound: true,
+  },
+) {
+  let errorMsg = error instanceof Error ? error.message : String(error);
+  console.error(`${context}:`, errorMsg);
+  if (notif.show)
+    showNotification(`${context}: ${errorMsg}`, "error", notif.sound, error);
+}
+
 // NotificationSystem.js
-export function showNotification(message, type, sound = true) {
+export function showNotification(message, type, sound = true, error = null) {
   const typeClasses = {
     success: "✅",
     error: "❌",
@@ -173,7 +171,13 @@ export function showNotification(message, type, sound = true) {
 
   // Security: Sanitize message before displaying
   const sanitizedMessage = sanitizeText(message);
-  const fullMessage = typeClasses[type] + " " + sanitizedMessage;
+  const caller = extractErrorLocation(error);
+  let fullMessage = typeClasses[type] + " " + sanitizedMessage;
+  if (type === "error") {
+    fullMessage = getDebugMode()
+      ? `[ ${caller?.file.toString().toUpperCase()}:${caller?.line} ] ${fullMessage}`
+      : fullMessage;
+  }
 
   window.parent.postMessage(
     {
@@ -190,7 +194,6 @@ export function showNotification(message, type, sound = true) {
         break;
       case "error":
         safePlay(type);
-        console.error(sanitizedMessage);
         break;
       case "info":
         break; // No sound
@@ -363,10 +366,13 @@ export function requestCurrentContract() {
     // Listen for response
     function handleMessage(event) {
       // Security: Verify origin is from axiom.trade (parent page)
-      if (!event.origin.includes('axiom.trade') && event.origin !== window.location.origin) {
+      if (
+        !event.origin.includes("axiom.trade") &&
+        event.origin !== window.location.origin
+      ) {
         return;
       }
-      
+
       const { type, contract, requestId: responseId } = event.data;
       if (type === "CONTRACT_RESPONSE" && responseId === requestId) {
         window.removeEventListener("message", handleMessage);
@@ -376,7 +382,7 @@ export function requestCurrentContract() {
     }
 
     window.addEventListener("message", handleMessage);
-    
+
     // Add timeout to prevent orphaned listeners
     timeoutId = setTimeout(() => {
       window.removeEventListener("message", handleMessage);
@@ -419,4 +425,18 @@ export function removeFromStorage(key) {
   return new Promise((resolve) => {
     chrome.storage.local.remove([key], () => resolve());
   });
+}
+
+function extractErrorLocation(error, depth = 2) {
+  if (!error?.stack) return null;
+
+  const line = error.stack.split("\n")[depth];
+
+  const match = line?.match(/\(?(.+):(\d+):(\d+)\)?$/);
+  if (!match) return null;
+
+  return {
+    file: match[1].split("/").pop(),
+    line: Number(match[2]),
+  };
 }
