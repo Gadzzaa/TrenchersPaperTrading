@@ -1,5 +1,4 @@
 import CONFIG from "../../config.js";
-import { disableUI } from "../utils.js";
 
 const DEFAULT_TIMEOUT = 1000 * 5;
 const API_BASE_URL = CONFIG.API_BASE_URL;
@@ -105,9 +104,9 @@ export class BackendRequest {
         );
       } catch (error) {
         if (this.isNetworkError(error)) {
-          await disableUI("no-internet");
           chrome.runtime.sendMessage({ type: "no-internet" });
           networkError = true;
+          // TODO: disable UI with chrome.sendMessage to dashboard and popup
           throw new Error("Network is offline or server is unreachable.");
         }
         if (attempt === this.requestData.retries)
