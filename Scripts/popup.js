@@ -5,14 +5,13 @@ import {
   logout,
   checkSession,
   fetchPopupData,
-  healthCheck,
   isLatestVersion,
   upgradeSubscription,
   manageSubscription,
   saveSettings,
   getSettings,
 } from "./backend/API.js";
-import { getDebugMode, setDebugMode } from "../config.js";
+import { setDebugMode } from "../config.js";
 import {
   disableUI,
   enableUI,
@@ -20,7 +19,6 @@ import {
   stopLoadingDots,
   sanitizeText,
   managedSetInterval,
-  managedSetTimeout,
   clearAllTimers,
 } from "./utils.js";
 let tokenListContainer,
@@ -42,10 +40,9 @@ let tokenListContainer,
   nextPaymentText,
   passwordInput;
 let isPremium = false;
-let healthCheckInterval = null;
-let reconnectTimeout = null;
 let countdownResets = null;
 let initializing = false;
+let runtimeMessageListener = null;
 const barWidth = 30;
 const tokens = [];
 const settings = [
@@ -109,23 +106,17 @@ async function init() {
     });
   });
 
-  const healthy = await healthCheck();
-  if (!healthy) {
-    await disableUI("no-internet");
-    scheduleReconnect();
-    initializing = false;
-    return;
-  }
-
-  if (healthCheckInterval) clearInterval(healthCheckInterval);
-  healthCheckInterval = managedSetInterval(async () => {
-    const healthy = await healthCheck();
-    console.log("Health check:", healthy ? "OK" : "FAILED");
-    if (!healthy) {
-      console.warn("Lost connection — disconnecting popup.");
-      disconnectPopup();
+  let healthy = false;
+  chrome.runtime.sendMessage({ type: "HEALTH_PING" }, async (response) => {
+    healthy = response.status;
+    if (healthy == null) return;
+    if (healthy == false) {
+      console.warn("Health check failed — retrying later.");
+      await disableUI("no-internet");
+      initializing = false;
+      return;
     }
-  }, 5000);
+  });
 
   const validVersion = await isLatestVersion();
   if (!validVersion) {
@@ -149,23 +140,11 @@ async function init() {
   initializing = false;
 }
 
-function scheduleReconnect() {
-  if (reconnectTimeout) return;
-  reconnectTimeout = managedSetTimeout(() => {
-    reconnectTimeout = null;
-    init();
-  }, 2000);
-}
-
-function disconnectPopup(logout = false) {
+function disconnectPopup() {
   // Clear all managed timers
   clearAllTimers();
 
   countdownResets = null;
-  healthCheckInterval = null;
-  reconnectTimeout = null;
-
-  if (!logout) scheduleReconnect();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -203,8 +182,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const manageButton = document.getElementById("manageButton");
   const monthlyButton = document.getElementById("monthlyButton");
   const yearlyButton = document.getElementById("yearlyButton");
-
-  await init();
 
   loginButton.addEventListener("click", async () => {
     const interval = startLoadingDots(loginButton);
@@ -279,7 +256,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .then(() => {
         moveIndicator(defaultButton);
         setDisplay(defaultButton.dataset.index);
-        disconnectPopup(true);
+        disconnectPopup();
       })
       .catch((err) => {
         showDialog({
@@ -479,6 +456,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       setQualityPreset(changes.animation.newValue);
     }
   });
+  if (runtimeMessageListener) {
+    chrome.runtime.onMessage.removeListener(runtimeMessageListener);
+  }
+
+  runtimeMessageListener = (message, sender, sendResponse) => {
+    if (message.type === "STATUS_UPDATE") {
+      console.log("Health status update received:", message.status);
+      if (!message.status) {
+        disconnectPopup();
+        disableUI("no-internet");
+      } else init();
+    }
+  };
+  chrome.runtime.onMessage.addListener(runtimeMessageListener);
+
+  await init();
 });
 async function loadAPIData() {
   tokenListContainer.innerHTML = "";

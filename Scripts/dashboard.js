@@ -3,7 +3,6 @@ import { applyPreset, getUsingPreset } from "./presetManager.js";
 import { showNotification } from "./utils.js";
 
 import {
-  healthCheck,
   checkSession,
   isLatestVersion,
   getPortfolio,
@@ -27,10 +26,8 @@ import {
   showButtonLoading,
   enableUI,
   disableUI,
-  getFromStorage,
   internetConnection,
   managedSetInterval,
-  managedSetTimeout,
   clearAllTimers,
 } from "./utils.js";
 
@@ -38,10 +35,8 @@ let currentContract = null;
 let currentPreset = null;
 let ws = null;
 let updateInterval = null;
-let healthCheckInterval = null;
 let initializing = false;
 let fetchingBalance = false;
-let reconnectTimeout = null;
 
 // Event listener tracking for cleanup
 let storageChangeListener = null;
@@ -80,24 +75,17 @@ async function initDashboard() {
     });
   });
 
-  const healthy = await healthCheck();
-  if (!healthy) {
-    console.warn("Health check failed — retrying later.");
-    await disableUI("no-internet");
-    scheduleReconnect();
-    initializing = false;
-    return;
-  }
-
-  clearInterval(healthCheckInterval);
-  healthCheckInterval = managedSetInterval(async () => {
-    const healthy = await healthCheck();
-    if (!healthy) {
-      console.warn("Lost connection — disconnecting dashboard.");
-      disconnectDashboard();
+  let healthy = false;
+  chrome.runtime.sendMessage({ type: "HEALTH_PING" }, async (response) => {
+    healthy = response.status;
+    if (healthy == null) return;
+    if (healthy == false) {
+      console.warn("Health check failed — retrying later.");
+      await disableUI("no-internet");
+      initializing = false;
+      return;
     }
-  }, 5000);
-
+  });
   const validVersion = await isLatestVersion();
   if (!validVersion) {
     console.warn("Outdated version detected.");
@@ -170,7 +158,7 @@ async function initDashboard() {
   initializing = false;
 }
 
-export async function disconnectDashboard(logout = false) {
+export async function disconnectDashboard() {
   console.log("[TrenchersPT] 🔴 Disconnecting dashboard...");
 
   document.body.style.pointerEvents = "none";
@@ -179,8 +167,6 @@ export async function disconnectDashboard(logout = false) {
   clearAllTimers();
 
   updateInterval = null;
-  healthCheckInterval = null;
-  reconnectTimeout = null;
 
   currentContract = null;
 
@@ -188,20 +174,10 @@ export async function disconnectDashboard(logout = false) {
     disconnectWebSocket();
     ws = null;
   }
-
-  if (!logout) scheduleReconnect();
-}
-
-function scheduleReconnect() {
-  if (reconnectTimeout) return;
-  reconnectTimeout = managedSetTimeout(() => {
-    reconnectTimeout = null;
-    initDashboard();
-  }, 2000);
 }
 
 async function logout() {
-  disconnectDashboard(true);
+  disconnectDashboard();
   clearPositions();
   await disableUI("no-session");
 }
@@ -262,6 +238,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (message.type === "logoutDashboard") {
         console.log("User logged out, disabling dashboard...");
         logout();
+      }
+      if (message.type === "STATUS_UPDATE") {
+        console.log("Health status update received:", message.status);
+        if (!message.status) {
+          disconnectDashboard();
+          disableUI("no-internet");
+        } else initDashboard();
       }
     };
     chrome.runtime.onMessage.addListener(runtimeMessageListener);
