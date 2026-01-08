@@ -12,29 +12,6 @@ import { BackendHelpers } from "./BackendHelpers.js";
 const slippagePercentage = 0;
 const feeAmount = 0;
 
-let lastHealthCheckTime;
-let healthCheckInterval = 15;
-let lastHealthCheckStatus = false;
-
-export async function healthCheck() {
-  if (Date.now() - lastHealthCheckTime < healthCheckInterval)
-    return lastHealthCheckStatus;
-
-  try {
-    const response = await new BackendRequest()
-      .addEndpoint("/health")
-      .addMethod("GET")
-      .build();
-    lastHealthCheckStatus = response.status == "ok" ? true : false;
-    lastHealthCheckTime = Date.now();
-    return lastHealthCheckStatus;
-  } catch (error) {
-    handleError(error, "Health check failed: ", { show: false });
-    return false;
-  }
-}
-
-// SessionChecker.js
 export async function checkSession() {
   try {
     const response = await new BackendRequest()
