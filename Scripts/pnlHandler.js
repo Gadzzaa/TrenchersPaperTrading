@@ -5,7 +5,7 @@ import {
 } from "./utils.js";
 import { getDebugMode } from "../config.js";
 import { getFromStorage, internetConnection } from "./utils.js";
-import { getTradeLog } from "./backend/API.js";
+import { DataManager } from "./Account/Core/DataManager.js";
 import CONFIG from "../config.js";
 const openPositions = [];
 let currentPool = null;
@@ -362,9 +362,11 @@ function updateDOM(
   holdText.textContent = `${(quantityHeld * currentPrice).toFixed(2)}`;
 }
 
-export async function importTradeLog() {
+export async function importTradeLog(variables) {
   try {
-    let tradeLog = await getTradeLog();
+    const dataManager = new DataManager(variables);
+    let tradeLog = await dataManager.getTradeLog();
+    if (!tradeLog) return;
     tradeLog = tradeLog.tokens;
     console.log("Importing trade log:", tradeLog);
     if (!tradeLog || !Array.isArray(tradeLog) || tradeLog.length === 0) {
