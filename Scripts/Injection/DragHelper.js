@@ -1,4 +1,9 @@
 export class DragHelper {
+  /**
+   * @param {HTMLDivElement} target - Container to be made draggable
+   * @param {HTMLDivElement} handle - Element that initiates the drag
+   * @param {HTMLIframeElement} iframe - Element to disable pointer events on during drag
+   */
   static makeDraggable(target, handle, iframe) {
     const helper = {
       offsetX: 0,
@@ -7,7 +12,7 @@ export class DragHelper {
       target,
       handle,
       iframe,
-      dragOverlay: null
+      dragOverlay: null,
     };
 
     helper.dragOverlay = document.createElement("div");
@@ -87,7 +92,9 @@ export class DragHelper {
 
     helper.handle.addEventListener("dblclick", resetPosition);
     helper.handle.addEventListener("pointerdown", startDrag);
-    helper.dragOverlay.addEventListener("pointermove", onDrag, { passive: true });
+    helper.dragOverlay.addEventListener("pointermove", onDrag, {
+      passive: true,
+    });
     helper.dragOverlay.addEventListener("pointerup", endDrag);
 
     document.body.appendChild(helper.dragOverlay);

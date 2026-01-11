@@ -4,10 +4,17 @@ export class RouteHelper {
   #lastPathname = "";
   #injHelper = null;
 
+  /**
+   * @returns {HTMLDivElement} -
+   */
   getAppContainer() {
     return this.#injHelper?.getAppContainer();
   }
 
+  /**
+   * @param {string} baseSegment - Trim URL Segment
+   * @returns {string} - Decoded URL Segment after baseSegment
+   */
   static getURLSegmentAfter(baseSegment) {
     const parts = new URL(window.location.href).pathname
       .split("/")
@@ -18,6 +25,9 @@ export class RouteHelper {
       : null;
   }
 
+  /**
+   * Handles route changes and injects or removes the app accordingly.
+   * */
   handleRouteChange() {
     const currentPath = location.pathname;
     const isOnMemePage = currentPath.startsWith("/meme");
@@ -37,6 +47,9 @@ export class RouteHelper {
     }
   }
 
+  /**
+   * Monitors route changes in a single-page.
+   * */
   monitorRouteChanges() {
     const observer = new MutationObserver(() => {
       if (location.pathname !== this.#lastPathname) {
@@ -64,11 +77,17 @@ export class RouteHelper {
     this.handleRouteChange();
   }
 
+  /**
+   * Hides the app container.
+   * */
   handleHideApp() {
     if (!this.#injHelper) return;
     this.#injHelper.hideApp();
   }
 
+  /**
+   * Hides the app container.
+   * */
   hideApp() {
     this.handleHideApp();
   }

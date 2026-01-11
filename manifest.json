@@ -18,7 +18,7 @@
   "content_scripts": [
     {
       "matches": ["https://axiom.trade/*"],
-      "js": ["Scripts/inject/inject.bundle.js"]
+      "js": ["Scripts/Injection/inject.bundle.js"]
     }
   ],
   "web_accessible_resources": [

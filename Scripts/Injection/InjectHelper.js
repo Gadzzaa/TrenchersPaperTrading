@@ -2,6 +2,13 @@ import { DragHelper } from "./DragHelper.js";
 
 export class InjectHelper {
   #appContainer = null;
+
+  /**
+   * Creates app container, grabs app position, creates iframe and appends it to the body.
+   * Loads settings and creates settings event listeners.
+   * Creates notification container and move handle for dragging.
+   * Fades in the app container.
+   * */
   constructor() {
     try {
       this.createAppContainer();
@@ -24,10 +31,16 @@ export class InjectHelper {
     }
   }
 
+  /**
+   * @returns {HTMLDivElement} - App container element.
+   */
   getAppContainer() {
     return this.#appContainer;
   }
 
+  /**
+   * Sets app container display to none after fading out.
+   * */
   hideApp() {
     if (this.#appContainer) {
       this.#appContainer.style.opacity = "0";
@@ -35,12 +48,18 @@ export class InjectHelper {
     }
   }
 
+  /**
+   * Removes app container from the DOM.
+   * */
   removeApp() {
     if (this.#appContainer) {
       this.#appContainer.remove();
     }
   }
 
+  /**
+   * Creates the main app container with styles.
+   * */
   createAppContainer() {
     this.#appContainer = document.createElement("div");
     this.#appContainer.id = "TrenchersPaperTrading";
@@ -60,6 +79,10 @@ export class InjectHelper {
     });
   }
 
+  /**
+   * Creates the iframe for the app and appends it to the app container.
+   * @returns {HTMLIFrameElement} -
+   */
   createAppIframe() {
     const appIframe = document.createElement("iframe");
     appIframe.src = chrome.runtime.getURL("dashboard.html");

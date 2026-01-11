@@ -1,4 +1,7 @@
 export class InjectUtils {
+  /**
+   * @param {RouteHelper} routeHelper
+   */
   static injectToggleButton(routeHelper) {
     let toggleButton = this.createToggleButton();
 
@@ -9,6 +12,9 @@ export class InjectUtils {
     document.body.appendChild(toggleButton);
   }
 
+  /**
+   * @returns {HTMLButtonElement} -
+   */
   static createToggleButton() {
     const toggleButton = document.createElement("button");
     toggleButton.id = "trenchersToggleBtn";
@@ -19,6 +25,9 @@ export class InjectUtils {
     return toggleButton;
   }
 
+  /**
+   * @param {RouteHelper} routeHelper -
+   */
   static toggleButtonClick(routeHelper) {
     const app = routeHelper?.getAppContainer();
     if (!app) return;
@@ -36,10 +45,17 @@ export class InjectUtils {
     }
   }
 
+  /**
+   * Injects the stylesheet into the document head.
+   * */
   static injectStylesheet() {
     const style = this.createStylesheet();
     document.head.appendChild(style);
   }
+
+  /**
+   * @param {string} message - Notification message to show
+   */
   static showNotification(message) {
     const notification = document.getElementById("notification");
     const notifText = document.getElementById("notifText");
@@ -60,6 +76,13 @@ export class InjectUtils {
     }, 2000);
   }
 
+  /**
+   * @param {number} left -
+   * @param {number} top -
+   * @param {number} width -
+   * @param {number} height -
+   * @returns {boolean} -
+   */
   static isWithinBounds(left, top, width, height) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -73,6 +96,7 @@ export class InjectUtils {
 
   /**
    * Parses a compact number string like "27.9K", "1B", "123M" into a Number.
+   * @param {string} txt - The compact number string to parse.
    */
   static parseCompactNumber(txt) {
     // 1) Make sure we have a string
@@ -102,6 +126,10 @@ export class InjectUtils {
 
     return num * mult;
   }
+
+  /**
+   * @returns {HTMLStyleElement} -
+   */
   static createStylesheet() {
     const style = document.createElement("style");
     style.textContent = `
