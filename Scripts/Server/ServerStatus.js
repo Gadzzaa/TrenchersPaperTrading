@@ -10,11 +10,17 @@ export class ServerStatus {
 
   checking = false;
 
+  /**
+   * Starts health checking the server and notes lastPing
+   * */
   ping() {
     this.lastPing = Date.now();
     this.start();
   }
 
+  /**
+   * Checks for lastPing and if was longer than @IDLE_TIMEOUT stops checking
+   */
   start() {
     if (this.interval) return;
 
@@ -30,6 +36,9 @@ export class ServerStatus {
     this.check();
   }
 
+  /**
+   * Checks the health of the server and updates status if changed
+   * */
   async check() {
     if (this.checking) return;
     this.checking = true;
@@ -55,6 +64,9 @@ export class ServerStatus {
     }
   }
 
+  /**
+   * @returns {Object<boolean>} - Returns the current server status
+   */
   getStatus() {
     return { status: this.status };
   }
