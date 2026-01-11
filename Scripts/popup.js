@@ -1,16 +1,11 @@
-import {
-  resetAccount,
-  login,
-  register,
-  logout,
-  checkSession,
-  fetchPopupData,
-  isLatestVersion,
-  upgradeSubscription,
-  manageSubscription,
-  saveSettings,
-  getSettings,
-} from "./backend/API.js";
+import { Variables } from "./Account/Core/Variables.js";
+import { DataManager } from "./Account/Core/DataManager.js";
+import { AuthManager } from "./Account/Core/AuthManager.js";
+import { ServerValidation } from "./Server/ServerValidation.js";
+import { SubscriptionManager } from "./Account/Core/SubscriptionManager.js";
+import { SettingsManager } from "./Account/Core/SettingsManager.js";
+
+import { getFromStorage } from "./utils.js";
 import { setDebugMode } from "../config.js";
 import {
   disableUI,
@@ -21,6 +16,9 @@ import {
   managedSetInterval,
   clearAllTimers,
 } from "./utils.js";
+
+let variables;
+
 let tokenListContainer,
   indicator,
   usernameText,
@@ -118,7 +116,7 @@ async function init() {
     }
   });
 
-  const validVersion = await isLatestVersion();
+  const validVersion = await ServerValidation.isLatestVersion();
   if (!validVersion) {
     console.warn("Outdated version detected.");
     await disableUI("outdated");
@@ -127,12 +125,24 @@ async function init() {
   }
 
   document.body.style.removeProperty("pointer-events");
-  const validSession = await checkSession();
-  if (!validSession) {
+  let sessionToken = await getFromStorage("sessionToken");
+  if (!sessionToken) {
+    await disableUI("no-session");
+    console.warn("No session token found in storage.");
+    initializing = false;
+    return;
+  }
+  variables = new Variables({ sessionToken });
+  let dataManager = new DataManager(variables);
+
+  const isSessionValid = await dataManager.checkSession();
+  if (!isSessionValid) {
+    console.warn("Session invalid — showing login screen.");
     await disableUI("no-session");
     initializing = false;
     return;
   }
+
   await loadAPIData();
 
   await enableUI();
@@ -185,8 +195,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   loginButton.addEventListener("click", async () => {
     const interval = startLoadingDots(loginButton);
+    variables = new Variables({
+      username: usernameInput.value,
+      password: passwordInput.value,
+    });
+    let authManager = new AuthManager(variables);
 
-    await login(usernameInput.value, passwordInput.value)
+    await authManager
+      .login()
       .then(async () => {
         clearInputFields();
         await init();
@@ -230,7 +246,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       }).then(async (confirmed) => {
         if (!confirmed) return;
         const interval = startLoadingDots(registerButton);
-        await register(usernameInput.value, passwordInput.value, amount)
+        variables = new Variables({
+          username: usernameInput.value,
+          password: passwordInput.value,
+          balance: amount,
+        });
+        let authManager = new AuthManager(variables);
+
+        await authManager
+          .register()
           .then(async () => {
             clearInputFields();
             await init();
@@ -250,9 +274,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
   });
+
   logoutButton.addEventListener("click", async () => {
     const interval = startLoadingDots(logoutButton);
-    await logout()
+    let authManager = new AuthManager(variables);
+
+    await authManager
+      .logout()
       .then(() => {
         moveIndicator(defaultButton);
         setDisplay(defaultButton.dataset.index);
@@ -269,6 +297,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         stopLoadingDots(logoutButton, interval);
       });
   });
+
   resetButton.addEventListener("click", async () => {
     showDialog({
       title: "Start balance",
@@ -295,7 +324,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       }).then(async (confirmed) => {
         if (!confirmed) return;
         const interval = startLoadingDots(resetButton);
-        await resetAccount(amount)
+        let dataManager = new DataManager(variables);
+
+        await dataManager
+          .resetAccount(amount)
           .then(async () => {
             await loadAPIData();
             moveIndicator(defaultButton);
@@ -333,7 +365,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   monthlyButton.addEventListener("click", async () => {
     const interval = startLoadingDots(monthlyButton);
-    await upgradeSubscription("monthly").catch((err) => {
+    let subscriptionManager = new SubscriptionManager(variables);
+    await subscriptionManager.upgradeSubscription("monthly").catch((err) => {
       showDialog({
         title: "Upgrade Failed",
         message: err.message || "An error occurred during upgrade.",
@@ -347,7 +380,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   yearlyButton.addEventListener("click", async () => {
     const interval = startLoadingDots(yearlyButton);
-    await upgradeSubscription("yearly").catch((err) => {
+    let subscriptionManager = new SubscriptionManager(variables);
+    await subscriptionManager.upgradeSubscription("yearly").catch((err) => {
       showDialog({
         title: "Upgrade Failed",
         message: err.message || "An error occurred during upgrade.",
@@ -361,7 +395,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   manageButton.addEventListener("click", async () => {
     const interval = startLoadingDots(manageButton);
-    await manageSubscription().catch((err) => {
+    let subscriptionManager = new SubscriptionManager(variables);
+    await subscriptionManager.manageSubscription().catch((err) => {
       showDialog({
         title: "Manage Failed.",
         message: err.message || "An error occurred during manage.",
@@ -474,9 +509,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   await init();
 });
 async function loadAPIData() {
+  let dataManager = new DataManager(variables);
+  let settingsManager = new SettingsManager(variables);
   tokenListContainer.innerHTML = "";
   tokens.length = 0;
-  const popupData = await fetchPopupData();
+  const popupData = await dataManager.fetchAccountData();
+  console.log("Popup data received:", popupData);
   const {
     userId,
     username,
@@ -524,7 +562,7 @@ async function loadAPIData() {
 
   //Settings
   try {
-    const settings = await getSettings();
+    const settings = await settingsManager.getSettings();
     applyPremiumSettings("saveWindowPos", settings.saveWindowPos, false);
     applyPremiumSettings(
       "pnlRefreshInterval",
@@ -833,7 +871,9 @@ function saveCurrentSettings() {
     saveWindowPos: checkbox ? checkbox.checked : false,
     pnlRefreshInterval: slider ? slider.value * 100 : 500,
   };
-  saveSettings(settings)
+  let settingsManager = new SettingsManager(variables);
+  settingsManager
+    .saveSettings(settings)
     .then(() => {
       console.log("Settings saved:", settings);
       Object.entries(settings).forEach(([key, value]) =>
