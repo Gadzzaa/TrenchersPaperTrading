@@ -13,8 +13,6 @@ import {
   startLoadingDots,
   stopLoadingDots,
   sanitizeText,
-  managedSetInterval,
-  clearAllTimers,
 } from "./utils.js";
 
 let variables;
@@ -151,9 +149,6 @@ async function init() {
 }
 
 function disconnectPopup() {
-  // Clear all managed timers
-  clearAllTimers();
-
   countdownResets = null;
 }
 
@@ -603,7 +598,7 @@ function startCountdown(lastReset) {
     resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
   }
   update(); // initial call
-  countdownResets = managedSetInterval(update, 1000 * 5); // update every 5s
+  countdownResets = setInterval(update, 1000 * 5); // update every 5s
 }
 function setDisplay(index) {
   const carousel = document.querySelector(".pageCarousel");
@@ -648,11 +643,10 @@ function renderToken(token) {
   const button = document.createElement("button");
   button.classList.add("tkn");
 
-  // Security: Sanitize user-provided data
-  const safeName = sanitizeText(token.name);
-  const safeSymbol = sanitizeText(token.symbol);
-  const safeAmount = sanitizeText(convertToKMB(token.amount));
-  const safeImagePath = sanitizeText(token.imagePath);
+  const safeName = token.name;
+  const safeSymbol = token.symbol;
+  const safeAmount = convertToKMB(token.amount);
+  const safeImagePath = token.imagePath;
 
   button.innerHTML = `
     <div class="tknImage">

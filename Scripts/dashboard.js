@@ -7,6 +7,10 @@ import { DataManager } from "./Account/Core/DataManager.js";
 import { ServerValidation } from "./Server/ServerValidation.js";
 import { TransactionManager } from "./Transactions/Core/TransactionManager.js";
 
+import { NotificationManager } from "./Utils/Core/NotificationManager.js";
+import { StorageManager } from "./Utils/Core/StorageManager.js";
+import { ErrorHandler } from "./ErrorHandling/Core/ErrorHandler.js";
+
 import {
   setActiveToken,
   clearPositions,
@@ -20,12 +24,8 @@ import {
   requestHideApp,
   disableAllTradeButtons,
   enableAllTradeButtons,
-  showButtonLoading,
   enableUI,
   disableUI,
-  internetConnection,
-  managedSetInterval,
-  clearAllTimers,
 } from "./utils.js";
 
 let dataManager;
@@ -38,100 +38,14 @@ let updateInterval = null;
 let initializing = false;
 let fetchingBalance = false;
 
-// Event listener tracking for cleanup
-let storageChangeListener = null;
-let runtimeMessageListener = null;
-
-const settings = [
-  {
-    key: "theme",
-    default: "dark",
-    apply: (value) => {
-      document.documentElement.setAttribute("data-theme", value);
-    },
-  },
-  {
-    key: "animation",
-    default: 3,
-    apply: (value) => {
-      document.documentElement.style.setProperty(
-        "--anim-time",
-        `${value / 10}s`,
-      );
-    },
-  },
-];
-
 async function initDashboard() {
   if (initializing) return; // prevent re-entrance
   initializing = true;
 
   console.log("[TrenchersPT] 🟢 Initializing dashboard...");
 
-  settings.forEach(({ key, default: def, apply }) => {
-    chrome.storage.local.get(key, ({ [key]: value }) => {
-      if (value === undefined) value = def;
-      apply(value);
-    });
-  });
-
-  let healthy = false;
-  chrome.runtime.sendMessage({ type: "HEALTH_PING" }, async (response) => {
-    healthy = response.status;
-    if (healthy == null) return;
-    if (healthy == false) {
-      console.warn("Health check failed — retrying later.");
-      await disableUI("no-internet");
-      initializing = false;
-      return;
-    }
-  });
-  const validVersion = await ServerValidation.isLatestVersion();
-  if (!validVersion) {
-    console.warn("Outdated version detected.");
-    await disableUI("outdated");
-    initializing = false;
-    return;
-  }
-
-  let sessionToken = await getFromStorage("sessionToken");
-  if (!sessionToken) {
-    await disableUI("no-session");
-    console.warn("No session token found in storage.");
-    initializing = false;
-    return;
-  }
-  variables = new Variables({ sessionToken });
-  dataManager = new DataManager(variables);
-
-  const isSessionValid = await dataManager.checkSession();
-  if (!isSessionValid) {
-    console.warn("Session invalid — showing login screen.");
-    clearPositions();
-    await disableUI("no-session");
-    initializing = false;
-    return;
-  }
-
-  if (!ws)
-    ws = await connectWebSocket().catch((error) => {
-      throw new Error("WebSocket connection failed: " + error.message);
-    });
-
-  let boughtText = document.getElementById("boughtText");
-  let soldText = document.getElementById("soldText");
-  let holdText = document.getElementById("holdText");
-  let pnlText = document.getElementById("pnlText");
-
-  boughtText.innerText = "0.0";
-  soldText.innerText = "0.0";
-  holdText.innerText = "0.0";
-  pnlText.innerText = "+0.0 (0.00%)";
-
-  document.body.style.removeProperty("pointer-events");
-
   clearInterval(updateInterval);
-  updateInterval = managedSetInterval(async () => {
+  updateInterval = setInterval(async () => {
     if (fetchingBalance) return; // prevent overlap
     fetchingBalance = true;
 
@@ -173,9 +87,6 @@ export async function disconnectDashboard() {
 
   document.body.style.pointerEvents = "none";
 
-  // Clear all managed timers
-  clearAllTimers();
-
   updateInterval = null;
 
   currentContract = null;
@@ -192,79 +103,6 @@ async function logout() {
   await disableUI("no-session");
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    const actionButtons = document.querySelectorAll(
-      "#buyButtons .buyButton, #sellButtons .sellButton",
-    );
-    for (const button of actionButtons) {
-      button.addEventListener("click", handleActionButtonClick(button));
-    }
-
-    currentPreset = getUsingPreset();
-    if (currentPreset == null || currentPreset === "undefined") {
-      applyPreset("preset1");
-    } else applyPreset(currentPreset);
-
-    const closeButton = document.getElementById("Close");
-    closeButton.addEventListener("click", () => {
-      requestHideApp();
-    });
-
-    // Remove existing listeners before adding new ones to prevent duplicates
-    if (storageChangeListener) {
-      chrome.storage.onChanged.removeListener(storageChangeListener);
-    }
-
-    storageChangeListener = (changes, area) => {
-      if (area === "local" && changes.theme) {
-        document.documentElement.setAttribute(
-          "data-theme",
-          changes.theme.newValue,
-        );
-      }
-      if (area === "local" && changes.animation) {
-        document.documentElement.style.setProperty(
-          "--anim-time",
-          `${changes.animation.newValue / 10}s`,
-        );
-      }
-      if (area === "local" && changes.pnlSlider) {
-        changeDelay(changes.updateDelay.newValue);
-      }
-    };
-    chrome.storage.onChanged.addListener(storageChangeListener);
-
-    // Remove existing listeners before adding new ones to prevent duplicates
-    if (runtimeMessageListener) {
-      chrome.runtime.onMessage.removeListener(runtimeMessageListener);
-    }
-
-    runtimeMessageListener = (message, sender, sendResponse) => {
-      if (message.type === "initDashboard") {
-        console.log("User registered, initializing dashboard...");
-        initDashboard();
-      }
-      if (message.type === "logoutDashboard") {
-        console.log("User logged out, disabling dashboard...");
-        logout();
-      }
-      if (message.type === "STATUS_UPDATE") {
-        console.log("Health status update received:", message.status);
-        if (!message.status) {
-          disconnectDashboard();
-          disableUI("no-internet");
-        } else initDashboard();
-      }
-    };
-    chrome.runtime.onMessage.addListener(runtimeMessageListener);
-
-    await initDashboard();
-  } catch (error) {
-    console.error("[TrenchersPT] Initialization error:", error);
-  }
-});
-
 function handleActionButtonClick(button) {
   return async () => {
     const actionButtons = document.querySelectorAll(
@@ -274,7 +112,7 @@ function handleActionButtonClick(button) {
     try {
       if (document.body.classList.contains("edit-mode")) return;
       disableAllTradeButtons(actionButtons);
-      showButtonLoading(button);
+      // Implement the startLoadingDots functionality here
 
       const poolAddress = currentContract;
       const action = button.dataset.action;
@@ -314,6 +152,7 @@ function handleActionButtonClick(button) {
       handleError(error, "Trade action failed: ");
     } finally {
       await updateBalanceUI(true);
+      // Implement the stopLoadingDots functionality here
       enableAllTradeButtons(actionButtons);
     }
   };
@@ -359,10 +198,7 @@ export async function updateBalanceUI(force = false) {
   }
 
   console.log("Fetching new balance from API...");
-  if (!internetConnection()) {
-    disconnectDashboard();
-    return;
-  }
+
   const result = await transactionManager.getPortfolio();
   if (!result?.solBalance) {
     console.error("Failed to fetch balance:", result?.error || result);

@@ -1,10 +1,6 @@
-import {
-  showNotification,
-  managedSetInterval,
-  clearManagedInterval,
-} from "./utils.js";
+import { showNotification, clearManagedInterval } from "./utils.js";
 import { getDebugMode } from "../config.js";
-import { getFromStorage, internetConnection } from "./utils.js";
+import { getFromStorage } from "./utils.js";
 import { DataManager } from "./Account/Core/DataManager.js";
 import CONFIG from "../config.js";
 const openPositions = [];
@@ -94,7 +90,7 @@ export async function connectWebSocket() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
 
             // Heartbeat every 15s
-            heartbeatInterval = managedSetInterval(() => {
+            heartbeatInterval = setInterval(() => {
               if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
               const now = Date.now();
@@ -255,7 +251,7 @@ export function setActiveToken(poolAddress) {
   chrome.storage.local.get("pnlSlider", (data) => {
     if (!data) data = 500;
     watchPool(poolAddress);
-    pnlIntervalId = managedSetInterval(updateTotalPnl, data.pnlSlider);
+    pnlIntervalId = setInterval(updateTotalPnl, data.pnlSlider);
   });
 }
 
