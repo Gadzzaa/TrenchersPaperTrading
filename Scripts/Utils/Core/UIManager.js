@@ -1,6 +1,6 @@
 // TODO: Remake
 export class UIManager {
-  async enableUI() {
+  static async enableUI() {
     const blocker = document.getElementById("Blocker");
     const popup = document.getElementById("popupTrenchersPT");
     if (blocker) {
@@ -36,7 +36,7 @@ export class UIManager {
     }
   }
 
-  async disableUI(reason) {
+  static async disableUI(reason) {
     const blocker = document.getElementById("Blocker");
     const popup = document.getElementById("popupTrenchersPT");
     if (blocker) {
