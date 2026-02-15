@@ -2,8 +2,7 @@ import { handleError } from "../utils.js";
 import { BackendRequest } from "./BackendRequest.js";
 
 export class ServerValidation {
-  #manifest = chrome.runtime.getManifest();
-  version = this.#manifest.version;
+  version = this.chrome.runtime.getManifest().version;
 
   /**
    *  @returns {Promise<boolean>} - true if the current version is the latest, false otherwise
