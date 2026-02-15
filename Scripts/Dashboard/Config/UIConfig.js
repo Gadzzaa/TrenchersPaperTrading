@@ -1,3 +1,4 @@
+import { UIManager } from "../../Utils/Core/UIManager.js";
 export class UIConfig {
   static settings = [
     {
@@ -19,39 +20,49 @@ export class UIConfig {
     },
   ];
 
-  static storageChangeListener = (changes, area) => {
-    if (area === "local" && changes.theme) {
-      document.documentElement.setAttribute(
-        "data-theme",
-        changes.theme.newValue,
-      );
-    }
-    if (area === "local" && changes.animation) {
-      document.documentElement.style.setProperty(
-        "--anim-time",
-        `${changes.animation.newValue / 10}s`,
-      );
-    }
-    if (area === "local" && changes.pnlSlider) {
-      changeDelay(changes.updateDelay.newValue);
-    }
-  };
+  static createStorageMessageListener(stateManager) {
+    return (changes, area) => {
+      if (area === "local" && changes.theme) {
+        document.documentElement.setAttribute(
+          "data-theme",
+          changes.theme.newValue,
+        );
+      }
+      if (area === "local" && changes.animation) {
+        document.documentElement.style.setProperty(
+          "--anim-time",
+          `${changes.animation.newValue / 10}s`,
+        );
+      }
+      if (area === "local" && changes.pnlSlider) {
+        //changeDelay(changes.updateDelay.newValue);
+        // TODO: fix this, somehow changeDelay function is nonexistent
+      }
+    };
+  }
 
-  static runtimeMessageListener = (message, sender, sendResponse) => {
-    if (message.type === "initDashboard") {
-      console.log("User registered, initializing dashboard...");
-      initDashboard();
-    }
-    if (message.type === "logoutDashboard") {
-      console.log("User logged out, disabling dashboard...");
-      logout();
-    }
-    if (message.type === "STATUS_UPDATE") {
-      console.log("Health status update received:", message.status);
-      if (!message.status) {
-        disconnectDashboard();
-        disableUI("no-internet");
-      } else initDashboard();
-    }
-  };
+  static createRuntimeMessageListener(stateManager) {
+    return (message, sender, sendResponse) => {
+      if (message.type === "initDashboard") {
+        console.log("User registered, initializing dashboard...");
+        stateManager.initialize();
+      }
+
+      if (message.type === "logoutDashboard") {
+        console.log("User logged out, disabling dashboard...");
+        stateManager.logout();
+      }
+
+      if (message.type === "STATUS_UPDATE") {
+        console.log("Health status update received:", message.status);
+
+        if (!message.status) {
+          stateManager.disconnect();
+          UIManager.disableUI("no-internet");
+        } else {
+          stateManager.initialize();
+        }
+      }
+    };
+  }
 }

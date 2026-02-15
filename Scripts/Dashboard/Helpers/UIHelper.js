@@ -1,27 +1,29 @@
 import { UIConfig } from "../Config/UIConfig.js";
+import { handleActions } from "../Core/ActionButtons.js";
+import { MessageHandlers } from "./MessageHandlers.js";
+
 export class UIHelper {
-  static createButtons() {
+  static createButtons(stateManager) {
     let actionButtons, closeButton;
 
     actionButtons = document.querySelectorAll(
       "#buyButtons .buyButton, #sellButtons .sellButton",
     );
-
     closeButton = document.getElementById("Close");
-  }
 
-  static createButtonEvents() {
     for (const button of actionButtons) {
-      button.addEventListener("click", handleActionButtonClick(button));
+      button.addEventListener("click", () =>
+        handleActions(button, stateManager),
+      );
     }
-
     closeButton.addEventListener("click", () => {
-      requestHideApp();
+      MessageHandlers.requestHideApp();
     });
   }
 
-  static createStorageEvents() {
-    let storageChangeListener = UIConfig.storageChangeListener;
+  static createStorageEvents(stateManager) {
+    let storageChangeListener =
+      UIConfig.createStorageMessageListener(stateManager);
 
     // Remove existing listeners before adding new ones to prevent duplicates
     if (storageChangeListener)
@@ -30,8 +32,9 @@ export class UIHelper {
     chrome.storage.onChanged.addListener(storageChangeListener);
   }
 
-  static createRuntimeEvents() {
-    let runtimeMessageListener = UIConfig.runtimeMessageListener;
+  static createRuntimeEvents(stateManager) {
+    let runtimeMessageListener =
+      UIConfig.createRuntimeMessageListener(stateManager);
 
     // Remove existing listeners before adding new ones to prevent duplicates
     if (runtimeMessageListener) {
@@ -41,14 +44,20 @@ export class UIHelper {
     chrome.runtime.onMessage.addListener(runtimeMessageListener);
   }
 
-  static disableAllTradeButtons(allButtons) {
+  static disableAllTradeButtons() {
+    const allButtons = document.querySelectorAll(
+      "#buyButtons .buyButton, #sellButtons .sellButton",
+    );
     allButtons.forEach((btn) => {
       btn.disabled = true;
       btn.classList.add("hidden");
     });
   }
 
-  static enableAllTradeButtons(allButtons) {
+  static enableAllTradeButtons() {
+    const allButtons = document.querySelectorAll(
+      "#buyButtons .buyButton, #sellButtons .sellButton",
+    );
     allButtons.forEach((btn) => {
       btn.disabled = false;
       btn.classList.remove("hidden");

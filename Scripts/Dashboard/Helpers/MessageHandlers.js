@@ -1,5 +1,5 @@
 export class MessageHandlers {
-  requestCurrentContract() {
+  static requestCurrentContract() {
     return new Promise((resolve, reject) => {
       const requestId = "get-contract-" + Date.now();
       let timeoutId = null;
@@ -41,7 +41,7 @@ export class MessageHandlers {
     });
   }
 
-  requestHideApp() {
+  static requestHideApp() {
     window.parent.postMessage(
       {
         type: "HIDE_APP",

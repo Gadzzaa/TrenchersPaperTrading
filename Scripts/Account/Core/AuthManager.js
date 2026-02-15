@@ -1,9 +1,5 @@
-import {
-  setToStorage,
-  removeFromStorage,
-  handleError,
-  disableUI,
-} from "../../utils.js";
+import { setToStorage, removeFromStorage, handleError } from "../../utils.js";
+import { UIManager } from "../../Utils/Core/UIManager.js";
 import { AuthAPI } from "../Helpers/AuthAPI.js";
 
 export class AuthManager {
@@ -68,7 +64,7 @@ export class AuthManager {
 
       chrome.runtime.sendMessage({ type: "logoutDashboard" });
 
-      await disableUI("no-session");
+      await UIManager.disableUI("no-session");
     } catch (error) {
       handleError(error, "Could not log out: ");
       throw error;
