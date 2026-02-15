@@ -1,5 +1,6 @@
 import { AccountValidators } from "./AccountValidators.js";
 import { BackendRequest } from "../../Server/BackendRequest.js";
+import { AppError } from "../../ErrorHandling/Helper/AppError.js";
 
 export class AuthAPI {
   /**
@@ -17,7 +18,10 @@ export class AuthAPI {
       .build();
 
     if (!response?.token)
-      throw new Error("No token received from server: " + response.error);
+      throw new AppError("No token received from server: " + response.error, {
+        code: "LOGIN_FAILED",
+        meta: { username, response },
+      });
 
     return response.token;
   }
@@ -45,7 +49,10 @@ export class AuthAPI {
       .build();
 
     if (!response?.token)
-      throw new Error("No token received from server: " + response.error);
+      throw new AppError("No token received from server: " + response.error, {
+        code: "REGISTRATION_FAILED",
+        meta: { username, balance, response },
+      });
 
     return response.token;
   }
@@ -55,7 +62,7 @@ export class AuthAPI {
    * @returns {Promise<bool>} - Marking the success of the logout operation.
    */
   async logout(sessionToken) {
-    const response = await new BackendRequest()
+    await new BackendRequest()
       .addEndpoint("/logout")
       .addMethod("DELETE")
       .addAuthParams(sessionToken)

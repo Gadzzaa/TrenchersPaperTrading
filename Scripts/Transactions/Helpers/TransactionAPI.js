@@ -1,4 +1,5 @@
 import { BackendRequest } from "../../Server/BackendRequest.js";
+import { AppError } from "../../ErrorHandling/Helper/AppError.js";
 
 export class TransactionAPI {
   /**
@@ -24,7 +25,14 @@ export class TransactionAPI {
       .build();
 
     if (!response?.success)
-      throw new Error(response.error || "Unknown error occured.");
+      throw new AppError(response.error || "Unknown error occured.", {
+        code: "BUY_FAILED",
+        meta: {
+          payload,
+          sessionToken,
+          response,
+        },
+      });
 
     return response;
   }
@@ -50,7 +58,14 @@ export class TransactionAPI {
       .build();
 
     if (!response?.success)
-      throw new Error(response.error || "Unknown error occured.");
+      throw new AppError(response.error || "Unknown error occured.", {
+        code: "SELL_FAILED",
+        meta: {
+          payload,
+          sessionToken,
+          response,
+        },
+      });
 
     return response;
   }
@@ -66,7 +81,11 @@ export class TransactionAPI {
       .addAuthParams(sessionToken)
       .build();
 
-    if (!response) throw new Error("Failed to fetch portfolio data.");
+    if (!response)
+      throw new AppError("No data received from server.", {
+        code: "NO_DATA",
+        meta: { response },
+      });
 
     return response;
   }

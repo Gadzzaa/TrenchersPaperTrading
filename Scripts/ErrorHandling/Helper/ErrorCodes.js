@@ -1,4 +1,4 @@
-class ErrorCodes {
+export class ErrorCodes {
   static Codes = Object.freeze({
     UNKNOWN: "UNKNOWN",
     NETWORK: "NETWORK",
@@ -11,6 +11,20 @@ class ErrorCodes {
     BAD_REQUEST: "BAD_REQUEST",
     NO_LISTENER: "NO_LISTENER",
     CONTEXT_INVALIDATED: "CONTEXT_INVALIDATED",
+    INVALID_ENDPOINT: "INVALID_ENDPOINT",
+    INVALID_METHOD: "INVALID_METHOD",
+    INVALID_TOKEN: "INVALID_TOKEN",
+    INVALID_BODY: "INVALID_BODY",
+    LOGIN_FAILED: "LOGIN_FAILED",
+    REGISTRATION_FAILED: "REGISTRATION_FAILED",
+    NO_DATA: "NO_DATA",
+    BUY_FAILED: "BUY_FAILED",
+    SELL_FAILED: "SELL_FAILED",
+    CALCULATION_FAILED: "CALCULATION_FAILED",
+    INVALID_AMOUNT: "INVALID_AMOUNT",
+    INVALID_PORTFOLIO: "INVALID_PORTFOLIO",
+    STORAGE_GET_FAILED: "STORAGE_GET_FAILED",
+    STORAGE_SET_FAILED: "STORAGE_SET_FAILED",
   });
 
   static UserMessages = Object.freeze({
@@ -25,5 +39,20 @@ class ErrorCodes {
     BAD_REQUEST: "Invalid request.",
     NO_LISTENER: "Page isn’t ready yet. Refresh and try again.",
     CONTEXT_INVALIDATED: "Extension reloaded/updated. Refresh the page.",
+    INVALID_ENDPOINT: "Requested resource is unavailable. Try again later.",
+    INVALID_METHOD: "Invalid method used for the request.",
+    INVALID_TOKEN: "Session token is invalid. Please log in again.",
+    INVALID_BODY: "Request body is invalid. Please contact support.",
+    LOGIN_FAILED: "Login failed. Check your credentials and try again.",
+    REGISTRATION_FAILED:
+      "Registration failed. Check your details and try again.",
+    NO_DATA: "No data received from server. Try again later.",
+    BUY_FAILED: "Purchase failed. Please try again.",
+    SELL_FAILED: "Sale failed. Please try again.",
+    CALCULATION_FAILED: "Failed to calculate price. Please try again.",
+    INVALID_AMOUNT: "Attempted amount is invalid. Please try again.",
+    INVALID_PORTFOLIO: "Portfolio data is invalid. Please try again.",
+    STORAGE_GET_FAILED: "Failed to retrieve data. Please try again.",
+    STORAGE_SET_FAILED: "Failed to save data. Please try again.",
   });
 }

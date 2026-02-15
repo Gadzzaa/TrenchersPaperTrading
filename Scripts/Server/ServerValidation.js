@@ -1,4 +1,4 @@
-import { handleError } from "../utils.js";
+import { AppError } from "../ErrorHandling/Helper/AppError.js";
 import { BackendRequest } from "./BackendRequest.js";
 
 export class ServerValidation {
@@ -8,16 +8,15 @@ export class ServerValidation {
    *  @returns {Promise<boolean>} - true if the current version is the latest, false otherwise
    * */
   static async isLatestVersion() {
-    try {
-      const response = await new BackendRequest()
-        .addEndpoint("/latest?version=" + this.version)
-        .addMethod("GET")
-        .addRetries(2)
-        .build();
-      return response.ok;
-    } catch (error) {
-      handleError(error, "Could not check latest version: ");
-      return false;
-    }
+    const response = await new BackendRequest()
+      .addEndpoint("/latest?version=" + this.version)
+      .addMethod("GET")
+      .addRetries(2)
+      .build();
+
+    if (!response)
+      throw new AppError("No data received from server", { code: "NO_DATA" });
+
+    return response.ok;
   }
 }

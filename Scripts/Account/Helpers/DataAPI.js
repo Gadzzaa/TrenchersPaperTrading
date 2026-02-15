@@ -1,4 +1,5 @@
 import { BackendRequest } from "../../Server/BackendRequest.js";
+import { AppError } from "../../ErrorHandling/Helper/AppError.js";
 
 export class DataAPI {
   /**
@@ -22,7 +23,13 @@ export class DataAPI {
       .addRetries(2)
       .build();
 
-    if (!response) throw new Error("No data received from server");
+    if (!response)
+      throw new AppError("No data received from server", {
+        code: "NO_DATA",
+        meta: {
+          response,
+        },
+      });
 
     return response;
   }
@@ -42,7 +49,10 @@ export class DataAPI {
       .build();
 
     if (!response.resetsLeft)
-      throw new Error("resetsLeft not received from server");
+      throw new AppError("Resets not received from server", {
+        code: "NO_DATA",
+        meta: { response },
+      });
 
     return response.resetsLeft;
   }
@@ -73,7 +83,11 @@ export class DataAPI {
       .addAuthParams(sessionToken)
       .build();
 
-    if (!response) throw new Error("No trade log data received from server");
+    if (!response)
+      throw new AppError("No trade log data received from server", {
+        code: "NO_DATA",
+        meta: { response },
+      });
 
     return response;
   }

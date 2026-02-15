@@ -1,4 +1,6 @@
 import { NotificationHelper } from "../Helpers/NotificationHelper.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
+import { AppError } from "../../ErrorHandling/Helper/AppError.js";
 // TODO: import getFromStorage
 
 export class NotificationManager {
@@ -25,7 +27,7 @@ export class NotificationManager {
    */
   addType(type) {
     if (typeof type != "string" || !(type in this.#typeClasses))
-      throw new Error("Invalid notification type");
+      throw ErrorHandler.log(new Error("Invalid notification type"));
     this.type = type;
     return this;
   }
@@ -36,7 +38,7 @@ export class NotificationManager {
    */
   addMessage(message) {
     if (typeof message != "string" || message.trim() === "")
-      throw new Error("Invalid notification message");
+      throw ErrorHandler.log(new Error("Invalid notification message"));
     this.message = message;
     return this;
   }
@@ -51,14 +53,16 @@ export class NotificationManager {
   }
 
   /**
-   * @param {Error} error - Error object to be associated with the notification.
+   * @param {Error | AppError} error - Error object to be associated with the notification.
    * @returns {this}
    */
   addError(error) {
     if (this.type !== "error")
-      throw new Error("Cannot add error to non-error notification");
-    if ((typeof error != Error) | (error == null))
-      throw new Error("Invalid error object");
+      throw ErrorHandler.log(
+        new Error("Cannot add error to non-error notification"),
+      );
+    if (typeof error != Error || typeof error != AppError)
+      throw ErrorHandler.log(new Error("Invalid error object"));
     this.error = error;
     return this;
   }

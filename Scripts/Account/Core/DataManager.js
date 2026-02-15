@@ -1,5 +1,5 @@
-import { handleError } from "../../utils.js";
 import { DataAPI } from "../Helpers/DataAPI.js";
+import { ErrorHandler } from "../../ErrorHandling/Helper/ErrorHandler.js";
 
 export class DataManager {
   /**
@@ -17,8 +17,7 @@ export class DataManager {
     try {
       return await this.api.getAccData(this.variables.getSessionToken());
     } catch (error) {
-      handleError(error, "Could not fetch popup data: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 
@@ -38,8 +37,7 @@ export class DataManager {
 
       return { success: true, resetsRemaining: response.resetsLeft };
     } catch (error) {
-      handleError(error, "Could not reset account: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 
@@ -52,16 +50,15 @@ export class DataManager {
 
       return response;
     } catch (error) {
-      handleError(error, "Could not validate session: ", { sound: false });
-      return false;
+      throw ErrorHandler.log(error);
     }
   }
 
   async getTradeLog() {
     try {
       return await this.api.getTradeLog(this.variables.getSessionToken());
-    } catch (e) {
-      console.warn("Could not fetch trade log: ", e);
+    } catch (error) {
+      ErrorHandler.log(e);
     }
   }
 }

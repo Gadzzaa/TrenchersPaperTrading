@@ -1,5 +1,5 @@
-import { handleError } from "../../utils.js";
 import { SettingsAPI } from "../Helpers/SettingsAPI.js";
+import { ErrorHandler } from "../../ErrorHandling/Helper/ErrorHandler.js";
 
 export class SettingsManager {
   /**
@@ -17,8 +17,7 @@ export class SettingsManager {
     try {
       await this.api.saveSettings(this.variables.getSessionToken(), settings);
     } catch (error) {
-      handleError(error, "Could not save settings: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 
@@ -32,8 +31,7 @@ export class SettingsManager {
       );
       return response;
     } catch (error) {
-      handleError(error, "Could not get settings: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 }

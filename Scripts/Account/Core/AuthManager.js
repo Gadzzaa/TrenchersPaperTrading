@@ -1,6 +1,7 @@
-import { setToStorage, removeFromStorage, handleError } from "../../utils.js";
+import { setToStorage, removeFromStorage } from "../../utils.js";
 import { UIManager } from "../../Utils/Core/UIManager.js";
 import { AuthAPI } from "../Helpers/AuthAPI.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class AuthManager {
   /**
@@ -26,8 +27,7 @@ export class AuthManager {
 
       chrome.runtime.sendMessage({ type: "initDashboard" });
     } catch (error) {
-      handleError(error, "Login failed: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 
@@ -47,8 +47,7 @@ export class AuthManager {
 
       chrome.runtime.sendMessage({ type: "initDashboard" });
     } catch (error) {
-      handleError(error, "Registration failed: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 
@@ -66,8 +65,7 @@ export class AuthManager {
 
       await UIManager.disableUI("no-session");
     } catch (error) {
-      handleError(error, "Could not log out: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 }

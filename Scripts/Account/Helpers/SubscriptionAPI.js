@@ -18,7 +18,8 @@ export class SubscriptionAPI {
       .addBody(JSON.stringify({ lookup_key }))
       .build();
 
-    if (!response) throw new Error("No response from server");
+    if (!response)
+      throw new AppError("No data received from server", { code: "NO_DATA" });
 
     return response;
   }
@@ -34,7 +35,8 @@ export class SubscriptionAPI {
       .addAuthParams(sessionToken)
       .build();
 
-    if (!response) throw new Error("No response from server");
+    if (!response)
+      throw new AppError("No data received from server", { code: "NO_DATA" });
 
     return response;
   }

@@ -1,5 +1,5 @@
 import { SubscriptionAPI } from "../Helpers/SubscriptionAPI.js";
-import { handleError } from "../../utils.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SubscriptionManager {
   /**
@@ -24,8 +24,7 @@ export class SubscriptionManager {
       const url = response.url;
       chrome.tabs.create({ url });
     } catch (error) {
-      handleError(error, "Could not upgrade subscription: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 
@@ -40,8 +39,7 @@ export class SubscriptionManager {
       const url = response.url;
       chrome.tabs.create({ url });
     } catch (error) {
-      handleError(error, "Could not manage subscription: ");
-      throw error;
+      throw ErrorHandler.log(error);
     }
   }
 }
