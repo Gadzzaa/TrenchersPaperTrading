@@ -1,5 +1,7 @@
 import { AppError } from "../Helper/AppError.js";
 import { ErrorHelper } from "../Helper/ErrorHelper.js";
+import { ErrorCodes } from "../Helper/ErrorCodes.js";
+import { NotificationManager } from "../../Utils/Core/NotificationManager.js";
 
 export class ErrorHandler {
   /**
@@ -19,7 +21,7 @@ export class ErrorHandler {
    * @returns {AppError}
    */
   static log(err, meta = {}) {
-    const e = this.normalize(err, meta);
+    const e = ErrorHelper.normalize(err, meta);
     console.error(`[${e.code}] ${e.message}`, {
       meta: e.meta,
       cause: e.cause,
@@ -27,20 +29,20 @@ export class ErrorHandler {
     });
     return e;
   }
-}
 
-/*
-  handleError(
-    error,
-    context = "An error occurred",
-    notif = {
-      show: true,
-      sound: true,
-    },
-  ) {
-    let errorMsg = error instanceof Error ? error.message : String(error);
-    console.error(`${context}:`, errorMsg);
-    if (notif.show)
-      showNotification(`${context}: ${errorMsg}`, "error", notif.sound, error);
+  /**
+   * @param {unknown} err
+   * @param {{ show?: boolean, sound?: boolean }} [notif]
+   */
+  static show(err, notif = { show: true, sound: true }) {
+    if (notif.show) {
+      const notification = new NotificationManager()
+        .addType("error")
+        .addMessage(ErrorHandler.userMessage(err));
+
+      if (notif.sound) notification.addSound();
+
+      notification.build();
+    }
   }
-*/
+}
