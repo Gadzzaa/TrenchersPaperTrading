@@ -1,5 +1,5 @@
 import { SettingsAPI } from "../Helpers/SettingsAPI.js";
-import { ErrorHandler } from "../../ErrorHandling/Helper/ErrorHandler.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SettingsManager {
   /**

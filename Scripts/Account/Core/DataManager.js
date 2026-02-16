@@ -1,5 +1,5 @@
 import { DataAPI } from "../Helpers/DataAPI.js";
-import { ErrorHandler } from "../../ErrorHandling/Helper/ErrorHandler.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class DataManager {
   /**
@@ -58,7 +58,7 @@ export class DataManager {
     try {
       return await this.api.getTradeLog(this.variables.getSessionToken());
     } catch (error) {
-      ErrorHandler.log(e);
+      ErrorHandler.log(error);
     }
   }
 }
