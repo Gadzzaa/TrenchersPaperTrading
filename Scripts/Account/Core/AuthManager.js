@@ -1,4 +1,4 @@
-import { setToStorage, removeFromStorage } from "../../utils.js";
+import { StorageManager } from "../../Utils/Core/StorageManager.js";
 import { UIManager } from "../../Utils/Core/UIManager.js";
 import { AuthAPI } from "../Helpers/AuthAPI.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
@@ -22,7 +22,7 @@ export class AuthManager {
         this.variables.getCredentials().password,
       );
 
-      await setToStorage("sessionToken", sessionToken);
+      await StorageManager.setToStorage("sessionToken", sessionToken);
       this.variables.setSessionToken(sessionToken);
 
       chrome.runtime.sendMessage({ type: "initDashboard" });
@@ -42,7 +42,7 @@ export class AuthManager {
         this.variables.getBalance(),
       );
 
-      await setToStorage("sessionToken", sessionToken);
+      await StorageManager.setToStorage("sessionToken", sessionToken);
       this.variables.setSessionToken(sessionToken);
 
       chrome.runtime.sendMessage({ type: "initDashboard" });
@@ -58,7 +58,7 @@ export class AuthManager {
     try {
       await this.api.logout(this.variables.getSessionToken());
 
-      removeFromStorage("sessionToken");
+      StorageManager.removeFromStorage("sessionToken");
       this.variables.setSessionToken(null);
 
       chrome.runtime.sendMessage({ type: "logoutDashboard" });
