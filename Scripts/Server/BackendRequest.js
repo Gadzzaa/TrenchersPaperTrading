@@ -188,6 +188,7 @@ export class BackendRequest {
             // TODO: disable UI with chrome.sendMessage to dashboard and popup
             throw new AppError("Network error: " + error.message, {
               code: "NETWORK",
+              cause: error,
               meta: { status: response.status, json: responseJSON },
             });
           }
@@ -197,6 +198,7 @@ export class BackendRequest {
         if (attempt === this.requestData.retries)
           throw new AppError("Request failed: " + error.message, {
             code: "TIMEOUT",
+            cause: error,
             meta: { status: response.status, json: responseJSON },
           });
       }
