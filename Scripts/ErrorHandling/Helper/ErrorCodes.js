@@ -32,6 +32,7 @@ export class ErrorCodes {
     INVALID_DATA: "INVALID_DATA",
     INVALID_NOTIFICATION_TYPE: "INVALID_NOTIFICATION_TYPE",
     INVALID_NOTIFICATION_MESSAGE: "INVALID_NOTIFICATION_MESSAGE",
+    STORAGE_REMOVE_FAILED: "STORAGE_REMOVE_FAILED",
   });
 
   static UserMessages = Object.freeze({
@@ -70,5 +71,6 @@ export class ErrorCodes {
     INVALID_DATA: "Received invalid data. Please try again.",
     INVALID_NOTIFICATION_TYPE: "Invalid notification type.",
     INVALID_NOTIFICATION_MESSAGE: "Invalid notification message.",
+    STORAGE_REMOVE_FAILED: "Failed to remove data. Please try again.",
   });
 }

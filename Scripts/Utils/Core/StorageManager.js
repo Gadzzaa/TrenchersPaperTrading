@@ -2,7 +2,7 @@ import { StorageHelper } from "../Helpers/StorageHelper.js";
 import { AppError } from "../../ErrorHandling/Helper/AppError.js";
 
 export class StorageManager {
-  async getFromStorage(key) {
+  static async getFromStorage(key) {
     try {
       return await StorageHelper.getFromStorage(key);
     } catch (err) {
@@ -14,7 +14,7 @@ export class StorageManager {
     }
   }
 
-  async setToStorage(key, value) {
+  static async setToStorage(key, value) {
     try {
       await StorageHelper.setToStorage(key, value);
     } catch (err) {
@@ -22,6 +22,18 @@ export class StorageManager {
         code: "STORAGE_SET_FAILED",
         cause: err,
         meta: { key, value },
+      });
+    }
+  }
+
+  static async removeFromStorage(key) {
+    try {
+      await StorageHelper.removeFromStorage(key);
+    } catch (err) {
+      throw new AppError("Failed to remove data from storage", {
+        code: "STORAGE_REMOVE_FAILED",
+        cause: err,
+        meta: { key },
       });
     }
   }
