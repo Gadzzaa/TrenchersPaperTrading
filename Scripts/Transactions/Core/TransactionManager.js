@@ -32,7 +32,10 @@ export class TransactionManager {
 
     this.#sessionToken = this.variables.getSessionToken();
     if (this.#sessionToken == null)
-      throw ErrorHandler.log(new Error("User is not authenticated."));
+      throw ErrorHandler.log(new AppError("User is not authenticated."), {
+        code: "INVALID_TOKEN",
+        meta: { sessionToken: this.#sessionToken },
+      });
   }
 
   /**
@@ -122,34 +125,27 @@ export class TransactionManager {
    * @returns {Promise<number>} - Amount of tokens to sell.
    */
   async #calculatePricePercentage(percentage) {
-    try {
-      let portfolio = await this.getPortfolio();
-      if (!portfolio?.tokens)
-        throw new AppError("Portfolio data is missing tokens information.", {
-          code: "INVALID_PORTFOLIO",
-          meta: { percentage, poolAddress: this.#poolAddress, portfolio },
-        });
-
-      const totalAmount = portfolio.tokens[this.#poolAddress].amount;
-      if (!totalAmount)
-        throw new AppError("No tokens found for this pool.", {
-          code: "INVALID_AMOUNT",
-          meta: { percentage, totalAmount, poolAddress: this.#poolAddress },
-        });
-
-      const amountToSell = parseFloat(totalAmount * (percentage / 100));
-      if (amountToSell <= 0)
-        throw new AppError("Calculated token amount is zero or negative.", {
-          code: "INVALID_AMOUNT",
-          meta: { percentage, totalAmount, poolAddress: this.#poolAddress },
-        });
-
-      return amountToSell;
-    } catch (error) {
-      throw new AppError("Failed to calculate token amount for sale.", {
-        code: "CALCULATION_FAILED",
-        meta: { percentage, poolAddress: this.#poolAddress, error },
+    let portfolio = await this.getPortfolio();
+    if (!portfolio?.tokens)
+      throw new AppError("Portfolio data is missing tokens information.", {
+        code: "INVALID_PORTFOLIO",
+        meta: { percentage, poolAddress: this.#poolAddress, portfolio },
       });
-    }
+
+    const totalAmount = portfolio.tokens[this.#poolAddress].amount;
+    if (!totalAmount)
+      throw new AppError("No tokens found for this pool.", {
+        code: "INVALID_AMOUNT",
+        meta: { percentage, totalAmount, poolAddress: this.#poolAddress },
+      });
+
+    const amountToSell = parseFloat(totalAmount * (percentage / 100));
+    if (amountToSell <= 0)
+      throw new AppError("Calculated token amount is zero or negative.", {
+        code: "INVALID_AMOUNT",
+        meta: { percentage, totalAmount, poolAddress: this.#poolAddress },
+      });
+
+    return amountToSell;
   }
 }

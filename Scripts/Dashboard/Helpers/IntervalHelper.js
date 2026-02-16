@@ -1,5 +1,7 @@
 import { updateBalanceUI } from "./BalanceUpdater.js";
 import { MessageHandlers } from "./MessageHandlers.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
+import { AppError } from "../../ErrorHandling/Helper/AppError.js";
 
 export function startInterval(stateManager) {
   stateManager.currentPreset = document.querySelector(".activePreset")?.id;
@@ -13,7 +15,7 @@ export function startInterval(stateManager) {
       await updateCurrentContract(stateManager);
       await updateBalanceUI(false, stateManager);
     } catch (err) {
-      console.error("[TrenchersPT] Error in interval:", err);
+      ErrorHandler.log(err);
     } finally {
       stateManager.fetchingBalance = false;
     }
@@ -47,7 +49,12 @@ async function updateCurrentContract(stateManager) {
 async function searchPosition(stateManager) {
   await importTradeLog(stateManager.variables);
   if (!stateManager.currentContract)
-    throw new Error("No current contract found.");
+    throw new AppError("No current contract found.", {
+      code: "NOT_FOUND",
+      meta: {
+        stateManager,
+      },
+    });
 
   const storedPositions = localStorage.getItem("openPositions");
   if (!storedPositions) {
@@ -57,7 +64,13 @@ async function searchPosition(stateManager) {
 
   const parsed = JSON.parse(storedPositions);
   if (!Array.isArray(parsed) || parsed.length < 1)
-    throw new Error("Parsing positions failed.");
+    throw new AppError("Parsing positions failed.", {
+      code: "PARSE_ERROR",
+      meta: {
+        parsed,
+        storedPositions,
+      },
+    });
 
   window.openPositions = parsed;
 

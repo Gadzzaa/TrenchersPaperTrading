@@ -1,4 +1,5 @@
 import { TransactionManager } from "../../Transactions/Core/TransactionManager.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 export async function updateBalanceUI(force = false, stateManager) {
   let Constants = {
     transactionManager: null,
@@ -42,7 +43,7 @@ function loadConstants(Constants, stateManager) {
 async function fetchBalanceAPI(transactionManager, solBalance) {
   const result = await transactionManager.getPortfolio();
   if (!result?.solBalance) {
-    console.error("Failed to fetch balance:", result?.error || result);
+    ErrorHandler.log(new AppError("Failed to fetch balance"), { result });
     return;
   }
   const balance = parseFloat(result.solBalance).toFixed(2);

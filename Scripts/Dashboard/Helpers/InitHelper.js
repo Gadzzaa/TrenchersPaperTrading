@@ -4,6 +4,7 @@ import { ServerValidation } from "../../Server/ServerValidation.js";
 import { DataManager } from "../../Account/Core/DataManager.js";
 import { Variables } from "../../Account/Core/Variables.js";
 import { StorageManager } from "../../Utils/Core/StorageManager.js";
+import { AppError } from "../../ErrorHandling/Helper/AppError.js";
 
 export class InitHelper {
   static loadSettings() {
@@ -23,7 +24,10 @@ export class InitHelper {
         if (stateManager.healthy == false) {
           await UIManager.disableUI("no-internet");
           stateManager.initializing = false;
-          promise.reject(new Error("Health check failed."));
+          promise.reject();
+          throw new AppError("Health check failed.", {
+            code: "HEALTH_CHECK_FAILED",
+          });
         }
         promise.resolve();
       });
@@ -35,7 +39,9 @@ export class InitHelper {
     if (!validVersion) {
       await UIManager.disableUI("outdated");
       stateManager.initializing = false;
-      throw new Error("Outdated version.");
+      throw new AppError("Outdated version.", {
+        code: "OUTDATED_VERSION",
+      });
     }
   }
 
@@ -44,7 +50,9 @@ export class InitHelper {
     if (!sessionToken) {
       await UIManager.disableUI("no-session");
       stateManager.initializing = false;
-      throw new Error("No session token found.");
+      throw new AppError("No session token found.", {
+        code: "INVALID_TOKEN",
+      });
     }
     return sessionToken;
   }
@@ -60,7 +68,9 @@ export class InitHelper {
       clearPositions();
       await UIManager.disableUI("no-session");
       stateManager.initializing = false;
-      throw new Error("Session invalid.");
+      throw new AppError("Session invalid.", {
+        code: "INVALID_TOKEN",
+      });
     }
   }
 
@@ -70,7 +80,10 @@ export class InitHelper {
       return;
     }
     stateManager.ws = await connectWebSocket().catch((error) => {
-      throw new Error("WebSocket connection failed: " + error.message);
+      throw new AppError("WebSocket connection failed: " + error.message, {
+        cause: error,
+        code: "WEBSOCKET_CONNECTION_FAILED",
+      });
     });
   }
 }

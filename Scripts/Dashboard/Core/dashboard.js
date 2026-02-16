@@ -1,5 +1,6 @@
 import { UIHelper } from "../Helpers/UIHelper.js";
 import { StateManager } from "./StateManager.js";
+import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     let stateManager = new StateManager();
@@ -13,6 +14,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await stateManager.initialize();
   } catch (error) {
-    console.error("[TrenchersPT] Initialization error:", error);
+    ErrorHandler.show(error);
   }
 });

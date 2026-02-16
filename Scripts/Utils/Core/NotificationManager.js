@@ -27,7 +27,12 @@ export class NotificationManager {
    */
   addType(type) {
     if (typeof type != "string" || !(type in this.#typeClasses))
-      throw ErrorHandler.log(new Error("Invalid notification type"));
+      throw ErrorHandler.log(
+        new AppError("Invalid notification type", {
+          code: "INVALID_NOTIFICATION_TYPE",
+          meta: { providedType: type },
+        }),
+      );
     this.type = type;
     return this;
   }
@@ -38,7 +43,12 @@ export class NotificationManager {
    */
   addMessage(message) {
     if (typeof message != "string" || message.trim() === "")
-      throw ErrorHandler.log(new Error("Invalid notification message"));
+      throw ErrorHandler.log(
+        new AppError("Invalid notification message", {
+          code: "INVALID_NOTIFICATION_MESSAGE",
+          meta: { providedMessage: message },
+        }),
+      );
     this.message = message;
     return this;
   }
@@ -59,10 +69,18 @@ export class NotificationManager {
   addError(error) {
     if (this.type !== "error")
       throw ErrorHandler.log(
-        new Error("Cannot add error to non-error notification"),
+        new AppError("Cannot add error to non-error notification", {
+          code: "INVALID_NOTIFICATION_TYPE",
+          meta: { providedType: this.type },
+        }),
       );
-    if (typeof error != Error || typeof error != AppError)
-      throw ErrorHandler.log(new Error("Invalid error object"));
+    if (!(error instanceof Error) || !(error instanceof AppError))
+      throw ErrorHandler.log(
+        new AppError("Invalid error object", {
+          code: "INVALID_NOTIFICATION_MESSAGE",
+          meta: { providedError: error },
+        }),
+      );
     this.error = error;
     return this;
   }
@@ -72,7 +90,7 @@ export class NotificationManager {
    * */
   build() {
     const sanitizedMessage = NotificationHelper.sanitizeText(this.message);
-    let fullMessage = typeClasses[type] + " " + sanitizedMessage;
+    let fullMessage = this.#typeClasses[this.type] + " " + sanitizedMessage;
     if (this.type === "error" && this.error)
       fullMessage = NotificationHelper.buildErrorMessage(
         this.error,
@@ -84,7 +102,9 @@ export class NotificationManager {
       let sound = NotificationHelper.getSound(this.type, this.volume);
       NotificationHelper.showNotification(this.type, fullMessage, sound).catch(
         (err) => {
-          console.error("Failed to show notification:", err);
+          ErrorHandler.log(
+            new AppError("Failed to show notification", { cause: err }),
+          );
         },
       );
     });
