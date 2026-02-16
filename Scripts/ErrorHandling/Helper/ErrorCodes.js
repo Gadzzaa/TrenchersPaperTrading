@@ -25,6 +25,13 @@ export class ErrorCodes {
     INVALID_PORTFOLIO: "INVALID_PORTFOLIO",
     STORAGE_GET_FAILED: "STORAGE_GET_FAILED",
     STORAGE_SET_FAILED: "STORAGE_SET_FAILED",
+    HEALTH_CHECK_FAILED: "HEALTH_CHECK_FAILED",
+    OUTDATED_VERSION: "OUTDATED_VERSION",
+    WEBSOCKET_CONNECTION_FAILED: "WEBSOCKET_CONNECTION_FAILED",
+    PARSE_ERROR: "PARSE_ERROR",
+    INVALID_DATA: "INVALID_DATA",
+    INVALID_NOTIFICATION_TYPE: "INVALID_NOTIFICATION_TYPE",
+    INVALID_NOTIFICATION_MESSAGE: "INVALID_NOTIFICATION_MESSAGE",
   });
 
   static UserMessages = Object.freeze({
@@ -54,5 +61,14 @@ export class ErrorCodes {
     INVALID_PORTFOLIO: "Portfolio data is invalid. Please try again.",
     STORAGE_GET_FAILED: "Failed to retrieve data. Please try again.",
     STORAGE_SET_FAILED: "Failed to save data. Please try again.",
+    HEALTH_CHECK_FAILED: "Unable to connect to server. Check your connection.",
+    OUTDATED_VERSION:
+      "Your extension is outdated. Please update to the latest version.",
+    WEBSOCKET_CONNECTION_FAILED:
+      "Failed to connect to server. Check your connection and try again.",
+    PARSE_ERROR: "Received malformed data. Please try again.",
+    INVALID_DATA: "Received invalid data. Please try again.",
+    INVALID_NOTIFICATION_TYPE: "Invalid notification type.",
+    INVALID_NOTIFICATION_MESSAGE: "Invalid notification message.",
   });
 }
