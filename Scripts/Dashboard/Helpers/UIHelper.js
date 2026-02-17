@@ -1,5 +1,5 @@
 import { UIConfig } from "../Config/UIConfig.js";
-import { handleActions } from "../Core/ActionButtons.js";
+import { handleActions } from "./ActionHelper.js";
 import { MessageHandlers } from "./MessageHandlers.js";
 
 export class UIHelper {

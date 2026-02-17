@@ -1,7 +1,6 @@
 import { TransactionAPI } from "../Helpers/TransactionAPI.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 import { AppError } from "../../ErrorHandling/Helper/AppError.js";
-import { setPnlData, unwatchPool } from "../../pnlHandler.js";
 
 export class TransactionManager {
   #poolAddress = null;
@@ -48,7 +47,7 @@ export class TransactionManager {
    *    tokenData: Object
    *  }
    * */
-  async buyToken() {
+  async buyToken(stateManager) {
     try {
       const payload = {
         poolAddress: this.#poolAddress,
@@ -59,7 +58,10 @@ export class TransactionManager {
 
       const response = await this.api.buy(payload, this.#sessionToken);
 
-      setPnlData(this.#poolAddress, response.pnlData);
+      stateManager.pnlService.pnlDataManager.add(
+        this.#poolAddress,
+        response.pnlData,
+      );
 
       return {
         success: response.success,
@@ -82,7 +84,7 @@ export class TransactionManager {
    *    effectivePrice: number
    *  }
    * */
-  async sellToken() {
+  async sellToken(stateManager) {
     try {
       const tokenAmount = await this.#calculatePricePercentage(this.#amount);
 
@@ -95,7 +97,8 @@ export class TransactionManager {
 
       const response = await this.api.sell(payload, this.#sessionToken);
 
-      if (this.#amount === 100) unwatchPool(this.#poolAddress);
+      if (this.#amount === 100)
+        stateManager.poolWatcher.unwatch(this.#poolAddress);
 
       return {
         success: response.success,

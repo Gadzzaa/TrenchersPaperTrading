@@ -47,7 +47,7 @@ async function updateCurrentContract(stateManager) {
 }
 
 async function searchPosition(stateManager) {
-  await importTradeLog(stateManager.variables);
+  await stateManager.pnlService.importTradeLog(stateManager.variables);
   if (!stateManager.currentContract)
     throw new AppError("No current contract found.", {
       code: "NOT_FOUND",
@@ -77,6 +77,6 @@ async function searchPosition(stateManager) {
   const match = parsed.find((p) => p.pool === stateManager.currentContract);
   if (match) {
     console.log("Setting active token to:", match.pool);
-    setActiveToken(match.pool);
+    stateManager.pnlService.setActiveToken(match.pool);
   }
 }

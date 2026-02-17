@@ -1,7 +1,7 @@
 import { UIHelper } from "../Helpers/UIHelper.js";
 import { StateManager } from "./StateManager.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
-import { PresetManager } from "./PresetManager.js";
+import { PresetManager } from "../Core/PresetManager.js";
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     let stateManager = new StateManager();

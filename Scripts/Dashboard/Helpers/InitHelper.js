@@ -65,7 +65,7 @@ export class InitHelper {
 
     const isSessionValid = await stateManager.dataManager.checkSession();
     if (!isSessionValid) {
-      clearPositions();
+      stateManager.pnlService.clearPositions();
       await UIManager.disableUI("no-session");
       stateManager.initializing = false;
       throw new AppError("Session invalid.", {
@@ -75,11 +75,7 @@ export class InitHelper {
   }
 
   static async createWebsocket(stateManager) {
-    if (stateManager.ws) {
-      console.log("WebSocket already exists, skipping creation.");
-      return;
-    }
-    stateManager.ws = await connectWebSocket().catch((error) => {
+    stateManager.ws = await stateManager.pnlService.start().catch((error) => {
       throw new AppError("WebSocket connection failed: " + error.message, {
         cause: error,
         code: "WEBSOCKET_CONNECTION_FAILED",
