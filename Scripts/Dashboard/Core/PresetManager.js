@@ -56,9 +56,11 @@ export class PresetManager {
   }
 
   static getPresetData(presetName) {
+    if (!JSON.parse(PresetManager.getPresets())[presetName])
       PresetManager.setPresets(defaultPresets);
 
     // Get data for new preset
+    const allPresetsData = JSON.parse(PresetManager.getPresets());
     const presetData = allPresetsData[presetName];
     if (!allPresetsData || !presetData)
       throw new AppError("No presets data found", {
