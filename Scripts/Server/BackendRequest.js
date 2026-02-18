@@ -189,7 +189,7 @@ export class BackendRequest {
             throw new AppError("Network error: " + error.message, {
               code: "NETWORK",
               cause: error,
-              meta: { status: response.status, json: responseJSON },
+              meta: { status: response?.status, json: responseJSON },
             });
           }
 
