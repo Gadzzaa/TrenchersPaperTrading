@@ -1,5 +1,5 @@
 import CONFIG from "../../config.js";
-import { AppError } from "../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../ErrorHandling/Helpers/AppError.js";
 
 const DEFAULT_TIMEOUT = 1000 * 5;
 const API_BASE_URL = CONFIG.API_BASE_URL;

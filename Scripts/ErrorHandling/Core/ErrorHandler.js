@@ -1,6 +1,6 @@
-import { AppError } from "../Helper/AppError.js";
-import { ErrorHelper } from "../Helper/ErrorHelper.js";
-import { ErrorCodes } from "../Helper/ErrorCodes.js";
+import { AppError } from "../Helpers/AppError.js";
+import { ErrorHelper } from "../Helpers/ErrorHelper.js";
+import { ErrorCodes } from "../Helpers/ErrorCodes.js";
 import { NotificationManager } from "../../Utils/Core/NotificationManager.js";
 
 export class ErrorHandler {

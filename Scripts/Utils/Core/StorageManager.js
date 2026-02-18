@@ -1,5 +1,5 @@
 import { StorageHelper } from "../Helpers/StorageHelper.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class StorageManager {
   static async getFromStorage(key) {

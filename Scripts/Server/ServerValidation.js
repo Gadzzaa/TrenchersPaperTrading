@@ -1,4 +1,4 @@
-import { AppError } from "../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../ErrorHandling/Helpers/AppError.js";
 import { BackendRequest } from "./BackendRequest.js";
 
 export class ServerValidation {

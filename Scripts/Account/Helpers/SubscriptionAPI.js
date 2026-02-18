@@ -1,4 +1,5 @@
 import { BackendRequest } from "../../Server/BackendRequest.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class SubscriptionAPI {
   /**

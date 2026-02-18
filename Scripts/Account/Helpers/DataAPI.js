@@ -1,5 +1,5 @@
 import { BackendRequest } from "../../Server/BackendRequest.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class DataAPI {
   /**
