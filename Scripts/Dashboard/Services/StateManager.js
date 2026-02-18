@@ -61,6 +61,7 @@ export class StateManager {
       this.pnlService.wsManager.disconnect();
       this.ws = null;
     }
+    this.pnlService.stop();
   }
 
   async logout() {

@@ -29,6 +29,7 @@ export class PNLService {
     });
   }
 
+  stop() {
   update() {
     if (Date.now() - this.lastUpdateTime < this.refreshTime) return;
     const pool = this.poolWatcher.get(this.positionManager.currentPool);
