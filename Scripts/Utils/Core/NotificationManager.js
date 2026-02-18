@@ -1,7 +1,7 @@
 import { NotificationHelper } from "../Helpers/NotificationHelper.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 import { AppError } from "../../ErrorHandling/Helper/AppError.js";
-// TODO: import getFromStorage
+import { StorageManager } from "../../Utils/Core/StorageManager.js";
 
 export class NotificationManager {
   #typeClasses = {
@@ -74,7 +74,7 @@ export class NotificationManager {
           meta: { providedType: this.type },
         }),
       );
-    if (!(error instanceof Error) || !(error instanceof AppError))
+    if (!(error instanceof Error) && !(error instanceof AppError))
       throw ErrorHandler.log(
         new AppError("Invalid error object", {
           code: "INVALID_NOTIFICATION_MESSAGE",
@@ -97,15 +97,12 @@ export class NotificationManager {
         fullMessage,
       );
 
-    getFromStorage("volume").then((vol) => {
+    StorageManager.getFromStorage("volume").then((vol) => {
       this.volume = vol ?? 1.0;
-      let sound = NotificationHelper.getSound(this.type, this.volume);
-      NotificationHelper.showNotification(this.type, fullMessage, sound).catch(
-        (err) => {
-          ErrorHandler.log(
-            new AppError("Failed to show notification", { cause: err }),
-          );
-        },
+      let sound = NotificationHelper.getSound(
+        this.type,
+        this.volume,
+        this.sounds,
       );
     });
   }
