@@ -1,4 +1,4 @@
-import { ServerStatus } from "./backend/ServerStatus.js";
+import { ServerStatus } from "./Server/ServerStatus.js";
 
 const Server = new ServerStatus();
 
