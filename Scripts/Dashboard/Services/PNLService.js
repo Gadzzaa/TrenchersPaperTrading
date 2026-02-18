@@ -30,6 +30,12 @@ export class PNLService {
   }
 
   stop() {
+    this.wsManager.disconnect();
+    this.positionManager.clear();
+    this.poolWatcher.clear();
+    this.ui.clear();
+  }
+
   update() {
     if (Date.now() - this.lastUpdateTime < this.refreshTime) return;
     const pool = this.poolWatcher.get(this.positionManager.currentPool);
