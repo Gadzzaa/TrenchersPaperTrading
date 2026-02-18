@@ -18,6 +18,7 @@ export class PresetManager {
 
     presetButtons.forEach((button) => {
       button.addEventListener("click", () => {
+        PresetManager.applyPreset(button.id, stateManager);
       });
     });
   }
@@ -40,6 +41,7 @@ export class PresetManager {
 
     PresetHelper.applyPresetUI(presetName);
     localStorage.setItem("usingPreset", presetName);
+    stateManager.currentPreset = presetName;
   }
 
   static getUsingPreset() {
