@@ -15,6 +15,9 @@ export class PNLService {
     this.poolWatcher = new PoolWatcher(this.wsManager);
     this.ui = new PnlUIController();
     this.pnlDataManager = new PNLDataManager();
+
+    this.refreshTime = 500; // Default refresh time in ms
+    this.lastUpdateTime = Date.now();
   }
 
   async start() {
@@ -27,7 +30,7 @@ export class PNLService {
   }
 
   update() {
-    // Implement a time checker to limit updates to every pnlSlider value
+    if (Date.now() - this.lastUpdateTime < this.refreshTime) return;
     const pool = this.poolWatcher.get(this.positionManager.currentPool);
     if (!pool?.price) return;
 
@@ -39,20 +42,14 @@ export class PNLService {
   }
 
   setActiveToken(poolAddress) {
-    this.pnlIntervalID && clearInterval(this.pnlIntervalID);
     this.positionManager.setActive(poolAddress);
     let pool = this.positionManager.getPosition(poolAddress);
     if (!pool) throw new Error("No position found for pool: " + poolAddress);
-    if (pool.posClosed) {
-      //updateTotalPnl();
-      console.log(`Pool ${poolAddress} has position closed.`);
-      return;
-    }
 
     StorageManager.getFromStorage("pnlSlider").then((sliderValue) => {
       if (!sliderValue) sliderValue = 500;
       this.poolWatcher.watch(poolAddress);
-      //pnlIntervalId = setInterval(updateTotalPnl, sliderValue);
+      this.refreshTime = sliderValue;
     });
   }
 
