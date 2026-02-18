@@ -1,4 +1,5 @@
 import { DragHelper } from "./DragHelper.js";
+import { InjectUtils } from "./InjectUtils.js";
 
 export class InjectHelper {
   #appContainer = null;
@@ -136,7 +137,7 @@ export class InjectHelper {
       if (
         savedLeft &&
         savedTop &&
-        utils.isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
+        InjectUtils.isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
       ) {
         this.#appContainer.style.left = savedLeft;
         this.#appContainer.style.top = savedTop;

@@ -1,13 +1,13 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-  mode: 'production',
-  entry: './Scripts/inject/inject.js',
+  mode: "production",
+  entry: "./Scripts/Injection/inject.js",
   output: {
-    filename: 'inject.bundle.js',
-    path: path.resolve(__dirname, 'Scripts/inject'),
+    filename: "inject.bundle.js",
+    path: path.resolve(__dirname, "Scripts/Injection"),
   },
   optimization: {
-    minimize: false
-  }
+    minimize: false,
+  },
 };
