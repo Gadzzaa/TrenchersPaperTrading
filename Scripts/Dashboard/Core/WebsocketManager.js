@@ -9,6 +9,7 @@ export class WebsocketManager {
     this.reconnectAttempts = 0;
     this.heartbeatInterval = null;
     this.lastPong = Date.now();
+    this.onMessage = null;
   }
 
   async connect(onMessage) {
@@ -20,8 +21,10 @@ export class WebsocketManager {
       return this.ws;
     }
 
+    this.onMessage = onMessage;
+
     const token = StorageManager.getFromStorage("sessionToken");
-    this.ws = new Websocket(this.url);
+    this.ws = new WebSocket(this.url);
 
     return new Promise((resolve, reject) => {
       let authTimeout;
@@ -38,7 +41,7 @@ export class WebsocketManager {
         // Set a timeout for authentication (10s)
         authTimeout = setTimeout(() => {
           reject(new Error("WebSocket authentication timeout"));
-          ws.close();
+          this.ws.close();
         }, 10000);
       };
 
@@ -56,7 +59,7 @@ export class WebsocketManager {
           console.log("🏓 Pong received");
         } else console.warn("Unknown message type:", data.type, data);
 
-        onMessage?.(data);
+        this.onMessage?.(data);
       };
       this.ws.onclose = () => {
         console.log("🛑 WebSocket disconnected, reconnecting...");
@@ -103,8 +106,8 @@ export class WebsocketManager {
     const delay = CONFIG.BASE_DELAY * Math.pow(2, this.reconnectAttempts++);
 
     setTimeout(() => {
-      reconnectAttempts++;
-      this.connect().catch((err) => {
+      this.reconnectAttempts++;
+      this.connect(this.onMessage).catch((err) => {
         console.error("Reconnection failed:", err);
       });
     }, delay);
