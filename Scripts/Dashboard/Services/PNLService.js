@@ -67,7 +67,7 @@ export class PNLService {
   }
 
   isActive() {
-    return this.positionManager.currentPool?.toString() !== null;
+    return this.positionManager.currentPool !== null;
   }
 
   clearPositions(global = true) {
