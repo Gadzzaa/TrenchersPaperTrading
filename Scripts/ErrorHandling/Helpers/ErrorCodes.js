@@ -34,6 +34,7 @@ export class ErrorCodes {
     INVALID_NOTIFICATION_MESSAGE: "INVALID_NOTIFICATION_MESSAGE",
     STORAGE_REMOVE_FAILED: "STORAGE_REMOVE_FAILED",
     PRESET_NOT_FOUND: "PRESET_NOT_FOUND",
+    BUTTON_NOT_FOUND: "BUTTON_NOT_FOUND",
   });
 
   static UserMessages = Object.freeze({
@@ -74,5 +75,6 @@ export class ErrorCodes {
     INVALID_NOTIFICATION_MESSAGE: "Invalid notification message.",
     STORAGE_REMOVE_FAILED: "Failed to remove data. Please try again.",
     PRESET_NOT_FOUND: "Preset data not found. Please try again.",
+    BUTTON_NOT_FOUND: "Button data not found. Please try again.",
   });
 }

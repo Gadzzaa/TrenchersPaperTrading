@@ -1,15 +1,17 @@
 import { UIConfig } from "../Config/UIConfig.js";
 import { handleActions } from "./ActionHelper.js";
 import { MessageHandlers } from "./MessageHandlers.js";
+import { EditHelper } from "./EditHelper.js";
 
 export class UIHelper {
   static createButtons(stateManager) {
-    let actionButtons, closeButton;
+    let actionButtons, closeButton, editButton;
 
     actionButtons = document.querySelectorAll(
       "#buyButtons .buyButton, #sellButtons .sellButton",
     );
     closeButton = document.getElementById("Close");
+    editButton = document.getElementById("editPresets");
 
     for (const button of actionButtons) {
       button.addEventListener("click", () =>
@@ -18,6 +20,10 @@ export class UIHelper {
     }
     closeButton.addEventListener("click", () => {
       MessageHandlers.requestHideApp();
+    });
+
+    editButton.addEventListener("click", () => {
+      EditHelper.toggleEditMode(stateManager);
     });
   }
 
