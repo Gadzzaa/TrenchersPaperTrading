@@ -42,21 +42,11 @@ export class NotificationHelper {
    * @param {number} volume - Volume level (0.0 to 1.0).
    * @returns {HTMLAudioElement} - Audio object configured with the specified sound and volume.
    */
-  static getSound(type, volume, sound = {}) {
-    let sound;
-    switch (type) {
-      case "success":
-        sound = new Audio(successSound.src);
-        break;
-      case "error":
-        sound = new Audio(failSound.src);
-        break;
-      default:
-        return;
-    }
-
-    sound.volume = volume.toFixed(2);
-    return sound;
+  static getSound(type, volume, sounds) {
+    let chosenSound;
+    chosenSound = type == "success" ? sounds.successSound : sounds.failSound;
+    chosenSound.volume = volume.toFixed(2);
+    return chosenSound;
   }
 
   /**
@@ -65,7 +55,7 @@ export class NotificationHelper {
    * @returns {string} - Error message with location info if in debug mode.
    */
   static buildErrorMessage(error, message) {
-    const caller = extractErrorLocation(error);
+    const caller = NotificationHelper.extractErrorLocation(error);
     return getDebugMode()
       ? `[ ${caller?.file.toString().toUpperCase()}:${caller?.line} ] ${message}`
       : message;
