@@ -9,15 +9,13 @@ export class PoolWatcher {
       this.watchedPools.set(poolAddress, { price: null, liquidity: null });
     }
 
-    this.ws.send(
-      JSON.stringify({ type: "watchPool", poolAddress, poolData: pnlData }),
-    );
+    this.ws.send({ type: "watchPool", poolAddress, poolData: pnlData });
   }
 
   unwatch(poolAddress) {
     if (!this.watchedPools.has(poolAddress)) return;
 
-    this.ws.send(JSON.stringify({ type: "unwatchPool", poolAddress }));
+    this.ws.send({ type: "unwatchPool", poolAddress });
     this.watchedPools.delete(poolAddress);
   }
 
