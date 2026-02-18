@@ -17,8 +17,8 @@ export class PNLDataManager {
       console.warn(`PnL data for pool ${poolAddress} already exists.`);
       return;
     }
-    pnlDataArray.push({ poolAddress, ...pnlData });
-    localStorage.setItem("pnlDataArray", JSON.stringify(pnlDataArray));
+    this.pnlDataArray.push({ poolAddress, ...pnlData });
+    localStorage.setItem("pnlDataArray", JSON.stringify(this.pnlDataArray));
   }
 
   get(poolAddress) {
@@ -28,8 +28,8 @@ export class PNLDataManager {
   }
 
   set(array) {
-    pnlDataArray = array;
-    localStorage.setItem("pnlDataArray", JSON.stringify(pnlDataArray));
+    this.pnlDataArray = array;
+    localStorage.setItem("pnlDataArray", JSON.stringify(this.pnlDataArray));
   }
 
   getArray() {
