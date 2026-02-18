@@ -76,11 +76,13 @@ export class NotificationHelper {
   }
 
   /**
-   * @param {string} type - Represents the type of notification (e.g., 'success', 'error', 'info').
    * @param {string} message - The message to be displayed in the notification.
    * @param {HTMLAudioElement} sound -
    */
-  static execNotification(type, message, sound) {
-    Promise.allSettled([sendMessageToInjector(type, message), sound.play()]);
+  static execNotification(message, sound) {
+    Promise.allSettled([
+      NotificationHelper.sendMessageToInjector(message),
+      sound.play(),
+    ]);
   }
 }

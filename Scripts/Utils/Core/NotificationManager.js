@@ -104,6 +104,11 @@ export class NotificationManager {
         this.volume,
         this.sounds,
       );
+      NotificationHelper.execNotification(fullMessage, sound).catch((err) => {
+        ErrorHandler.log(
+          new AppError("Failed to show notification", { cause: err }),
+        );
+      });
     });
   }
 }
