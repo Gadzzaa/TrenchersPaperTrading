@@ -60,10 +60,11 @@ export class PNLService {
     });
   }
 
-  async importTradeLog(variables) {
+  async syncTradeLog(variables) {
     const dataManager = new DataManager(variables);
-    let tradeLog = await dataManager?.getTradeLog()?.tokens;
-    PositionManager.setPositions(tradeLog);
+    let tradeLog = await dataManager.getTradeLog();
+    let tokens = tradeLog?.tokens;
+    this.positionManager.setPositions(tokens);
   }
 
   isActive() {

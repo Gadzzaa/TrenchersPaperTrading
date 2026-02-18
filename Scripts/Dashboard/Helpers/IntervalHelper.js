@@ -48,6 +48,7 @@ async function updateCurrentContract(stateManager) {
 }
 
 async function searchPosition(stateManager) {
+  await stateManager.pnlService.syncTradeLog(stateManager.variables);
   if (!stateManager.currentContract)
     throw new AppError("No current contract found.", {
       code: "NOT_FOUND",
