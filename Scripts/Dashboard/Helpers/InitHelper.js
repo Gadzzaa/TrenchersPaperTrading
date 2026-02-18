@@ -74,13 +74,4 @@ export class InitHelper {
       });
     }
   }
-
-  static async createWebsocket(stateManager) {
-    stateManager.ws = await stateManager.pnlService.start().catch((error) => {
-      throw new AppError("WebSocket connection failed: " + error.message, {
-        cause: error,
-        code: "WEBSOCKET_CONNECTION_FAILED",
-      });
-    });
-  }
 }

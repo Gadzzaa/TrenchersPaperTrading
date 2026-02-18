@@ -14,7 +14,6 @@ export class StateManager {
     this.dataManager = null;
     this.pnlService = new PNLService();
 
-    this.ws = null;
     this.updateInterval = null;
 
     this.fetchingBalance = false;
@@ -34,7 +33,7 @@ export class StateManager {
     await InitHelper.validateVersion(this);
 
     await InitHelper.validateSession(this);
-    await InitHelper.createWebsocket(this);
+    await this.pnlService.start();
 
     UIHelper.clearUI();
 
@@ -57,16 +56,11 @@ export class StateManager {
 
     this.currentContract = null;
 
-    if (this.ws) {
-      this.pnlService.wsManager.disconnect();
-      this.ws = null;
-    }
     this.pnlService.stop();
   }
 
   async logout() {
     this.disconnect();
-    this.pnlService.clearPositions();
     await UIManager.disableUI("no-session");
   }
 }
