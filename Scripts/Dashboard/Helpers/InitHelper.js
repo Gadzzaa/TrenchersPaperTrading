@@ -4,7 +4,7 @@ import { ServerValidation } from "../../Server/ServerValidation.js";
 import { DataManager } from "../../Account/Core/DataManager.js";
 import { Variables } from "../../Account/Core/Variables.js";
 import { StorageManager } from "../../Utils/Core/StorageManager.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class InitHelper {
   static loadSettings() {
@@ -24,12 +24,13 @@ export class InitHelper {
         if (stateManager.healthy == false) {
           await UIManager.disableUI("no-internet");
           stateManager.initializing = false;
-          promise.reject();
-          throw new AppError("Health check failed.", {
-            code: "HEALTH_CHECK_FAILED",
-          });
+          reject(
+            new AppError("Health check failed.", {
+              code: "HEALTH_CHECK_FAILED",
+            }),
+          );
         }
-        promise.resolve();
+        resolve();
       });
     });
   }
