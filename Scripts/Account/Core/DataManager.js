@@ -58,7 +58,7 @@ export class DataManager {
     try {
       return await this.api.getTradeLog(this.variables.getSessionToken());
     } catch (error) {
-      ErrorHandler.log(error);
+      throw ErrorHandler.log(error);
     }
   }
 }
