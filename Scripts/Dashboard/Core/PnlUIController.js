@@ -12,7 +12,6 @@ export class PnlUIController {
     this.soldText != null && (DOM_el.soldText = this.soldText);
     this.holdText != null && (DOM_el.holdText = this.holdText);
     this.positionEl != null && (DOM_el.positionEl = this.positionEl);
-    this.sellsTab != null && (DOM_el.sellsTab = this.sellsTab);
 
     Object.entries(DOM_el).forEach(([key, value]) => {
       if (value == null) {
@@ -25,7 +24,7 @@ export class PnlUIController {
     let DOM_el = {};
     this.validateElements(DOM_el);
 
-    this.toggleSellsTab();
+    this.toggleSellsTab(data.pos.quantityHeld);
 
     DOM_el.positionEl.classList.remove("positive", "negative");
     DOM_el.positionEl.textContent = `${data.totalPNL.toFixed(2)} (${data.percent.toFixed(2)}%)`;
@@ -38,20 +37,14 @@ export class PnlUIController {
     DOM_el.holdText.textContent = `${(data.pos.quantityHeld * data.currentPrice).toFixed(2)}`;
   }
 
-  toggleSellsTab() {
+  toggleSellsTab(quantityHeld) {
+    let sellsTab;
+    this.sellsTab != null && (sellsTab = this.sellsTab);
     if (quantityHeld <= 0 && !document.body.classList.contains("edit-mode"))
       sellsTab.classList.add("hidden");
     else sellsTab.classList.remove("hidden");
   }
 
   clear() {
-    const positionEl = document.getElementById("pnlText");
-    if (!positionEl) {
-      console.warn("Position element not found in DOM");
-      return;
-    }
-
-    positionEl.classList.remove("positive", "negative");
-    positionEl.textContent = "0.00 SOL (0.00%)";
   }
 }
