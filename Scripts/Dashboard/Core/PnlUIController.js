@@ -46,5 +46,13 @@ export class PnlUIController {
   }
 
   clear() {
+    let DOM_el = {};
+    this.validateElements(DOM_el);
+
+    Object.entries(DOM_el).forEach(([key, value]) => {
+      value.textContent = "0.00";
+    });
+    DOM_el.positionEl.classList.remove("positive", "negative");
+    DOM_el.positionEl.textContent = "0.00 SOL (0.00%)";
   }
 }
