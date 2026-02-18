@@ -7,7 +7,7 @@ export class PositionManager {
   setPositions(positions) {
     this.openPositions.length = 0;
     this.openPositions = positions;
-    localStorage.setItem("openPositions", JSON.stringify(openPositions));
+    localStorage.setItem("openPositions", JSON.stringify(this.openPositions));
   }
 
   setActive(poolAddress) {
@@ -37,7 +37,7 @@ export class PositionManager {
   }
 
   clear() {
-    currentPool = null;
-    openPositions.length = 0;
+    this.currentPool = null;
+    this.openPositions.length = 0;
   }
 }
