@@ -24,7 +24,11 @@
           <button data-tooltip="Enter edit mode" id="editPresets">
             <i id="editIcon" class="fa-regular fa-pen-to-square"></i>
           </button>
-          <button data-tooltip="Select preset 1" class="preset" id="preset1">
+          <button
+            data-tooltip="Select preset 1"
+            class="preset activePreset"
+            id="preset1"
+          >
             P1
           </button>
           <button data-tooltip="Select preset 2" class="preset" id="preset2">
@@ -168,6 +172,8 @@
   </body>
 
   <script type="module" src="Scripts/tooltipManager.js" defer></script>
-  <script type="module" src="Scripts/editManager.js" defer></script>
-  <script type="module" src="Scripts/dashboard.js"></script>
+  <script
+    type="module"
+    src="Scripts/Dashboard/Services/dashboardService.js"
+  ></script>
 </html>

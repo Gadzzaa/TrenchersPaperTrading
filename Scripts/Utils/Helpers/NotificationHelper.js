@@ -80,7 +80,7 @@ export class NotificationHelper {
    * @param {HTMLAudioElement} sound -
    */
   static execNotification(message, sound) {
-    Promise.allSettled([
+    return Promise.allSettled([
       NotificationHelper.sendMessageToInjector(message),
       sound.play(),
     ]);

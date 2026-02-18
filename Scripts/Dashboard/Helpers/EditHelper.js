@@ -1,21 +1,24 @@
-import { AppError } from "../../ErrorHandling/Helpers/AppError";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 export class EditHelper {
-  static toggleEditMode(stateManager) {
+  static activateEditMode(stateManager) {
     const body = document.body;
     const sellsTab = document.getElementById("Sells");
 
-    if (body.classList.contains("edit-mode")) {
-      body.classList.add("edit-mode-exit");
-      if (!stateManager.pnlService.isActive()) sellsTab.classList.add("hidden");
+    body.classList.add("edit-mode-exit");
+    if (!stateManager.pnlService.isActive()) sellsTab.classList.add("hidden");
 
-      // Wait for animation to finish
-      setTimeout(() => {
-        body.classList.remove("edit-mode", "edit-mode-exit");
-      }, 400);
-    } else {
-      sellsTab.classList.remove("hidden");
-      body.classList.add("edit-mode");
-    }
+    // Wait for animation to finish
+    setTimeout(() => {
+      body.classList.remove("edit-mode", "edit-mode-exit");
+    }, 400);
+  }
+
+  static deactivateEditMode() {
+    const body = document.body;
+    const sellsTab = document.getElementById("Sells");
+
+    sellsTab.classList.remove("hidden");
+    body.classList.add("edit-mode");
   }
 
   static editBuyPresets(

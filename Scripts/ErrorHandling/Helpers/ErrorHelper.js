@@ -1,5 +1,5 @@
 import { ErrorCodes } from "./ErrorCodes.js";
-import { AppError } from "./../Helper/AppError.js";
+import { AppError } from "./AppError.js";
 
 export class ErrorHelper {
   /**

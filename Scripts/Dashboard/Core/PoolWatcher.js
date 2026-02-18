@@ -33,4 +33,8 @@ export class PoolWatcher {
   get(poolAddress) {
     return this.watchedPools.get(poolAddress);
   }
+
+  clear() {
+    this.watchedPools.clear();
+  }
 }

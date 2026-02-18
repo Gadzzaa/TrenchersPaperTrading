@@ -1,7 +1,6 @@
 import { UIConfig } from "../Config/UIConfig.js";
-import { handleActions } from "./ActionHelper.js";
+import { ActionManager } from "../Core/ActionManager.js";
 import { MessageHandlers } from "./MessageHandlers.js";
-import { EditHelper } from "./EditHelper.js";
 
 export class UIHelper {
   static createButtons(stateManager) {
@@ -15,7 +14,7 @@ export class UIHelper {
 
     for (const button of actionButtons) {
       button.addEventListener("click", () =>
-        handleActions(button, stateManager),
+        ActionManager.handleActions(button, stateManager),
       );
     }
     closeButton.addEventListener("click", () => {
@@ -23,7 +22,7 @@ export class UIHelper {
     });
 
     editButton.addEventListener("click", () => {
-      EditHelper.toggleEditMode(stateManager);
+      ActionManager.toggleEditMode(stateManager);
     });
   }
 

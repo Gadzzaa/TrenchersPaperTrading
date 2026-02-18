@@ -1,6 +1,6 @@
 import { NotificationHelper } from "../Helpers/NotificationHelper.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 import { StorageManager } from "../../Utils/Core/StorageManager.js";
 
 export class NotificationManager {

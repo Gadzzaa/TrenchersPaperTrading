@@ -35,6 +35,7 @@ export class ErrorCodes {
     STORAGE_REMOVE_FAILED: "STORAGE_REMOVE_FAILED",
     PRESET_NOT_FOUND: "PRESET_NOT_FOUND",
     BUTTON_NOT_FOUND: "BUTTON_NOT_FOUND",
+    PRESET_DATA_INVALID: "PRESET_DATA_INVALID",
   });
 
   static UserMessages = Object.freeze({
@@ -76,5 +77,7 @@ export class ErrorCodes {
     STORAGE_REMOVE_FAILED: "Failed to remove data. Please try again.",
     PRESET_NOT_FOUND: "Preset data not found. Please try again.",
     BUTTON_NOT_FOUND: "Button data not found. Please try again.",
+    PRESET_DATA_INVALID:
+      "Preset data is in an invalid format. Please try again.",
   });
 }

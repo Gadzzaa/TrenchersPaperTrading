@@ -1,4 +1,4 @@
-import { UIHelper } from "./UIHelper.js";
+import { UIHelper } from "../Helpers/UIHelper.js";
 import { updateBalanceUI } from "../Helpers/BalanceUpdater.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
 import { ActionHelper } from "../Helpers/ActionHelper.js";
@@ -13,6 +13,14 @@ export class ActionManager {
       } else ActionManager.#handleBasicActions(button, stateManager);
     } catch (error) {
       ErrorHandler.show(error);
+    }
+  }
+
+  static toggleEditMode(stateManager) {
+    if (document.body.classList.contains("edit-mode")) {
+      EditHelper.activateEditMode(stateManager);
+    } else {
+      EditHelper.deactivateEditMode();
     }
   }
 

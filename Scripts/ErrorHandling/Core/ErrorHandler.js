@@ -35,14 +35,15 @@ export class ErrorHandler {
    * @param {{ show?: boolean, sound?: boolean }} [notif]
    */
   static show(err, notif = { show: true, sound: true }) {
+    const normalizedError = ErrorHandler.log(err);
     if (notif.show) {
       const notification = new NotificationManager()
         .addType("error")
-        .addMessage(ErrorHandler.userMessage(err));
+        .addMessage(ErrorHandler.userMessage(normalizedError));
 
       if (notif.sound) notification.addSound();
 
-      notification.build();
+      notification.addError(normalizedError).build();
     }
   }
 }

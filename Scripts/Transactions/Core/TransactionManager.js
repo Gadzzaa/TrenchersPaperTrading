@@ -1,6 +1,6 @@
 import { TransactionAPI } from "../Helpers/TransactionAPI.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class TransactionManager {
   #poolAddress = null;

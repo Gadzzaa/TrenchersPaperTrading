@@ -18,20 +18,35 @@ export class InitHelper {
 
   static validateHealth(stateManager) {
     return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({ type: "HEALTH_PING" }, async (response) => {
-        stateManager.healthy = response.status;
-        if (stateManager.healthy == null) return;
-        if (stateManager.healthy == false) {
-          await UIManager.disableUI("no-internet");
-          stateManager.initializing = false;
-          reject(
-            new AppError("Health check failed.", {
-              code: "HEALTH_CHECK_FAILED",
-            }),
-          );
-        }
-        resolve();
-      });
+      try {
+        chrome.runtime.sendMessage(
+          { type: "HEALTH_PING" },
+          async (response) => {
+            stateManager.healthy = response?.status;
+            if (stateManager.healthy == false) {
+              await UIManager.disableUI("no-internet");
+              stateManager.initializing = false;
+              reject(
+                new AppError("Health check failed.", {
+                  code: "HEALTH_CHECK_FAILED",
+                }),
+              );
+            }
+            resolve(
+              console.log(
+                "[TrenchersPT] 🟢 Health check passed. Server is healthy.",
+              ),
+            );
+          },
+        );
+      } catch (error) {
+        reject(
+          new AppError("Health check failed.", {
+            code: "HEALTH_CHECK_FAILED",
+            cause: error,
+          }),
+        );
+      }
     });
   }
 
@@ -44,6 +59,9 @@ export class InitHelper {
         code: "OUTDATED_VERSION",
       });
     }
+    console.log(
+      "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
+    );
   }
 
   static async searchToken(stateManager) {
@@ -73,5 +91,8 @@ export class InitHelper {
         code: "INVALID_TOKEN",
       });
     }
+    console.log(
+      "[TrenchersPT] 🟢 Session check passed. Valid session token found.",
+    );
   }
 }

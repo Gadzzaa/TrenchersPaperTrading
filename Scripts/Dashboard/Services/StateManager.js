@@ -7,7 +7,7 @@ import { PNLService } from "./PNLService.js";
 export class StateManager {
   constructor() {
     this.initializing = false;
-    this.healthy = null;
+    this.healthy = false;
     this.dataUpdater = null;
 
     this.variables = null;

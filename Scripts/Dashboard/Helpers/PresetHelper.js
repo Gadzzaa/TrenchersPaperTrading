@@ -25,7 +25,7 @@ export class PresetHelper {
   }
 
   static applyPresetButtons(type, dataArray, tooltipBuilder) {
-    dataArray.forEach((item, index) => {
+    Object.entries(dataArray || {}).forEach(([, item], index) => {
       const buttonId = `${type}${index + 1}`;
       const button = document.getElementById(buttonId);
 

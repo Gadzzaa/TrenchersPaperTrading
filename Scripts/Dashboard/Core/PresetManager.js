@@ -5,7 +5,7 @@ import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 export class PresetManager {
   static initUI(stateManager) {
     let currentPreset = PresetManager.getUsingPreset();
-    PresetManager.applyPreset(currentPreset);
+    PresetManager.applyPreset(currentPreset, stateManager);
 
     const presetButtons = document.querySelectorAll("#Presets .preset");
     if (!presetButtons)
@@ -58,15 +58,25 @@ export class PresetManager {
   }
 
   static getPresetData(presetName) {
-    if (!JSON.parse(PresetManager.getPresets())[presetName])
-      PresetManager.setPresets(defaultPresets);
+    if (!PresetManager.getPresets()) PresetManager.setPresets(defaultPresets);
 
     // Get data for new preset
     const allPresetsData = JSON.parse(PresetManager.getPresets());
-    const presetData = allPresetsData[presetName];
+    const presetData = allPresetsData?.[presetName];
+
     if (!allPresetsData || !presetData)
       throw new AppError("No presets data found", {
         code: "PRESET_NOT_FOUND",
+        meta: {
+          presetName,
+          allPresetsData,
+          presetData,
+        },
+      });
+
+    if (typeof presetData !== "object" || presetData === null)
+      throw new AppError("Invalid preset data format", {
+        code: "PRESET_DATA_INVALID",
         meta: {
           presetName,
           allPresetsData,

@@ -27,6 +27,9 @@ export class PNLService {
         this.update();
       }
     });
+    console.log(
+      "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
+    );
   }
 
   stop() {
