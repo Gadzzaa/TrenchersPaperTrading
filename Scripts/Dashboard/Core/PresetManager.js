@@ -39,6 +39,7 @@ export class PresetManager {
     );
 
     PresetHelper.applyPresetUI(presetName);
+    localStorage.setItem("usingPreset", presetName);
   }
 
   static getUsingPreset() {

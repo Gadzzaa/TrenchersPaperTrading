@@ -1,4 +1,4 @@
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class PresetHelper {
   static applyPresetUI(presetName) {
@@ -22,7 +22,6 @@ export class PresetHelper {
 
     oldPresetUI.classList.remove("activePreset");
     newPresetUI.classList.add("activePreset");
-    localStorage.setItem("usingPreset", newPresetUI.id);
   }
 
   static applyPresetButtons(type, dataArray, tooltipBuilder) {
