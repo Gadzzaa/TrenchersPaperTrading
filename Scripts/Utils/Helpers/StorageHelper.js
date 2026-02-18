@@ -30,7 +30,7 @@ export class StorageHelper {
    * @param {string} key - Key to retrieve from storage
    * @returns {Promise<string>} - Key value from storage
    */
-  getFromStorage(key) {
+  static getFromStorage(key) {
     return new Promise((resolve) => {
       chrome.storage.local.get([key], (res) => resolve(res[key]));
     });
@@ -40,18 +40,20 @@ export class StorageHelper {
    * @param {string} key - Key to set in storage
    * @param {string} value - Value to set in storage
    */
-  setToStorage(key, value) {
-    new Promise(() => {
+  static setToStorage(key, value) {
+    return new Promise(() => {
       chrome.storage.local.set({ [key]: value });
+      resolve();
     });
   }
 
   /**
    * @param {string} key - Key to remove from storage
    */
-  removeFromStorage(key) {
-    new Promise(() => {
+  static removeFromStorage(key) {
+    return new Promise(() => {
       chrome.storage.local.remove([key]);
+      resolve();
     });
   }
 }

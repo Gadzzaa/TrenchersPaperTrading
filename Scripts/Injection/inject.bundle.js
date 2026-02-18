@@ -1,8 +1,11 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 
-;// ./Scripts/inject/inject_utils.js
+;// ./Scripts/Injection/InjectUtils.js
 class InjectUtils {
+  /**
+   * @param {RouteHelper} routeHelper
+   */
   static injectToggleButton(routeHelper) {
     let toggleButton = this.createToggleButton();
 
@@ -13,6 +16,9 @@ class InjectUtils {
     document.body.appendChild(toggleButton);
   }
 
+  /**
+   * @returns {HTMLButtonElement} -
+   */
   static createToggleButton() {
     const toggleButton = document.createElement("button");
     toggleButton.id = "trenchersToggleBtn";
@@ -23,6 +29,9 @@ class InjectUtils {
     return toggleButton;
   }
 
+  /**
+   * @param {RouteHelper} routeHelper -
+   */
   static toggleButtonClick(routeHelper) {
     const app = routeHelper?.getAppContainer();
     if (!app) return;
@@ -40,10 +49,17 @@ class InjectUtils {
     }
   }
 
+  /**
+   * Injects the stylesheet into the document head.
+   * */
   static injectStylesheet() {
     const style = this.createStylesheet();
     document.head.appendChild(style);
   }
+
+  /**
+   * @param {string} message - Notification message to show
+   */
   static showNotification(message) {
     const notification = document.getElementById("notification");
     const notifText = document.getElementById("notifText");
@@ -64,6 +80,13 @@ class InjectUtils {
     }, 2000);
   }
 
+  /**
+   * @param {number} left -
+   * @param {number} top -
+   * @param {number} width -
+   * @param {number} height -
+   * @returns {boolean} -
+   */
   static isWithinBounds(left, top, width, height) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -77,6 +100,7 @@ class InjectUtils {
 
   /**
    * Parses a compact number string like "27.9K", "1B", "123M" into a Number.
+   * @param {string} txt - The compact number string to parse.
    */
   static parseCompactNumber(txt) {
     // 1) Make sure we have a string
@@ -106,6 +130,10 @@ class InjectUtils {
 
     return num * mult;
   }
+
+  /**
+   * @returns {HTMLStyleElement} -
+   */
   static createStylesheet() {
     const style = document.createElement("style");
     style.textContent = `
@@ -278,8 +306,13 @@ class InjectUtils {
   }
 }
 
-;// ./Scripts/inject/dragHelper.js
+;// ./Scripts/Injection/DragHelper.js
 class DragHelper {
+  /**
+   * @param {HTMLDivElement} target - Container to be made draggable
+   * @param {HTMLDivElement} handle - Element that initiates the drag
+   * @param {HTMLIframeElement} iframe - Element to disable pointer events on during drag
+   */
   static makeDraggable(target, handle, iframe) {
     const helper = {
       offsetX: 0,
@@ -288,7 +321,7 @@ class DragHelper {
       target,
       handle,
       iframe,
-      dragOverlay: null
+      dragOverlay: null,
     };
 
     helper.dragOverlay = document.createElement("div");
@@ -368,18 +401,28 @@ class DragHelper {
 
     helper.handle.addEventListener("dblclick", resetPosition);
     helper.handle.addEventListener("pointerdown", startDrag);
-    helper.dragOverlay.addEventListener("pointermove", onDrag, { passive: true });
+    helper.dragOverlay.addEventListener("pointermove", onDrag, {
+      passive: true,
+    });
     helper.dragOverlay.addEventListener("pointerup", endDrag);
 
     document.body.appendChild(helper.dragOverlay);
   }
 }
 
-;// ./Scripts/inject/injectHelper.js
+;// ./Scripts/Injection/InjectHelper.js
+
 
 
 class InjectHelper {
   #appContainer = null;
+
+  /**
+   * Creates app container, grabs app position, creates iframe and appends it to the body.
+   * Loads settings and creates settings event listeners.
+   * Creates notification container and move handle for dragging.
+   * Fades in the app container.
+   * */
   constructor() {
     try {
       this.createAppContainer();
@@ -402,10 +445,16 @@ class InjectHelper {
     }
   }
 
+  /**
+   * @returns {HTMLDivElement} - App container element.
+   */
   getAppContainer() {
     return this.#appContainer;
   }
 
+  /**
+   * Sets app container display to none after fading out.
+   * */
   hideApp() {
     if (this.#appContainer) {
       this.#appContainer.style.opacity = "0";
@@ -413,12 +462,18 @@ class InjectHelper {
     }
   }
 
+  /**
+   * Removes app container from the DOM.
+   * */
   removeApp() {
     if (this.#appContainer) {
       this.#appContainer.remove();
     }
   }
 
+  /**
+   * Creates the main app container with styles.
+   * */
   createAppContainer() {
     this.#appContainer = document.createElement("div");
     this.#appContainer.id = "TrenchersPaperTrading";
@@ -438,6 +493,10 @@ class InjectHelper {
     });
   }
 
+  /**
+   * Creates the iframe for the app and appends it to the app container.
+   * @returns {HTMLIFrameElement} -
+   */
   createAppIframe() {
     const appIframe = document.createElement("iframe");
     appIframe.src = chrome.runtime.getURL("dashboard.html");
@@ -491,7 +550,7 @@ class InjectHelper {
       if (
         savedLeft &&
         savedTop &&
-        utils.isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
+        InjectUtils.isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
       ) {
         this.#appContainer.style.left = savedLeft;
         this.#appContainer.style.top = savedTop;
@@ -532,17 +591,24 @@ class InjectHelper {
   }
 }
 
-;// ./Scripts/inject/routeHelper.js
+;// ./Scripts/Injection/RouteHelper.js
 
 
 class RouteHelper {
   #lastPathname = "";
   #injHelper = null;
 
+  /**
+   * @returns {HTMLDivElement} -
+   */
   getAppContainer() {
     return this.#injHelper?.getAppContainer();
   }
 
+  /**
+   * @param {string} baseSegment - Trim URL Segment
+   * @returns {string} - Decoded URL Segment after baseSegment
+   */
   static getURLSegmentAfter(baseSegment) {
     const parts = new URL(window.location.href).pathname
       .split("/")
@@ -553,6 +619,9 @@ class RouteHelper {
       : null;
   }
 
+  /**
+   * Handles route changes and injects or removes the app accordingly.
+   * */
   handleRouteChange() {
     const currentPath = location.pathname;
     const isOnMemePage = currentPath.startsWith("/meme");
@@ -572,6 +641,9 @@ class RouteHelper {
     }
   }
 
+  /**
+   * Monitors route changes in a single-page.
+   * */
   monitorRouteChanges() {
     const observer = new MutationObserver(() => {
       if (location.pathname !== this.#lastPathname) {
@@ -599,17 +671,23 @@ class RouteHelper {
     this.handleRouteChange();
   }
 
+  /**
+   * Hides the app container.
+   * */
   handleHideApp() {
     if (!this.#injHelper) return;
     this.#injHelper.hideApp();
   }
 
+  /**
+   * Hides the app container.
+   * */
   hideApp() {
     this.handleHideApp();
   }
 }
 
-;// ./Scripts/inject/inject.js
+;// ./Scripts/Injection/inject.js
 
 
 // 🚀 Start the app
@@ -623,7 +701,7 @@ let routeHelper;
 
     await new Promise((r) => setTimeout(r, 500));
     InjectUtils.injectStylesheet();
-    
+
     // Now safe to start monitoring routes
     routeHelper = new RouteHelper();
     InjectUtils.injectToggleButton(routeHelper);

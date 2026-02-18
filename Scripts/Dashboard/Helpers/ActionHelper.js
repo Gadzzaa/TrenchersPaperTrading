@@ -1,8 +1,9 @@
 import { TransactionManager } from "../../Transactions/Core/TransactionManager.js";
-import { UIHelper } from "../Helpers/UIHelper.js";
+import { UIHelper } from "./UIHelper.js";
 import { updateBalanceUI } from "../Helpers/BalanceUpdater.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
+import { NotificationManager } from "../../Utils/Core/NotificationManager.js";
 
 export async function handleActions(button, stateManager) {
   try {
@@ -72,7 +73,7 @@ function loadConstants(Constants, stateManager) {
 }
 
 async function handleBuy(transactionManager, poolAddress, stateManager) {
-  const result = await transactionManager.buyToken();
+  const result = await transactionManager.buyToken(stateManager);
   if (!result?.success)
     throw new AppError(result.error || "Unknown error occurred.", {
       code: "BUY_FAILED",
@@ -85,16 +86,20 @@ async function handleBuy(transactionManager, poolAddress, stateManager) {
     });
 
   let solSpent = parseFloat(result.solSpent.toFixed(2));
-  showNotification(
-    `You bought ${solSpent} SOL worth of ${result.tokenData.symbol}!`,
-    "success",
-  );
-  await importTradeLog(stateManager.variables);
-  setActiveToken(poolAddress);
+
+  NotificationManager.addType("success")
+    .addMessage(
+      `You bought ${solSpent} SOL worth of ${result.tokenData.symbol}!`,
+    )
+    .addSound()
+    .build();
+
+  await stateManager.pnlService.syncTradeLog(stateManager.variables);
+  stateManager.pnlService.setActiveToken(poolAddress);
 }
 
 async function handleSell(transactionManager, stateManager) {
-  const result = await transactionManager.sellToken();
+  const result = await transactionManager.sellToken(stateManager);
   if (!result?.success)
     throw new AppError(result.error || "Unknown error occurred.", {
       code: "SELL_FAILED",
@@ -106,6 +111,10 @@ async function handleSell(transactionManager, stateManager) {
     });
 
   const solReceived = parseFloat(result.solReceived).toFixed(2);
-  showNotification(`You sold for ${solReceived} SOL!`, "success");
-  await importTradeLog(stateManager.variables);
+  NotificationManager.addType("success")
+    .addMessage(`You sold for ${solReceived} SOL!`)
+    .addSound()
+    .build();
+
+  await stateManager.pnlService.syncTradeLog(stateManager.variables);
 }

@@ -1,5 +1,5 @@
 import CONFIG from "../../config.js";
-import { AppError } from "../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../ErrorHandling/Helpers/AppError.js";
 
 const DEFAULT_TIMEOUT = 1000 * 5;
 const API_BASE_URL = CONFIG.API_BASE_URL;
@@ -189,7 +189,7 @@ export class BackendRequest {
             throw new AppError("Network error: " + error.message, {
               code: "NETWORK",
               cause: error,
-              meta: { status: response.status, json: responseJSON },
+              meta: { status: response?.status, json: responseJSON },
             });
           }
 

@@ -10,9 +10,10 @@ export class AccountValidators {
     if (!/^[a-zA-Z0-9_]+$/.test(username))
       errMsg = "Username can only contain letters, numbers, and underscores.";
 
-    throw new AppError(errMsg, {
-      code: "LOGIN_FAILED",
-    });
+    if (errMsg)
+      throw new AppError(errMsg, {
+        code: "LOGIN_FAILED",
+      });
   }
 
   /**
@@ -43,8 +44,9 @@ export class AccountValidators {
         errMsg = "Balance must be a valid number.";
       }
     }
-    throw new AppError(errMsg, {
-      code: "REGISTRATION_FAILED",
-    });
+    if (errMsg)
+      throw new AppError(errMsg, {
+        code: "REGISTRATION_FAILED",
+      });
   }
 }

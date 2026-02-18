@@ -3,7 +3,10 @@ import { PresetHelper } from "../Helpers/PresetHelper.js";
 import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class PresetManager {
-  static initUI() {
+  static initUI(stateManager) {
+    let currentPreset = PresetManager.getUsingPreset();
+    PresetManager.applyPreset(currentPreset);
+
     const presetButtons = document.querySelectorAll("#Presets .preset");
     if (!presetButtons)
       throw new AppError("Preset buttons not found", {
@@ -15,12 +18,14 @@ export class PresetManager {
 
     presetButtons.forEach((button) => {
       button.addEventListener("click", () => {
-        PresetManager.applyPreset(button.id);
+        PresetManager.applyPreset(button.id, stateManager);
       });
     });
   }
 
-  static applyPreset(presetName) {
+  //TODO: Implement Transaction, if preset fails mid func, revert
+  static applyPreset(presetName, stateManager) {
+    if (!presetName) presetName = "preset1";
     let presetData = PresetManager.getPresetData(presetName);
 
     PresetHelper.applyPresetButtons(
@@ -35,6 +40,8 @@ export class PresetManager {
     );
 
     PresetHelper.applyPresetUI(presetName);
+    localStorage.setItem("usingPreset", presetName);
+    stateManager.currentPreset = presetName;
   }
 
   static getUsingPreset() {
@@ -51,11 +58,11 @@ export class PresetManager {
   }
 
   static getPresetData(presetName) {
-    if (!JSON.parse(getPresets())[presetName])
+    if (!JSON.parse(PresetManager.getPresets())[presetName])
       PresetManager.setPresets(defaultPresets);
 
     // Get data for new preset
-    const allPresetsData = JSON.parse(getPresets());
+    const allPresetsData = JSON.parse(PresetManager.getPresets());
     const presetData = allPresetsData[presetName];
     if (!allPresetsData || !presetData)
       throw new AppError("No presets data found", {

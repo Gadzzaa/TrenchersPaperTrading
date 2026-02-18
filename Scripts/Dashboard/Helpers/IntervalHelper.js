@@ -1,7 +1,8 @@
 import { updateBalanceUI } from "./BalanceUpdater.js";
 import { MessageHandlers } from "./MessageHandlers.js";
 import { ErrorHandler } from "../../ErrorHandling/Core/ErrorHandler.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
+import { PresetManager } from "../Core/PresetManager.js";
 
 export function startInterval(stateManager) {
   stateManager.currentPreset = document.querySelector(".activePreset")?.id;
@@ -25,15 +26,15 @@ export function startInterval(stateManager) {
 function checkPendingPresets(stateManager) {
   const pendingPresets = localStorage.getItem("pendingPresets");
   if (pendingPresets) {
-    applyPreset(stateManager.currentPreset);
+    PresetManager.applyPreset(stateManager.currentPreset);
     localStorage.setItem("pendingPresets", false);
   }
 }
 
 function updateCurrentPreset(stateManager) {
-  const newPreset = getUsingPreset();
+  const newPreset = PresetManager.getUsingPreset();
   if (stateManager.currentPreset !== newPreset) {
-    applyPreset(newPreset);
+    PresetManager.applyPreset(newPreset);
     stateManager.currentPreset = newPreset;
   }
 }
@@ -47,7 +48,7 @@ async function updateCurrentContract(stateManager) {
 }
 
 async function searchPosition(stateManager) {
-  await importTradeLog(stateManager.variables);
+  await stateManager.pnlService.syncTradeLog(stateManager.variables);
   if (!stateManager.currentContract)
     throw new AppError("No current contract found.", {
       code: "NOT_FOUND",
@@ -77,6 +78,6 @@ async function searchPosition(stateManager) {
   const match = parsed.find((p) => p.pool === stateManager.currentContract);
   if (match) {
     console.log("Setting active token to:", match.pool);
-    setActiveToken(match.pool);
+    stateManager.pnlService.setActiveToken(match.pool);
   }
 }

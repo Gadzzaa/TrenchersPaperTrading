@@ -2,6 +2,7 @@ import { InitHelper } from "../Helpers/InitHelper.js";
 import { UIHelper } from "../Helpers/UIHelper.js";
 import { startInterval } from "../Helpers/IntervalHelper.js";
 import { UIManager } from "../../Utils/Core/UIManager.js";
+import { PNLService } from "./PNLService.js";
 
 export class StateManager {
   constructor() {
@@ -11,8 +12,8 @@ export class StateManager {
 
     this.variables = null;
     this.dataManager = null;
+    this.pnlService = new PNLService();
 
-    this.ws = null;
     this.updateInterval = null;
 
     this.fetchingBalance = false;
@@ -32,7 +33,7 @@ export class StateManager {
     await InitHelper.validateVersion(this);
 
     await InitHelper.validateSession(this);
-    await InitHelper.createWebsocket(this);
+    await this.pnlService.start();
 
     UIHelper.clearUI();
 
@@ -55,15 +56,11 @@ export class StateManager {
 
     this.currentContract = null;
 
-    if (this.ws) {
-      disconnectWebSocket();
-      this.ws = null;
-    }
+    this.pnlService.stop();
   }
 
   async logout() {
     this.disconnect();
-    clearPositions();
     await UIManager.disableUI("no-session");
   }
 }

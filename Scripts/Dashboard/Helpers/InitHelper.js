@@ -4,7 +4,7 @@ import { ServerValidation } from "../../Server/ServerValidation.js";
 import { DataManager } from "../../Account/Core/DataManager.js";
 import { Variables } from "../../Account/Core/Variables.js";
 import { StorageManager } from "../../Utils/Core/StorageManager.js";
-import { AppError } from "../../ErrorHandling/Helper/AppError.js";
+import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
 
 export class InitHelper {
   static loadSettings() {
@@ -24,12 +24,13 @@ export class InitHelper {
         if (stateManager.healthy == false) {
           await UIManager.disableUI("no-internet");
           stateManager.initializing = false;
-          promise.reject();
-          throw new AppError("Health check failed.", {
-            code: "HEALTH_CHECK_FAILED",
-          });
+          reject(
+            new AppError("Health check failed.", {
+              code: "HEALTH_CHECK_FAILED",
+            }),
+          );
         }
-        promise.resolve();
+        resolve();
       });
     });
   }
@@ -65,25 +66,12 @@ export class InitHelper {
 
     const isSessionValid = await stateManager.dataManager.checkSession();
     if (!isSessionValid) {
-      clearPositions();
+      stateManager.pnlService.clearPositions();
       await UIManager.disableUI("no-session");
       stateManager.initializing = false;
       throw new AppError("Session invalid.", {
         code: "INVALID_TOKEN",
       });
     }
-  }
-
-  static async createWebsocket(stateManager) {
-    if (stateManager.ws) {
-      console.log("WebSocket already exists, skipping creation.");
-      return;
-    }
-    stateManager.ws = await connectWebSocket().catch((error) => {
-      throw new AppError("WebSocket connection failed: " + error.message, {
-        cause: error,
-        code: "WEBSOCKET_CONNECTION_FAILED",
-      });
-    });
   }
 }
