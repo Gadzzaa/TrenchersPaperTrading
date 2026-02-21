@@ -1,19 +1,10 @@
 import { Variables } from "./Account/Core/Variables.js";
 import { DataManager } from "./Account/Core/DataManager.js";
-import { AuthManager } from "./Account/Core/AuthManager.js";
 import { ServerValidation } from "./Server/ServerValidation.js";
-import { SubscriptionManager } from "./Account/Core/SubscriptionManager.js";
 import { SettingsManager } from "./Account/Core/SettingsManager.js";
 
 import { getFromStorage } from "./utils.js";
-import { setDebugMode } from "../config.js";
-import {
-  disableUI,
-  enableUI,
-  startLoadingDots,
-  stopLoadingDots,
-  sanitizeText,
-} from "./utils.js";
+import { disableUI, enableUI } from "./utils.js";
 
 let variables;
 
@@ -41,57 +32,6 @@ let initializing = false;
 let runtimeMessageListener = null;
 const barWidth = 30;
 const tokens = [];
-const settings = [
-  {
-    key: "username",
-    default: "Guest",
-    apply: (value) => {
-      usernameText.textContent = value;
-      accountUser.textContent = value;
-    },
-  },
-  {
-    key: "theme",
-    default: "dark",
-    apply: (value) => {
-      const button = document.getElementById(value + "Theme");
-      button?.classList.add("active");
-      document.documentElement.setAttribute("data-theme", value);
-    },
-  },
-  {
-    key: "volume",
-    default: 1.0,
-    apply: (value) => {
-      const slider = document.getElementById("volumeSlider");
-      if (slider) slider.value = value * 100;
-    },
-  },
-  {
-    key: "animation",
-    default: 3,
-    apply: (value) => {
-      const slider = document.getElementById("animationSlider");
-      if (slider) slider.value = value;
-      document.documentElement.style.setProperty(
-        "--anim-time",
-        `${value / 10}s`,
-      );
-      setQualityPreset(value);
-    },
-  },
-  {
-    key: "debugMode",
-    default: false,
-    apply: (value) => {
-      const button = document.getElementById("debugButton");
-      if (!button) return;
-      button.classList.toggle("active", value);
-      setDebugMode(value);
-    },
-  },
-];
-
 async function init() {
   if (initializing) return;
   initializing = true;
@@ -153,21 +93,11 @@ function disconnectPopup() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const footerButtons = document.querySelectorAll(".footerButton");
-  const debugButton = document.getElementById("debugButton");
   usernameInput = document.getElementById("formUsername");
-  passwordInput = document.getElementById("formPassword");
-  const showPasswordButton = document.getElementById("showPasswordButton");
-  const icon = showPasswordButton.querySelector("i");
   usernameText = document.getElementById("usernameText");
   solBalance = document.getElementById("solBalance");
   pnlData = document.getElementById("pnlData");
   accountUser = document.getElementById("username");
-  const themeButtons = document.querySelectorAll(".theme");
-  const volumeSlider = document.getElementById("volumeSlider");
-  const animationSlider = document.getElementById("animationSlider");
-  const saveWindowBox = document.getElementById("saveWindowBox");
-  const pnlSlider = document.getElementById("pnlSlider");
   indicator = document.querySelector(".indicator");
   tokenListContainer = document.getElementById("tokenList");
   accountId = document.getElementById("id");
@@ -179,228 +109,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   subscriptionPrice = document.getElementById("price");
   subscriptionMethod = document.getElementById("method");
   versionInfo = document.getElementById("versionInfo");
-  const loginButton = document.getElementById("loginButton");
-  const registerButton = document.getElementById("registerButton");
-  const logoutButton = document.getElementById("logoutButton");
-  const resetButton = document.getElementById("resetButton");
-  const upgradeButton = document.getElementById("upgradeButton");
-  const manageButton = document.getElementById("manageButton");
-  const monthlyButton = document.getElementById("monthlyButton");
-  const yearlyButton = document.getElementById("yearlyButton");
-
-  loginButton.addEventListener("click", async () => {
-    const interval = startLoadingDots(loginButton);
-    variables = new Variables({
-      username: usernameInput.value,
-      password: passwordInput.value,
-    });
-    let authManager = new AuthManager(variables);
-
-    await authManager
-      .login()
-      .then(async () => {
-        clearInputFields();
-        await init();
-        moveIndicator(defaultButton);
-        setDisplay(defaultButton.dataset.index);
-      })
-      .catch((err) => {
-        showDialog({
-          title: "Login Failed",
-          message: err.message || "An error occurred during login.",
-          type: "Info",
-        });
-      })
-      .finally(() => {
-        stopLoadingDots(loginButton, interval);
-      });
-  });
-
-  registerButton.addEventListener("click", async () => {
-    showDialog({
-      title: "Startup Balance",
-      message:
-        "Please enter the amount of SOL you want to start with (minimum 1 SOL, maximum 100 SOL):",
-      type: "Input",
-    }).then(async (input) => {
-      if (input === null || input === undefined) return; // User canceled
-      const amount = Number(input);
-      if (isNaN(amount) || amount < 1 || amount > 100) {
-        showDialog({
-          title: "Invalid Amount",
-          message: "Please enter a valid number between 1 and 100.",
-          type: "Info",
-        });
-        return;
-      }
-      showDialog({
-        title: "Register",
-        message:
-          "By registering, you agree to our Terms of Service and Privacy Policy.",
-        type: "Confirm",
-      }).then(async (confirmed) => {
-        if (!confirmed) return;
-        const interval = startLoadingDots(registerButton);
-        variables = new Variables({
-          username: usernameInput.value,
-          password: passwordInput.value,
-          balance: amount,
-        });
-        let authManager = new AuthManager(variables);
-
-        await authManager
-          .register()
-          .then(async () => {
-            clearInputFields();
-            await init();
-            moveIndicator(defaultButton);
-            setDisplay(defaultButton.dataset.index);
-          })
-          .catch((err) => {
-            showDialog({
-              title: "Registration Failed",
-              message: err.message || "An error occurred during registration.",
-              type: "Info",
-            });
-          })
-          .finally(() => {
-            stopLoadingDots(registerButton, interval);
-          });
-      });
-    });
-  });
-
-  logoutButton.addEventListener("click", async () => {
-    const interval = startLoadingDots(logoutButton);
-    let authManager = new AuthManager(variables);
-
-    await authManager
-      .logout()
-      .then(() => {
-        moveIndicator(defaultButton);
-        setDisplay(defaultButton.dataset.index);
-        disconnectPopup();
-      })
-      .catch((err) => {
-        showDialog({
-          title: "Logout Failed",
-          message: err.message || "An error occurred during logout.",
-          type: "Info",
-        });
-      })
-      .finally(() => {
-        stopLoadingDots(logoutButton, interval);
-      });
-  });
-
-  resetButton.addEventListener("click", async () => {
-    showDialog({
-      title: "Start balance",
-      message:
-        "With how much balance do you want to start over? (minimum 1 SOL, maximum 100 SOL)",
-      type: "Input",
-    }).then(async (input) => {
-      if (input === null || input === undefined) return; // User canceled
-      const amount = parseFloat(input);
-      console.log("Reset amount:", amount);
-      if (isNaN(amount) || amount <= 0 || amount > 100) {
-        showDialog({
-          title: "Invalid Amount",
-          message: "Please enter a valid number between 1 and 100.",
-          type: "Info",
-        });
-        return;
-      }
-      showDialog({
-        title: "Confirm Reset",
-        message:
-          "Are you sure you want to reset your account? This action cannot be undone.",
-        type: "Confirm",
-      }).then(async (confirmed) => {
-        if (!confirmed) return;
-        const interval = startLoadingDots(resetButton);
-        let dataManager = new DataManager(variables);
-
-        await dataManager
-          .resetAccount(amount)
-          .then(async () => {
-            await loadAPIData();
-            moveIndicator(defaultButton);
-            setDisplay(defaultButton.dataset.index);
-          })
-          .catch((err) => {
-            showDialog({
-              title: "Reset Failed",
-              message: err.message || "An error occurred during reset.",
-              type: "Info",
-            });
-          })
-          .finally(() => {
-            stopLoadingDots(resetButton, interval);
-          });
-      });
-    });
-  });
-
-  showPasswordButton.addEventListener("click", () => {
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      icon.classList.remove("fa-eye-slash");
-      icon.classList.add("fa-eye");
-    } else {
-      passwordInput.type = "password";
-      icon.classList.remove("fa-eye");
-      icon.classList.add("fa-eye-slash");
-    }
-  });
-
-  upgradeButton.addEventListener("click", async () => {
-    showSubscriptionDiv();
-  });
-
-  monthlyButton.addEventListener("click", async () => {
-    const interval = startLoadingDots(monthlyButton);
-    let subscriptionManager = new SubscriptionManager(variables);
-    await subscriptionManager.upgradeSubscription("monthly").catch((err) => {
-      showDialog({
-        title: "Upgrade Failed",
-        message: err.message || "An error occurred during upgrade.",
-        type: "Info",
-      }).finally(() => {
-        stopLoadingDots(monthlyButton, interval);
-        hideSubscriptionDiv();
-      });
-    });
-  });
-
-  yearlyButton.addEventListener("click", async () => {
-    const interval = startLoadingDots(yearlyButton);
-    let subscriptionManager = new SubscriptionManager(variables);
-    await subscriptionManager.upgradeSubscription("yearly").catch((err) => {
-      showDialog({
-        title: "Upgrade Failed",
-        message: err.message || "An error occurred during upgrade.",
-        type: "Info",
-      }).finally(() => {
-        stopLoadingDots(yearlyButton, interval);
-        hideSubscriptionDiv();
-      });
-    });
-  });
-
-  manageButton.addEventListener("click", async () => {
-    const interval = startLoadingDots(manageButton);
-    let subscriptionManager = new SubscriptionManager(variables);
-    await subscriptionManager.manageSubscription().catch((err) => {
-      showDialog({
-        title: "Manage Failed.",
-        message: err.message || "An error occurred during manage.",
-        type: "Info",
-      }).finally(() => {
-        stopLoadingDots(manageButton, interval);
-      });
-    });
-  });
 
   // Disable arrow keys
   document.addEventListener("keydown", (e) => {
@@ -408,62 +116,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (scrollKeys.includes(e.key)) {
       e.preventDefault();
     }
-  });
-
-  themeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      themeButtons.forEach((btn) => btn.classList.remove("active"));
-      switch (button.id) {
-        case "lightTheme":
-          chrome.storage.local.set({ theme: "light" });
-          button.classList.add("active");
-          break;
-        case "darkTheme":
-          chrome.storage.local.set({ theme: "dark" });
-          button.classList.add("active");
-          break;
-      }
-    });
-  });
-  volumeSlider.addEventListener("input", function () {
-    chrome.storage.local.set({ volume: parseFloat(this.value) / 100 });
-  });
-
-  animationSlider.addEventListener("input", function () {
-    chrome.storage.local.set({ animation: this.value });
-  });
-
-  saveWindowBox.addEventListener("change", () => {
-    saveCurrentSettings();
-  });
-
-  pnlSlider.addEventListener("input", function () {
-    saveCurrentSettings();
-  });
-
-  debugButton.addEventListener("click", () => {
-    if (debugButton.classList.contains("active")) {
-      debugButton.classList.remove("active");
-      setDebugMode(false);
-      chrome.storage.local.set({ debugMode: false });
-    } else {
-      debugButton.classList.add("active");
-      setDebugMode(true);
-      chrome.storage.local.set({ debugMode: true });
-    }
-  });
-
-  // Footer Buttons animation
-  footerButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const index = parseInt(button.dataset.index, 10);
-      document
-        .querySelector(".footerButton.active")
-        ?.classList.remove("active");
-      button.classList.add("active");
-      setDisplay(index);
-      moveIndicator(button);
-    });
   });
 
   // Default active footer button
@@ -697,26 +349,6 @@ function moveIndicator(el) {
   indicator.style.left = `${barLeft}px`;
 }
 
-function setQualityPreset(qualityValue) {
-  document.querySelector(".pageCarousel").style.scrollBehavior =
-    qualityValue < 3 ? "auto" : "smooth";
-  const buttons = document.querySelectorAll("button");
-  if (qualityValue < 2) {
-    buttons.forEach((btn) => btn.style.removeProperty("will-change"));
-  } else {
-    buttons.forEach(
-      (btn) =>
-        (btn.style.willChange =
-          "transform, background-color, color, box-shadow, border-color"),
-    );
-  }
-  if (qualityValue < 1) {
-    buttons.forEach((btn) => btn.classList.add("no-shadow"));
-  } else {
-    buttons.forEach((btn) => btn.classList.remove("no-shadow"));
-  }
-}
-
 export function showDialog({ title, message, type }) {
   return new Promise((resolve) => {
     const dialogOverlay = document.getElementById("dialogOverlay");
@@ -856,33 +488,6 @@ function applyPremiumSettings(key, value, fallback) {
       if (slider) slider.value = value / 100;
       break;
   }
-}
-
-function saveCurrentSettings() {
-  const checkbox = document.getElementById("saveWindowBox");
-  const slider = document.getElementById("pnlSlider");
-  let settings = {
-    saveWindowPos: checkbox ? checkbox.checked : false,
-    pnlRefreshInterval: slider ? slider.value * 100 : 500,
-  };
-  let settingsManager = new SettingsManager(variables);
-  settingsManager
-    .saveSettings(settings)
-    .then(() => {
-      console.log("Settings saved:", settings);
-      Object.entries(settings).forEach(([key, value]) =>
-        chrome.storage.local.set({ [key]: value }),
-      );
-    })
-    .catch((err) => {
-      console.error("Failed to save settings:", err);
-    });
-}
-
-function showSubscriptionDiv() {
-  const subDiv = document.getElementById("SubscriptionSelectorDiv");
-  subDiv.classList.remove("hidden");
-  subDiv.style.opacity = "1";
 }
 
 function hideSubscriptionDiv() {

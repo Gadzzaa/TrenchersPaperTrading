@@ -36,6 +36,8 @@ export class ErrorCodes {
     PRESET_NOT_FOUND: "PRESET_NOT_FOUND",
     BUTTON_NOT_FOUND: "BUTTON_NOT_FOUND",
     PRESET_DATA_INVALID: "PRESET_DATA_INVALID",
+    INVALID_AMOUNT_INPUT: "INVALID_AMOUNT_INPUT",
+    INVALID_VOLUME: "INVALID_VOLUME",
   });
 
   static UserMessages = Object.freeze({
@@ -79,5 +81,7 @@ export class ErrorCodes {
     BUTTON_NOT_FOUND: "Button data not found. Please try again.",
     PRESET_DATA_INVALID:
       "Preset data is in an invalid format. Please try again.",
+    INVALID_AMOUNT_INPUT: "Please enter a valid number between 1 and 100.",
+    INVALID_VOLUME: "Please enter a valid volume between 0 and 100.",
   });
 }
