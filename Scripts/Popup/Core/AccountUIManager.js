@@ -14,10 +14,10 @@ export class AccountUIManager {
       AccountUILogic.showSubscriptionDiv();
     });
     monthlyButton.addEventListener("click", async () => {
-      AccountUILogic.subscribe("monthly", stateManager);
+      AccountUILogic.upgradeSubscription("monthly", stateManager);
     });
     yearlyButton.addEventListener("click", async () => {
-      AccountUILogic.subscribe("yearly", stateManager);
+      AccountUILogic.upgradeSubscription("yearly", stateManager);
     });
     manageButton.addEventListener("click", async () => {
       AccountUILogic.manageSubscription(stateManager);
