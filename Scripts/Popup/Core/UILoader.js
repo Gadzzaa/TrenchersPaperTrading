@@ -1,41 +1,43 @@
-import { UIHelper } from "../Helpers/UIHelper.js";
-export class UIManager {
-  static updateUsername(newUsername) {
-    let usernameText = document.getElementById("usernameText");
-    let accountUser = document.getElementById("username");
+import {UIHelper} from "../Helpers/UIHelper.js";
+import {setDebugMode} from "../../../config";
 
-    usernameText?.textContent = newUsername;
-    accountUser?.textContent = newUsername;
-  }
+export class UILoader {
+    static updateUsername(newUsername) {
+        let usernameText = document.getElementById("usernameText");
+        let accountUser = document.getElementById("username");
 
-  static updateTheme(newTheme) {
-    const button = document.getElementById(newTheme + "Theme");
+        usernameText.textContent = newUsername;
+        accountUser.textContent = newUsername;
+    }
 
-    button?.classList.add("active");
+    static updateTheme(newTheme) {
+        const button = document.getElementById(newTheme + "Theme");
 
-    document.documentElement.setAttribute("data-theme", newTheme);
-  }
+        button?.classList.add("active");
 
-  static applyVolumeUI(volume) {
-    const slider = document.getElementById("volumeSlider");
+        document.documentElement.setAttribute("data-theme", newTheme);
+    }
 
-    slider?.value = volume * 100;
-  }
+    static applyVolumeUI(volume) {
+        const slider = document.getElementById("volumeSlider");
 
-  static applyQualityUI(animationTime) {
-    const slider = document.getElementById("animationSlider");
+        slider.value = volume * 100;
+    }
 
-    slider?.value = animationTime;
-    document.documentElement.style.setProperty(
-      "--anim-time",
-      `${animationTime / 10}s`,
-    );
-    UIHelper.setQualityPreset(animationTime);
-  }
+    static applyQualityUI(animationTime) {
+        const slider = document.getElementById("animationSlider");
 
-  applyDebugModeUI(enabled) {
-    const button = document.getElementById("debugButton");
-    button?.classList.toggle("active", enabled);
-    setDebugMode(enabled);
-  }
+        slider.value = animationTime;
+        document.documentElement.style.setProperty(
+            "--anim-time",
+            `${animationTime / 10}s`,
+        );
+        UIHelper.setQualityPreset(animationTime);
+    }
+
+    static applyDebugModeUI(enabled) {
+        const button = document.getElementById("debugButton");
+        button?.classList.toggle("active", enabled);
+        setDebugMode(enabled);
+    }
 }
