@@ -40,7 +40,7 @@ export class UIConfig {
         },
     ];
 
-    static createStorageMessageListener(stateManager) {
+    static createStorageMessageListener() {
         return (changes, area) => {
             if (area === "local" && changes.theme) {
                 document.documentElement.setAttribute(
@@ -64,7 +64,7 @@ export class UIConfig {
                 console.log("Health status update received:", message.status);
                 if (!message.status) {
                     // disconnectPopup and internet
-                } // init else
+                } else stateManager.initialize()
             }
         };/**/
     }
