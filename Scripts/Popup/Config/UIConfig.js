@@ -59,7 +59,7 @@ export class UIConfig {
     }
 
     static createRuntimeMessageListener(stateManager) {
-        return (message, sender, sendResponse) => {
+        return (message) => {
             if (message.type === "STATUS_UPDATE") {
                 console.log("Health status update received:", message.status);
                 if (!message.status) {

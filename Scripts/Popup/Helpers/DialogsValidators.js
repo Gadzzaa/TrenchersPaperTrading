@@ -2,7 +2,7 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {DialogManager} from "../Core/DialogManager.js";
 
 export class DialogsValidators {
-    async static askStartupBalance() {
+    static async askStartupBalance() {
         let input = await new DialogManager()
             .addTitle("Startup Balance")
             .addMessage("Please enter the amount of SOL you want to start with (minimum 1 SOL, maximum 100 SOL):")
@@ -26,7 +26,7 @@ export class DialogsValidators {
         return amount;
     }
 
-    async static askTOSAgreement() {
+    static async askTOSAgreement() {
         return await new DialogManager()
             .addTitle("TOS Agreement")
             .addMessage(
@@ -36,7 +36,7 @@ export class DialogsValidators {
             .show();
     }
 
-    async static askResetConfirmation() {
+    static async askResetConfirmation() {
         return await new DialogManager()
             .addTitle("Reset Confirmation")
             .addMessage("Are you sure you want to reset your account? This action cannot be undone.")

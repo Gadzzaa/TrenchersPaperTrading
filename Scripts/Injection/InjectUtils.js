@@ -1,138 +1,105 @@
 export class InjectUtils {
-  /**
-   * @param {RouteHelper} routeHelper
-   */
-  static injectToggleButton(routeHelper) {
-    let toggleButton = this.createToggleButton();
+    /**
+     * @param {RouteHelper} routeHelper
+     */
+    static injectToggleButton(routeHelper) {
+        let toggleButton = this.createToggleButton();
 
-    // Toggle logic
-    toggleButton.addEventListener("click", () =>
-      this.toggleButtonClick(routeHelper),
-    );
-    document.body.appendChild(toggleButton);
-  }
-
-  /**
-   * @returns {HTMLButtonElement} -
-   */
-  static createToggleButton() {
-    const toggleButton = document.createElement("button");
-    toggleButton.id = "trenchersToggleBtn";
-    var toggleButtonImage = document.createElement("img");
-    toggleButtonImage.src = chrome.runtime.getURL("Images/logo.png");
-    toggleButtonImage.alt = "Show/Hide TrenchersPT";
-    toggleButton.appendChild(toggleButtonImage);
-    return toggleButton;
-  }
-
-  /**
-   * @param {RouteHelper} routeHelper -
-   */
-  static toggleButtonClick(routeHelper) {
-    const app = routeHelper?.getAppContainer();
-    if (!app) return;
-    const toggleButton = document.getElementById("trenchersToggleBtn");
-    // --- animate button ---
-    toggleButton.classList.remove("clicked"); // reset
-    void toggleButton.offsetWidth; // force reflow so animation restarts
-    toggleButton.classList.add("clicked");
-
-    if (app.style.display === "none") {
-      app.style.display = "block";
-      setTimeout(() => (app.style.opacity = "1"), 20);
-    } else {
-      routeHelper.hideApp();
-    }
-  }
-
-  /**
-   * Injects the stylesheet into the document head.
-   * */
-  static injectStylesheet() {
-    const style = this.createStylesheet();
-    document.head.appendChild(style);
-  }
-
-  /**
-   * @param {string} message - Notification message to show
-   */
-  static showNotification(message) {
-    const notification = document.getElementById("notification");
-    const notifText = document.getElementById("notifText");
-    if (!notification || !notifText) return;
-
-    clearTimeout(notification._hideTimeout);
-
-    // Update text and trigger pop animation
-    notifText.textContent = message;
-    if (notification.classList.contains("show")) {
-      notifText.classList.remove("pop");
-      void notifText.offsetWidth; // Force reflow to restart animation
-      notifText.classList.add("pop");
-    } else notification.classList.add("show");
-
-    notification._hideTimeout = setTimeout(() => {
-      notification.classList.remove("show");
-    }, 2000);
-  }
-
-  /**
-   * @param {number} left -
-   * @param {number} top -
-   * @param {number} width -
-   * @param {number} height -
-   * @returns {boolean} -
-   */
-  static isWithinBounds(left, top, width, height) {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    return (
-      parseInt(left) + width <= vw &&
-      parseInt(top) + height <= vh &&
-      parseInt(left) >= 0 &&
-      parseInt(top) >= 0
-    );
-  }
-
-  /**
-   * Parses a compact number string like "27.9K", "1B", "123M" into a Number.
-   * @param {string} txt - The compact number string to parse.
-   */
-  static parseCompactNumber(txt) {
-    // 1) Make sure we have a string
-    const raw = String(txt).trim();
-
-    // 2) Remove any leading $ or commas
-    const cleaned = raw.replace(/[$,]/g, "");
-
-    // 3) Regex: capture number + optional unit (K/M/B)
-    const re = /^(\d+(?:\.\d+)?)([KMB])?$/i;
-    const m = cleaned.match(re);
-    if (!m) {
-      const asNum = Number(cleaned);
-      if (isNaN(asNum)) {
-        throw new Error(`Unrecognized number format: "${txt}"`);
-      }
-      return asNum;
+        // Toggle logic
+        toggleButton.addEventListener("click", () =>
+            this.toggleButtonClick(routeHelper),
+        );
+        document.body.appendChild(toggleButton);
     }
 
-    // 4) Parse the numeric part
-    const num = parseFloat(m[1]);
-    const unit = (m[2] || "").toUpperCase();
+    /**
+     * @returns {HTMLButtonElement} -
+     */
+    static createToggleButton() {
+        const toggleButton = document.createElement("button");
+        toggleButton.id = "trenchersToggleBtn";
+        let toggleButtonImage = document.createElement("img");
+        toggleButtonImage.src = chrome.runtime.getURL("Images/logo.png");
+        toggleButtonImage.alt = "Show/Hide TrenchersPT";
+        toggleButton.appendChild(toggleButtonImage);
+        return toggleButton;
+    }
 
-    // 5) Apply multiplier if needed
-    const mult =
-      unit === "K" ? 1e3 : unit === "M" ? 1e6 : unit === "B" ? 1e9 : 1;
+    /**
+     * @param {RouteHelper} routeHelper -
+     */
+    static toggleButtonClick(routeHelper) {
+        const app = routeHelper?.getAppContainer();
+        if (!app) return;
+        const toggleButton = document.getElementById("trenchersToggleBtn");
+        // --- animate button ---
+        toggleButton.classList.remove("clicked"); // reset
+        void toggleButton.offsetWidth; // force reflow so animation restarts
+        toggleButton.classList.add("clicked");
 
-    return num * mult;
-  }
+        if (app.style.display === "none") {
+            app.style.display = "block";
+            setTimeout(() => (app.style.opacity = "1"), 20);
+        } else {
+            routeHelper.hideApp();
+        }
+    }
 
-  /**
-   * @returns {HTMLStyleElement} -
-   */
-  static createStylesheet() {
-    const style = document.createElement("style");
-    style.textContent = `
+    /**
+     * Injects the stylesheet into the document head.
+     * */
+    static injectStylesheet() {
+        const style = this.createStylesheet();
+        document.head.appendChild(style);
+    }
+
+    /**
+     * @param {string} message - Notification message to show
+     */
+    static showNotification(message) {
+        const notification = document.getElementById("notification");
+        const notifText = document.getElementById("notifText");
+        if (!notification || !notifText) return;
+
+        clearTimeout(notification._hideTimeout);
+
+        // Update text and trigger pop animation
+        notifText.textContent = message;
+        if (notification.classList.contains("show")) {
+            notifText.classList.remove("pop");
+            void notifText.offsetWidth; // Force reflow to restart animation
+            notifText.classList.add("pop");
+        } else notification.classList.add("show");
+
+        notification._hideTimeout = setTimeout(() => {
+            notification.classList.remove("show");
+        }, 2000);
+    }
+
+    /**
+     * @param {number} left -
+     * @param {number} top -
+     * @param {number} width -
+     * @param {number} height -
+     * @returns {boolean} -
+     */
+    static isWithinBounds(left, top, width, height) {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        return (
+            left + width <= vw &&
+            top + height <= vh &&
+            left >= 0 &&
+            top >= 0
+        );
+    }
+
+    /**
+     * @returns {HTMLStyleElement} -
+     */
+    static createStylesheet() {
+        const style = document.createElement("style");
+        style.textContent = `
   #TrenchersPaperTrading {
     transition: 
       background var(--anim-time) ease,
@@ -298,6 +265,6 @@ export class InjectUtils {
   animation: toggleClick 0.3s ease;
 }
   `;
-    return style;
-  }
+        return style;
+    }
 }
