@@ -1,31 +1,39 @@
-import { SettingsUILogic } from "../Helpers/SettingsUILogic.js";
+import {SettingsUILogic} from "../Helpers/SettingsUILogic.js";
+
 export class SettingsUIManager {
-  static createButtons(stateManager) {
-    themeButtons.forEach((button) => {
-      button.classList.remove("active");
-      button.addEventListener("click", () => {
-        SettingsUILogic.applyTheme(button);
-      });
-    });
+    static createButtons(stateManager) {
+        const themeButtons = document.querySelectorAll(".theme");
+        const volumeSlider = document.getElementById("volumeSlider");
+        const animationSlider = document.getElementById("animationSlider");
+        const saveWindowBox = document.getElementById("saveWindowBox");
+        const pnlSlider = document.getElementById("pnlSlider");
+        const debugButton = document.getElementById("debugButton");
 
-    volumeSlider.addEventListener("input", function () {
-      SettingsUILogic.setVolume(this.value);
-    });
+        themeButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                document.querySelector(".theme.active").classList.remove("active");
+                SettingsUILogic.applyTheme(button);
+            });
+        });
 
-    animationSlider.addEventListener("input", function () {
-      SettingsUILogic.setAnimationQuality(this.value);
-    });
+        volumeSlider.addEventListener("input", function () {
+            SettingsUILogic.setVolume(this.value);
+        });
 
-    saveWindowBox.addEventListener("change", () => {
-      SettingsUILogic.setAndSavePremiumSettings(stateManager);
-    });
+        animationSlider.addEventListener("input", function () {
+            SettingsUILogic.setAnimationQuality(this.value);
+        });
 
-    pnlSlider.addEventListener("input", function () {
-      SettingsUILogic.setAndSavePremiumSettings(stateManager);
-    });
+        saveWindowBox.addEventListener("change", () => {
+            SettingsUILogic.setAndSavePremiumSettings(stateManager);
+        });
 
-    debugButton.addEventListener("click", () => {
-      SettingsUILogic.toggleDebugMode(debugButton);
-    });
-  }
+        pnlSlider.addEventListener("mouseup", function () {
+            SettingsUILogic.setAndSavePremiumSettings(stateManager);
+        });
+
+        debugButton.addEventListener("click", () => {
+            SettingsUILogic.toggleDebugMode(debugButton);
+        });
+    }
 }
