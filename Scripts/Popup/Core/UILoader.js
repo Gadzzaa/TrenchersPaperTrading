@@ -13,7 +13,7 @@ export class UILoader {
     static updateTheme(newTheme) {
         const button = document.getElementById(newTheme + "Theme");
 
-        button?.classList.add("active");
+        button.classList.add("active");
 
         document.documentElement.setAttribute("data-theme", newTheme);
     }
@@ -37,7 +37,7 @@ export class UILoader {
 
     static applyDebugModeUI(enabled) {
         const button = document.getElementById("debugButton");
-        button?.classList.toggle("active", enabled);
+        button.classList.toggle("active", enabled);
         setDebugMode(enabled);
     }
 }

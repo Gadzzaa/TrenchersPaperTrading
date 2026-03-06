@@ -1,7 +1,7 @@
 export class FooterHelper {
     static focusButton(button) {
         const index = parseInt(button.dataset.index, 10);
-        document.querySelector(".footerButton.active")?.classList.remove("active");
+        document.querySelector(".footerButton.active").classList.remove("active");
         button.classList.add("active");
         FooterHelper.#setDisplay(index);
         FooterHelper.#moveIndicator(button);
@@ -38,7 +38,7 @@ export class FooterHelper {
     static #moveIndicator(el) {
         let indicator = document.querySelector(".indicator");
         let barWidth = 30;
-       
+
         const parentRect = el.parentElement.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
 
