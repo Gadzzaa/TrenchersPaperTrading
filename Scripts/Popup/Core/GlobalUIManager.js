@@ -2,7 +2,7 @@ import {AccountUIManager} from "./AccountUIManager.js";
 import {LoginUIManager} from "./LoginUIManager.js";
 import {SettingsUIManager} from "./SettingsUIManager.js";
 import {FooterHelper} from "../Helpers/FooterHelper.js";
-import {UIConfig} from "../Config/UIConfig";
+import {UIConfig} from "../Config/UIConfig.js";
 
 export class GlobalUIManager {
     static createButtons(stateManager) {

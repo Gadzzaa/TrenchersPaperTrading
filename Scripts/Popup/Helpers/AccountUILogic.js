@@ -1,6 +1,6 @@
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {SubscriptionManager} from "../../Account/Core/SubscriptionManager.js";
-import {DataManager} from "../../Data/Core/DataManager.js";
+import {DataManager} from "../../Account/Core/DataManager.js"
 import {FooterHelper} from "./FooterHelper.js";
 import {DialogsValidators} from "./DialogsValidators";
 

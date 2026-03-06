@@ -1,5 +1,5 @@
 import {UIHelper} from "../Helpers/UIHelper.js";
-import {setDebugMode} from "../../../config";
+import {setDebugMode} from "../../../config.js";
 
 export class UILoader {
     static updateUsername(newUsername) {

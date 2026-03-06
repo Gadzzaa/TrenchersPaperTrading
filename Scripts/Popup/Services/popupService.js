@@ -1,7 +1,7 @@
-import {StateManager} from "./StateManager";
-import {GlobalUIManager} from "../Core/GlobalUIManager";
+import {StateManager} from "./StateManager.js";
+import {GlobalUIManager} from "../Core/GlobalUIManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js"
-import {FooterHelper} from "../Helpers/FooterHelper";
+import {FooterHelper} from "../Helpers/FooterHelper.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     try {

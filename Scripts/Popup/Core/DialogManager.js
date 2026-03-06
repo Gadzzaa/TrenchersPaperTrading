@@ -1,5 +1,5 @@
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js"
-import {DialogHelper} from "../Helpers/DialogHelper";
+import {DialogHelper} from "../Helpers/DialogHelper.js";
 
 export class DialogManager {
     constructor() {
