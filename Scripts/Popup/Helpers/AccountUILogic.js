@@ -2,7 +2,8 @@ import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {SubscriptionManager} from "../../Account/Core/SubscriptionManager.js";
 import {DataManager} from "../../Account/Core/DataManager.js"
 import {FooterHelper} from "./FooterHelper.js";
-import {DialogsValidators} from "./DialogsValidators";
+import {DialogsValidators} from "./DialogsValidators.js";
+import {AccountLoader} from "../Core/AccountLoader.js";
 
 export class AccountUILogic {
     static async resetAccount(stateManager) {
@@ -12,13 +13,13 @@ export class AccountUILogic {
         let confirmed = await DialogsValidators.askResetConfirmation();
         if (!confirmed) return;
 
-        // TODO: startLoadingDots
         let dataManager = new DataManager(stateManager.variables);
 
         await dataManager
             .resetAccount(amount)
             .then(() => {
                 FooterHelper.focusDefaultButton();
+                AccountLoader.loadData(stateManager);
             })
             .catch((err) => {
                 throw ErrorHandler.log(err);
@@ -27,7 +28,6 @@ export class AccountUILogic {
 
 
     static async upgradeSubscription(plan, stateManager) {
-        // TODO: startLoadingDots
         let subscriptionManager = new SubscriptionManager(stateManager.variables);
         await subscriptionManager
             .upgradeSubscription(plan)
@@ -40,7 +40,6 @@ export class AccountUILogic {
     }
 
     static async manageSubscription(stateManager) {
-        // TODO: startLoadingDots
         let subscriptionManager = new SubscriptionManager(stateManager.variables);
         await subscriptionManager.manageSubscription().catch((err) => {
             throw ErrorHandler.log(err);
