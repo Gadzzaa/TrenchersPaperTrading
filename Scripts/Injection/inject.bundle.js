@@ -3,140 +3,107 @@
 
 ;// ./Scripts/Injection/InjectUtils.js
 class InjectUtils {
-  /**
-   * @param {RouteHelper} routeHelper
-   */
-  static injectToggleButton(routeHelper) {
-    let toggleButton = this.createToggleButton();
+    /**
+     * @param {RouteHelper} routeHelper
+     */
+    static injectToggleButton(routeHelper) {
+        let toggleButton = this.createToggleButton();
 
-    // Toggle logic
-    toggleButton.addEventListener("click", () =>
-      this.toggleButtonClick(routeHelper),
-    );
-    document.body.appendChild(toggleButton);
-  }
-
-  /**
-   * @returns {HTMLButtonElement} -
-   */
-  static createToggleButton() {
-    const toggleButton = document.createElement("button");
-    toggleButton.id = "trenchersToggleBtn";
-    var toggleButtonImage = document.createElement("img");
-    toggleButtonImage.src = chrome.runtime.getURL("Images/logo.png");
-    toggleButtonImage.alt = "Show/Hide TrenchersPT";
-    toggleButton.appendChild(toggleButtonImage);
-    return toggleButton;
-  }
-
-  /**
-   * @param {RouteHelper} routeHelper -
-   */
-  static toggleButtonClick(routeHelper) {
-    const app = routeHelper?.getAppContainer();
-    if (!app) return;
-    const toggleButton = document.getElementById("trenchersToggleBtn");
-    // --- animate button ---
-    toggleButton.classList.remove("clicked"); // reset
-    void toggleButton.offsetWidth; // force reflow so animation restarts
-    toggleButton.classList.add("clicked");
-
-    if (app.style.display === "none") {
-      app.style.display = "block";
-      setTimeout(() => (app.style.opacity = "1"), 20);
-    } else {
-      routeHelper.hideApp();
-    }
-  }
-
-  /**
-   * Injects the stylesheet into the document head.
-   * */
-  static injectStylesheet() {
-    const style = this.createStylesheet();
-    document.head.appendChild(style);
-  }
-
-  /**
-   * @param {string} message - Notification message to show
-   */
-  static showNotification(message) {
-    const notification = document.getElementById("notification");
-    const notifText = document.getElementById("notifText");
-    if (!notification || !notifText) return;
-
-    clearTimeout(notification._hideTimeout);
-
-    // Update text and trigger pop animation
-    notifText.textContent = message;
-    if (notification.classList.contains("show")) {
-      notifText.classList.remove("pop");
-      void notifText.offsetWidth; // Force reflow to restart animation
-      notifText.classList.add("pop");
-    } else notification.classList.add("show");
-
-    notification._hideTimeout = setTimeout(() => {
-      notification.classList.remove("show");
-    }, 2000);
-  }
-
-  /**
-   * @param {number} left -
-   * @param {number} top -
-   * @param {number} width -
-   * @param {number} height -
-   * @returns {boolean} -
-   */
-  static isWithinBounds(left, top, width, height) {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    return (
-      parseInt(left) + width <= vw &&
-      parseInt(top) + height <= vh &&
-      parseInt(left) >= 0 &&
-      parseInt(top) >= 0
-    );
-  }
-
-  /**
-   * Parses a compact number string like "27.9K", "1B", "123M" into a Number.
-   * @param {string} txt - The compact number string to parse.
-   */
-  static parseCompactNumber(txt) {
-    // 1) Make sure we have a string
-    const raw = String(txt).trim();
-
-    // 2) Remove any leading $ or commas
-    const cleaned = raw.replace(/[$,]/g, "");
-
-    // 3) Regex: capture number + optional unit (K/M/B)
-    const re = /^(\d+(?:\.\d+)?)([KMB])?$/i;
-    const m = cleaned.match(re);
-    if (!m) {
-      const asNum = Number(cleaned);
-      if (isNaN(asNum)) {
-        throw new Error(`Unrecognized number format: "${txt}"`);
-      }
-      return asNum;
+        // Toggle logic
+        toggleButton.addEventListener("click", () =>
+            this.toggleButtonClick(routeHelper),
+        );
+        document.body.appendChild(toggleButton);
     }
 
-    // 4) Parse the numeric part
-    const num = parseFloat(m[1]);
-    const unit = (m[2] || "").toUpperCase();
+    /**
+     * @returns {HTMLButtonElement} -
+     */
+    static createToggleButton() {
+        const toggleButton = document.createElement("button");
+        toggleButton.id = "trenchersToggleBtn";
+        let toggleButtonImage = document.createElement("img");
+        toggleButtonImage.src = chrome.runtime.getURL("Images/logo.png");
+        toggleButtonImage.alt = "Show/Hide TrenchersPT";
+        toggleButton.appendChild(toggleButtonImage);
+        return toggleButton;
+    }
 
-    // 5) Apply multiplier if needed
-    const mult =
-      unit === "K" ? 1e3 : unit === "M" ? 1e6 : unit === "B" ? 1e9 : 1;
+    /**
+     * @param {RouteHelper} routeHelper -
+     */
+    static toggleButtonClick(routeHelper) {
+        const app = routeHelper?.getAppContainer();
+        if (!app) return;
+        const toggleButton = document.getElementById("trenchersToggleBtn");
+        // --- animate button ---
+        toggleButton.classList.remove("clicked"); // reset
+        void toggleButton.offsetWidth; // force reflow so animation restarts
+        toggleButton.classList.add("clicked");
 
-    return num * mult;
-  }
+        if (app.style.display === "none") {
+            app.style.display = "block";
+            setTimeout(() => (app.style.opacity = "1"), 20);
+        } else {
+            routeHelper.hideApp();
+        }
+    }
 
-  /**
-   * @returns {HTMLStyleElement} -
-   */
-  static createStylesheet() {
-    const style = document.createElement("style");
-    style.textContent = `
+    /**
+     * Injects the stylesheet into the document head.
+     * */
+    static injectStylesheet() {
+        const style = this.createStylesheet();
+        document.head.appendChild(style);
+    }
+
+    /**
+     * @param {string} message - Notification message to show
+     */
+    static showNotification(message) {
+        const notification = document.getElementById("notification");
+        const notifText = document.getElementById("notifText");
+        if (!notification || !notifText) return;
+
+        clearTimeout(notification._hideTimeout);
+
+        // Update text and trigger pop animation
+        notifText.textContent = message;
+        if (notification.classList.contains("show")) {
+            notifText.classList.remove("pop");
+            void notifText.offsetWidth; // Force reflow to restart animation
+            notifText.classList.add("pop");
+        } else notification.classList.add("show");
+
+        notification._hideTimeout = setTimeout(() => {
+            notification.classList.remove("show");
+        }, 2000);
+    }
+
+    /**
+     * @param {number} left -
+     * @param {number} top -
+     * @param {number} width -
+     * @param {number} height -
+     * @returns {boolean} -
+     */
+    static isWithinBounds(left, top, width, height) {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        return (
+            left + width <= vw &&
+            top + height <= vh &&
+            left >= 0 &&
+            top >= 0
+        );
+    }
+
+    /**
+     * @returns {HTMLStyleElement} -
+     */
+    static createStylesheet() {
+        const style = document.createElement("style");
+        style.textContent = `
   #TrenchersPaperTrading {
     transition: 
       background var(--anim-time) ease,
@@ -302,112 +269,112 @@ class InjectUtils {
   animation: toggleClick 0.3s ease;
 }
   `;
-    return style;
-  }
+        return style;
+    }
 }
 
 ;// ./Scripts/Injection/DragHelper.js
 class DragHelper {
-  /**
-   * @param {HTMLDivElement} target - Container to be made draggable
-   * @param {HTMLDivElement} handle - Element that initiates the drag
-   * @param {HTMLIframeElement} iframe - Element to disable pointer events on during drag
-   */
-  static makeDraggable(target, handle, iframe) {
-    const helper = {
-      offsetX: 0,
-      offsetY: 0,
-      isDragging: false,
-      target,
-      handle,
-      iframe,
-      dragOverlay: null,
-    };
+    /**
+     * @param {HTMLDivElement} target - Container to be made draggable
+     * @param {HTMLDivElement} handle - Element that initiates the drag
+     * @param {HTMLIFrameElement} iframe - Element to disable pointer events on during drag
+     */
+    static makeDraggable(target, handle, iframe) {
+        const helper = {
+            offsetX: 0,
+            offsetY: 0,
+            isDragging: false,
+            target,
+            handle,
+            iframe,
+            dragOverlay: null,
+        };
 
-    helper.dragOverlay = document.createElement("div");
-    Object.assign(helper.dragOverlay.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100vw",
-      height: "100vh",
-      zIndex: "9999999",
-      cursor: "grabbing",
-      display: "none",
-    });
+        helper.dragOverlay = document.createElement("div");
+        Object.assign(helper.dragOverlay.style, {
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100vw",
+            height: "100vh",
+            zIndex: "9999999",
+            cursor: "grabbing",
+            display: "none",
+        });
 
-    const resetPosition = () => {
-      helper.target.style.left = "100px";
-      helper.target.style.top = "100px";
-      localStorage.setItem("draggableLeft", "100px");
-      localStorage.setItem("draggableTop", "100px");
-    };
+        const resetPosition = () => {
+            helper.target.style.left = "100px";
+            helper.target.style.top = "100px";
+            localStorage.setItem("draggableLeft", "100px");
+            localStorage.setItem("draggableTop", "100px");
+        };
 
-    const startDrag = (e) => {
-      helper.isDragging = true;
-      helper.offsetX = e.clientX - helper.target.getBoundingClientRect().left;
-      helper.offsetY = e.clientY - helper.target.getBoundingClientRect().top;
-      document.body.style.userSelect = "none";
+        const startDrag = (e) => {
+            helper.isDragging = true;
+            helper.offsetX = e.clientX - helper.target.getBoundingClientRect().left;
+            helper.offsetY = e.clientY - helper.target.getBoundingClientRect().top;
+            document.body.style.userSelect = "none";
 
-      helper.target.style.transition = "opacity 0.15s ease";
-      helper.target.style.opacity = "0.8";
-      helper.target.style.transform = "scale(0.98)";
+            helper.target.style.transition = "opacity 0.15s ease";
+            helper.target.style.opacity = "0.8";
+            helper.target.style.transform = "scale(0.98)";
 
-      helper.dragOverlay.style.display = "block";
-      if (helper.iframe) helper.iframe.style.pointerEvents = "none";
-    };
+            helper.dragOverlay.style.display = "block";
+            if (helper.iframe) helper.iframe.style.pointerEvents = "none";
+        };
 
-    const onDrag = (e) => {
-      if (!helper.isDragging) return;
+        const onDrag = (e) => {
+            if (!helper.isDragging) return;
 
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const targetRect = helper.target.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const targetRect = helper.target.getBoundingClientRect();
 
-      const newLeft = e.clientX - helper.offsetX;
-      const newTop = e.clientY - helper.offsetY;
+            const newLeft = e.clientX - helper.offsetX;
+            const newTop = e.clientY - helper.offsetY;
 
-      const clampedLeft = Math.min(
-        Math.max(0, newLeft),
-        viewportWidth - targetRect.width,
-      );
-      const clampedTop = Math.min(
-        Math.max(0, newTop),
-        viewportHeight - targetRect.height,
-      );
+            const clampedLeft = Math.min(
+                Math.max(0, newLeft),
+                viewportWidth - targetRect.width,
+            );
+            const clampedTop = Math.min(
+                Math.max(0, newTop),
+                viewportHeight - targetRect.height,
+            );
 
-      helper.target.style.left = `${clampedLeft}px`;
-      helper.target.style.top = `${clampedTop}px`;
-    };
+            helper.target.style.left = `${clampedLeft}px`;
+            helper.target.style.top = `${clampedTop}px`;
+        };
 
-    const endDrag = () => {
-      if (!helper.isDragging) return;
-      helper.isDragging = false;
+        const endDrag = () => {
+            if (!helper.isDragging) return;
+            helper.isDragging = false;
 
-      document.body.style.userSelect = "";
-      helper.target.style.opacity = "1";
-      helper.target.style.transform = "scale(1)";
-      helper.handle.style.width = "12px";
-      helper.handle.style.height = "8px";
-      helper.handle.style.left = "174.5px";
-      helper.handle.style.top = "6px";
+            document.body.style.userSelect = "";
+            helper.target.style.opacity = "1";
+            helper.target.style.transform = "scale(1)";
+            helper.handle.style.width = "12px";
+            helper.handle.style.height = "8px";
+            helper.handle.style.left = "174.5px";
+            helper.handle.style.top = "6px";
 
-      helper.dragOverlay.style.display = "none";
-      if (helper.iframe) helper.iframe.style.pointerEvents = "auto";
+            helper.dragOverlay.style.display = "none";
+            if (helper.iframe) helper.iframe.style.pointerEvents = "auto";
 
-      localStorage.setItem("draggableLeft", helper.target.style.left);
-      localStorage.setItem("draggableTop", helper.target.style.top);
-    };
+            localStorage.setItem("draggableLeft", helper.target.style.left);
+            localStorage.setItem("draggableTop", helper.target.style.top);
+        };
 
-    helper.handle.addEventListener("dblclick", resetPosition);
-    helper.handle.addEventListener("pointerdown", startDrag);
-    helper.dragOverlay.addEventListener("pointermove", onDrag, {
-      passive: true,
-    });
-    helper.dragOverlay.addEventListener("pointerup", endDrag);
+        helper.handle.addEventListener("dblclick", resetPosition);
+        helper.handle.addEventListener("pointerdown", startDrag);
+        helper.dragOverlay.addEventListener("pointermove", onDrag, {
+            passive: true,
+        });
+        helper.dragOverlay.addEventListener("pointerup", endDrag);
 
-    document.body.appendChild(helper.dragOverlay);
-  }
+        document.body.appendChild(helper.dragOverlay);
+    }
 }
 
 ;// ./Scripts/Injection/InjectHelper.js
@@ -415,180 +382,181 @@ class DragHelper {
 
 
 class InjectHelper {
-  #appContainer = null;
+    #appContainer = null;
 
-  /**
-   * Creates app container, grabs app position, creates iframe and appends it to the body.
-   * Loads settings and creates settings event listeners.
-   * Creates notification container and move handle for dragging.
-   * Fades in the app container.
-   * */
-  constructor() {
-    try {
-      this.createAppContainer();
-      this.getAppPosition();
-      const iframe = this.createAppIframe();
-      document.body.appendChild(this.#appContainer);
+    /**
+     * Creates app container, grabs app position, creates iframe and appends it to the body.
+     * Loads settings and creates settings event listeners.
+     * Creates notification container and move handle for dragging.
+     * Fades in the app container.
+     * */
+    constructor() {
+        try {
+            this.createAppContainer();
+            this.getAppPosition();
+            const iframe = this.createAppIframe();
+            document.body.appendChild(this.#appContainer);
 
-      this.loadSettings();
-      this.createSettingsEvents();
+            this.loadSettings();
+            this.createSettingsEvents();
 
-      this.createNotificationContainer();
-      const moveHandle = this.createMoveHandle();
-      DragHelper.makeDraggable(this.#appContainer, moveHandle, iframe);
+            this.createNotificationContainer();
+            const moveHandle = this.createMoveHandle();
+            DragHelper.makeDraggable(this.#appContainer, moveHandle, iframe);
 
-      setTimeout(() => {
-        this.#appContainer.style.opacity = "1";
-      }, 50);
-    } catch (error) {
-      throw error;
+            setTimeout(() => {
+                this.#appContainer.style.opacity = "1";
+            }, 50);
+        } catch (error) {
+            throw error;
+        }
     }
-  }
 
-  /**
-   * @returns {HTMLDivElement} - App container element.
-   */
-  getAppContainer() {
-    return this.#appContainer;
-  }
-
-  /**
-   * Sets app container display to none after fading out.
-   * */
-  hideApp() {
-    if (this.#appContainer) {
-      this.#appContainer.style.opacity = "0";
-      setTimeout(() => (this.#appContainer.style.display = "none"), 300); // match your fade duration
+    /**
+     * @returns {HTMLDivElement} - App container element.
+     */
+    getAppContainer() {
+        return this.#appContainer;
     }
-  }
 
-  /**
-   * Removes app container from the DOM.
-   * */
-  removeApp() {
-    if (this.#appContainer) {
-      this.#appContainer.remove();
+    /**
+     * Sets app container display to none after fading out.
+     * */
+    hideApp() {
+        if (this.#appContainer) {
+            this.#appContainer.style.opacity = "0";
+            setTimeout(() => (this.#appContainer.style.display = "none"), 300); // match your fade duration
+        }
     }
-  }
 
-  /**
-   * Creates the main app container with styles.
-   * */
-  createAppContainer() {
-    this.#appContainer = document.createElement("div");
-    this.#appContainer.id = "TrenchersPaperTrading";
-    Object.assign(this.#appContainer.style, {
-      position: "fixed",
-      top: "100px",
-      left: "100px",
-      width: "350px",
-      height: "500px",
-      zIndex: "99999",
-      background: "transparent",
-      borderRadius: "12px",
-      overflow: "hidden",
-      userSelect: "none",
-      opacity: "0",
-      transition: "opacity 0.3s ease",
-    });
-  }
+    /**
+     * Removes app container from the DOM.
+     * */
+    removeApp() {
+        if (this.#appContainer) {
+            this.#appContainer.remove();
+        }
+    }
 
-  /**
-   * Creates the iframe for the app and appends it to the app container.
-   * @returns {HTMLIFrameElement} -
-   */
-  createAppIframe() {
-    const appIframe = document.createElement("iframe");
-    appIframe.src = chrome.runtime.getURL("dashboard.html");
-    Object.assign(appIframe.style, {
-      width: "100%",
-      height: "240px",
-      border: "none",
-      borderRadius: "12px",
-      zIndex: "2",
-    });
+    /**
+     * Creates the main app container with styles.
+     * */
+    createAppContainer() {
+        this.#appContainer = document.createElement("div");
+        this.#appContainer.id = "TrenchersPaperTrading";
+        Object.assign(this.#appContainer.style, {
+            position: "fixed",
+            top: "100px",
+            left: "100px",
+            width: "350px",
+            height: "500px",
+            zIndex: "99999",
+            background: "transparent",
+            borderRadius: "12px",
+            overflow: "hidden",
+            userSelect: "none",
+            opacity: "0",
+            transition: "opacity 0.3s ease",
+        });
+    }
 
-    this.#appContainer.appendChild(appIframe);
-    return appIframe;
-  }
+    /**
+     * Creates the iframe for the app and appends it to the app container.
+     * @returns {HTMLIFrameElement} -
+     */
+    createAppIframe() {
+        const appIframe = document.createElement("iframe");
+        appIframe.src = chrome.runtime.getURL("dashboard.html");
+        Object.assign(appIframe.style, {
+            width: "100%",
+            height: "240px",
+            border: "none",
+            borderRadius: "12px",
+            zIndex: "2",
+        });
 
-  createNotificationContainer() {
-    const notification = document.createElement("div");
-    notification.id = "notification";
-    notification.className = "notification";
+        this.#appContainer.appendChild(appIframe);
+        return appIframe;
+    }
 
-    // Create span for text
-    const notifText = document.createElement("span");
-    notifText.id = "notifText";
-    notification.appendChild(notifText);
+    createNotificationContainer() {
+        const notification = document.createElement("div");
+        notification.id = "notification";
+        notification.className = "notification";
 
-    this.#appContainer.appendChild(notification);
-  }
+        // Create span for text
+        const notifText = document.createElement("span");
+        notifText.id = "notifText";
+        notification.appendChild(notifText);
 
-  createMoveHandle() {
-    const moveHandle = document.createElement("div");
-    Object.assign(moveHandle.style, {
-      position: "absolute",
-      top: "6px",
-      left: "174.5px",
-      width: "12px",
-      height: "8px",
-      cursor: "grab",
-      background: "transparent",
-      zIndex: "999999",
-    });
-    this.#appContainer.appendChild(moveHandle);
-    return moveHandle;
-  }
+        this.#appContainer.appendChild(notification);
+    }
 
-  getAppPosition() {
-    const savedLeft = localStorage.getItem("draggableLeft");
-    const savedTop = localStorage.getItem("draggableTop");
+    createMoveHandle() {
+        const moveHandle = document.createElement("div");
+        Object.assign(moveHandle.style, {
+            position: "absolute",
+            top: "6px",
+            left: "174.5px",
+            width: "12px",
+            height: "8px",
+            cursor: "grab",
+            background: "transparent",
+            zIndex: "999999",
+        });
+        this.#appContainer.appendChild(moveHandle);
+        return moveHandle;
+    }
 
-    chrome.storage.local.get("saveWindowPos", ({ saveWindowPos }) => {
-      if (!saveWindowPos) return;
-      if (
-        savedLeft &&
-        savedTop &&
-        InjectUtils.isWithinBounds(savedLeft, savedTop, 350, 240) // your app size
-      ) {
-        this.#appContainer.style.left = savedLeft;
-        this.#appContainer.style.top = savedTop;
-      }
-    });
-  }
-  loadSettings() {
-    chrome.storage.local.get("animation", ({ animation }) => {
-      if (!animation) animation = 3;
-      document.documentElement.style.setProperty(
-        "--anim-time",
-        `${animation / 10}s`,
-      );
-    });
+    getAppPosition() {
+        const savedLeft = localStorage.getItem("draggableLeft");
+        const savedTop = localStorage.getItem("draggableTop");
 
-    chrome.storage.local.get("theme", ({ theme }) => {
-      if (theme) {
-        this.#appContainer.setAttribute("data-theme", theme);
-      } else this.#appContainer.setAttribute("data-theme", "dark");
-    });
-  }
+        chrome.storage.local.get("saveWindowPos", ({saveWindowPos}) => {
+            if (!saveWindowPos) return;
+            if (
+                savedLeft &&
+                savedTop &&
+                InjectUtils.isWithinBounds(parseInt(savedLeft), parseInt(savedTop), 350, 240) // your app size
+            ) {
+                this.#appContainer.style.left = savedLeft;
+                this.#appContainer.style.top = savedTop;
+            }
+        });
+    }
 
-  createSettingsEvents() {
-    chrome.storage.onChanged.addListener((changes, area) => {
-      if (area === "local" && changes.animation) {
-        document.documentElement.style.setProperty(
-          "--anim-time",
-          `${changes.animation.newValue / 10}s`,
-        );
-      }
-    });
+    loadSettings() {
+        chrome.storage.local.get("animation", ({animation}) => {
+            if (!animation) animation = 3;
+            document.documentElement.style.setProperty(
+                "--anim-time",
+                `${animation / 10}s`,
+            );
+        });
 
-    chrome.storage.onChanged.addListener((changes, area) => {
-      if (area === "local" && changes.theme) {
-        this.#appContainer.setAttribute("data-theme", changes.theme.newValue);
-      }
-    });
-  }
+        chrome.storage.local.get("theme", ({theme}) => {
+            if (theme) {
+                this.#appContainer.setAttribute("data-theme", theme);
+            } else this.#appContainer.setAttribute("data-theme", "dark");
+        });
+    }
+
+    createSettingsEvents() {
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area === "local" && changes.animation) {
+                document.documentElement.style.setProperty(
+                    "--anim-time",
+                    `${changes.animation.newValue / 10}s`,
+                );
+            }
+        });
+
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area === "local" && changes.theme) {
+                this.#appContainer.setAttribute("data-theme", changes.theme.newValue);
+            }
+        });
+    }
 }
 
 ;// ./Scripts/Injection/RouteHelper.js
