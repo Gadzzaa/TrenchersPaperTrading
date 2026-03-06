@@ -1,89 +1,115 @@
-import { defaultPresets } from "../Config/defaultPresets.js";
-import { PresetHelper } from "../Helpers/PresetHelper.js";
-import { AppError } from "../../ErrorHandling/Helpers/AppError.js";
+import {defaultPresets} from "../Config/defaultPresets.js";
+import {PresetHelper} from "../Helpers/PresetHelper.js";
+import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
+import {StateManager} from "../Services/StateManager.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class PresetManager {
-  static initUI(stateManager) {
-    let currentPreset = PresetManager.getUsingPreset();
-    PresetManager.applyPreset(currentPreset, stateManager);
+    /**
+     * Initializes preset UI and event listeners.
+     * @param {StateManager} stateManager
+     */
+    static initUI(stateManager) {
+        let currentPreset = PresetManager.getUsingPreset();
+        PresetManager.applyPreset(currentPreset, stateManager);
 
-    const presetButtons = document.querySelectorAll("#Presets .preset");
-    if (!presetButtons)
-      throw new AppError("Preset buttons not found", {
-        code: "PRESET_NOT_FOUND",
-        meta: {
-          presetButtons,
-        },
-      });
+        const presetButtons = document.querySelectorAll("#Presets .preset");
+        if (!presetButtons)
+            throw new AppError("Preset buttons not found", {
+                code: "PRESET_NOT_FOUND",
+                meta: {
+                    presetButtons,
+                },
+            });
 
-    presetButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        PresetManager.applyPreset(button.id, stateManager);
-      });
-    });
-  }
+        presetButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                PresetManager.applyPreset(button.id, stateManager);
+            });
+        });
+    }
 
-  //TODO: Implement Transaction, if preset fails mid func, revert
-  static applyPreset(presetName, stateManager) {
-    if (!presetName) presetName = "preset1";
-    let presetData = PresetManager.getPresetData(presetName);
+    /**
+     * Applies a preset to UI and state.
+     * @param {string} presetName
+     * @param {StateManager} stateManager
+     */
+    static applyPreset(presetName, stateManager) {
+        let prevPresetName = PresetManager.getUsingPreset();
+        let prevPresetData = PresetManager.getPresetData(prevPresetName);
+        try {
+            let presetData = PresetManager.getPresetData(presetName);
+            PresetHelper.applyPreset(presetName, presetData, stateManager);
+        } catch (error) {
+            PresetHelper.applyPreset(prevPresetName, prevPresetData, stateManager);
+            throw ErrorHandler.log(`Could not apply preset: ${presetName}`, {
+                code: "PRESET_APPLY_FAILED",
+                cause: error,
+                meta: {
+                    presetName,
+                    prevPresetName,
+                },
+            });
+        }
+    }
 
-    PresetHelper.applyPresetButtons(
-      "buy",
-      presetData.buys,
-      (amount) => `Buy ${amount} SOL worth`,
-    );
-    PresetHelper.applyPresetButtons(
-      "sell",
-      presetData.sells,
-      (amount) => `Sell ${amount}%`,
-    );
+    /**
+     * Returns currently selected preset id.
+     * @returns {string|null}
+     */
+    static getUsingPreset() {
+        return localStorage.getItem("usingPreset");
+    }
 
-    PresetHelper.applyPresetUI(presetName);
-    localStorage.setItem("usingPreset", presetName);
-    stateManager.currentPreset = presetName;
-  }
+    /**
+     * Returns serialized presets from storage.
+     * @returns {string|null}
+     */
+    static getPresets() {
+        return localStorage.getItem("presets");
+    }
 
-  static getUsingPreset() {
-    return localStorage.getItem("usingPreset");
-  }
+    /**
+     * Persists updated preset data and marks it pending.
+     * @param {Record<string, any>} newPresets
+     */
+    static setPresets(newPresets) {
+        localStorage.setItem("presets", JSON.stringify(newPresets));
+        localStorage.setItem("pendingPresets", true);
+    }
 
-  static getPresets() {
-    return localStorage.getItem("presets");
-  }
+    /**
+     * Returns parsed preset data for a given preset id.
+     * @param {string} presetName
+     * @returns {Record<string, any>}
+     */
+    static getPresetData(presetName) {
+        if (!PresetManager.getPresets()) PresetManager.setPresets(defaultPresets);
 
-  static setPresets(newPresets) {
-    localStorage.setItem("presets", JSON.stringify(newPresets));
-    localStorage.setItem("pendingPresets", true);
-  }
+        // Get data for new preset
+        const allPresetsData = JSON.parse(PresetManager.getPresets());
+        const presetData = allPresetsData?.[presetName];
 
-  static getPresetData(presetName) {
-    if (!PresetManager.getPresets()) PresetManager.setPresets(defaultPresets);
+        if (!allPresetsData || !presetData)
+            throw new AppError("No presets data found", {
+                code: "PRESET_NOT_FOUND",
+                meta: {
+                    presetName,
+                    allPresetsData,
+                    presetData,
+                },
+            });
 
-    // Get data for new preset
-    const allPresetsData = JSON.parse(PresetManager.getPresets());
-    const presetData = allPresetsData?.[presetName];
+        if (typeof presetData !== "object")
+            throw new AppError("Invalid preset data format", {
+                code: "PRESET_DATA_INVALID",
+                meta: {
+                    presetName,
+                    allPresetsData,
+                    presetData,
+                },
+            });
 
-    if (!allPresetsData || !presetData)
-      throw new AppError("No presets data found", {
-        code: "PRESET_NOT_FOUND",
-        meta: {
-          presetName,
-          allPresetsData,
-          presetData,
-        },
-      });
-
-    if (typeof presetData !== "object" || presetData === null)
-      throw new AppError("Invalid preset data format", {
-        code: "PRESET_DATA_INVALID",
-        meta: {
-          presetName,
-          allPresetsData,
-          presetData,
-        },
-      });
-
-    return presetData;
-  }
+        return presetData;
+    }
 }
