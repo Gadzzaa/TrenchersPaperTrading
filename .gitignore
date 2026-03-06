@@ -138,3 +138,5 @@ Images/.DS_Store
 .vscode/settings.json
 .DS_Store
 TrenchersPaperTrading.zip
+.idea/copilot.data.migration.ask2agent.xml
+.idea/discord.xml
