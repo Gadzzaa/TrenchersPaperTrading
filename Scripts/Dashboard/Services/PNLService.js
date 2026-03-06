@@ -1,82 +1,91 @@
-import { PNLDataManager } from "../Core/PNLDataManager.js";
-import { PnlUIController } from "../Core/PnlUIController.js";
-import { PoolWatcher } from "../Core/PoolWatcher.js";
-import { PositionManager } from "../Core/PositionManager.js";
-import { WebsocketManager } from "../Core/WebsocketManager.js";
+import {PNLDataManager} from "../Core/PNLDataManager.js";
+import {PnlUIController} from "../Core/PnlUIController.js";
+import {PoolWatcher} from "../Core/PoolWatcher.js";
+import {PositionManager} from "../Core/PositionManager.js";
+import {WebsocketManager} from "../Core/WebsocketManager.js";
 
-import { DataManager } from "../../Account/Core/DataManager.js";
-import { StorageManager } from "../../Utils/Core/StorageManager.js";
+import {DataManager} from "../../Account/Core/DataManager.js";
+import {StorageManager} from "../../Utils/Core/StorageManager.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class PNLService {
-  constructor() {
-    this.wsManager = new WebsocketManager();
+    constructor(stateManager) {
+        this.stateManager = stateManager;
+        this.wsManager = new WebsocketManager();
 
-    this.positionManager = new PositionManager();
-    this.poolWatcher = new PoolWatcher(this.wsManager);
-    this.ui = new PnlUIController();
-    this.pnlDataManager = new PNLDataManager();
+        this.positionManager = new PositionManager();
+        this.poolWatcher = new PoolWatcher(this.wsManager);
+        this.ui = new PnlUIController();
+        this.pnlDataManager = new PNLDataManager();
 
-    this.refreshTime = 500; // Default refresh time in ms
-    this.lastUpdateTime = Date.now();
-  }
+        this.refreshTime = 500; // Default refresh time in ms
+        this.lastUpdateTime = Date.now();
+    }
 
-  async start() {
-    await this.wsManager.connect((data) => {
-      if (data.type === "poolUpdate") {
-        this.poolWatcher.updatePool(data);
-        this.update();
-      }
-    });
-    console.log(
-      "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
-    );
-  }
+    async start() {
+        await this.wsManager.connect().catch((err) => {
+            throw ErrorHandler.log(err);
+        })
+        console.log(
+            "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
+        );
+        this.wsManager.loadWsEvents((data) => {
+            if (data.type === "poolUpdate") {
+                this.poolWatcher.updatePool(data);
+                this.update();
+            }
+        });
+    }
 
-  stop() {
-    this.wsManager.disconnect();
-    this.positionManager.clear();
-    this.poolWatcher.clear();
-    this.ui.clear();
-  }
+    stop() {
+        this.wsManager.disconnect();
+        this.positionManager.clear();
+        this.poolWatcher.clear();
+        this.ui.clear();
+    }
 
-  update() {
-    if (Date.now() - this.lastUpdateTime < this.refreshTime) return;
-    const pool = this.poolWatcher.get(this.positionManager.currentPool);
-    if (!pool?.price) return;
+    update(force = false) {
+        if (Date.now() - this.lastUpdateTime < this.refreshTime && !force) return;
+        let pool = this.poolWatcher.get(this.positionManager.currentPool);
+        if (!pool)
+            pool = {
+                price: 0,
+                liquidity: 0,
+            }
 
-    const uiData = this.positionManager.calculatePnlUI(
-      pool.price,
-      pool.posClosed,
-    );
-    if (uiData) this.ui.update(uiData);
-  }
 
-  setActiveToken(poolAddress) {
-    this.positionManager.setActive(poolAddress);
-    let pool = this.positionManager.getPosition(poolAddress);
-    if (!pool) throw new Error("No position found for pool: " + poolAddress);
+        const uiData = this.positionManager.calculatePnlUI(
+            pool.price,
+        );
+        if (uiData)
+            this.ui.update(uiData);
+    }
 
-    StorageManager.getFromStorage("pnlSlider").then((sliderValue) => {
-      if (!sliderValue) sliderValue = 500;
-      this.poolWatcher.watch(poolAddress);
-      this.refreshTime = sliderValue;
-    });
-  }
+    setActiveToken(poolAddress) {
+        this.positionManager.setActive(poolAddress);
+        let pnlData = this.pnlDataManager.get(poolAddress);
 
-  async syncTradeLog(variables) {
-    const dataManager = new DataManager(variables);
-    let tradeLog = await dataManager.getTradeLog();
-    let tokens = tradeLog?.tokens;
-    this.positionManager.setPositions(tokens);
-  }
+        StorageManager.getFromStorage("pnlRefreshInterval").then((sliderValue) => {
+            if (!sliderValue) sliderValue = 500;
+            this.poolWatcher.watch(poolAddress, pnlData);
+            this.refreshTime = sliderValue;
+        });
+    }
 
-  isActive() {
-    return this.positionManager.currentPool !== null;
-  }
+    async syncTradeLog(variables) {
+        const dataManager = new DataManager(variables);
+        let tradeLog = await dataManager.getTradeLog();
+        let tokens = tradeLog?.tokens;
+        this.positionManager.setPositions(tokens);
+    }
 
-  clearPositions(global = true) {
-    this.positionManager.clear();
-    this.ui.clear();
-    if (global) localStorage.removeItem("openPositions");
-  }
+    isActive() {
+        return this.positionManager.currentPool !== null;
+    }
+
+    clearPositions(global = true) {
+        this.positionManager.clear();
+        this.ui.clear();
+        if (global) localStorage.removeItem("openPositions");
+    }
 }
