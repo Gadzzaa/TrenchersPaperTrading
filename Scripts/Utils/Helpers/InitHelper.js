@@ -22,7 +22,7 @@ export class InitHelper {
                     {type: "HEALTH_PING"},
                     async (response) => {
                         stateManager.healthy = response?.status;
-                        if (stateManager.healthy == false) {
+                        if (stateManager.healthy === false) {
                             await UIManager.disableUI("no-internet");
                             stateManager.initializing = false;
                             reject(
@@ -79,9 +79,9 @@ export class InitHelper {
         let sessionToken = await InitHelper.searchToken(stateManager);
 
         stateManager.variables = new Variables({sessionToken});
-        stateManager.dataManager = new DataManager(stateManager.variables);
+        let dataManager = new DataManager(stateManager.variables);
 
-        const isSessionValid = await stateManager.dataManager.checkSession();
+        const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
             stateManager.pnlService?.clearPositions();
             await UIManager.disableUI("no-session");
