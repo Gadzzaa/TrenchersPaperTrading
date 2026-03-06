@@ -1,6 +1,9 @@
 import {LoginUILogic} from "../Helpers/LoginUILogic.js";
-import {FooterHelper} from "../Helpers/FooterHelper";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler";
+import {FooterHelper} from "../Helpers/FooterHelper.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {AccountLoader} from "./AccountLoader.js";
+import {UIManager} from "../../Utils/Core/UIManager.js";
+import {UIHelper as GlobalUIHelper} from "../../Utils/Helpers/UIHelper.js"
 
 export class LoginUIManager {
     static createButtons(stateManager) {
@@ -10,32 +13,54 @@ export class LoginUIManager {
         const showPassButton = document.getElementById("showPasswordButton");
 
         loginButton.addEventListener("click", async () => {
+            let loginInterval = GlobalUIHelper.startLoadingDots(loginButton);
             LoginUILogic.login(stateManager).then(() => {
-                //todo: loadAccountData
-                FooterHelper.focusDefaultButton();
+                AccountLoader.loadData(stateManager).then(() => {
+                    FooterHelper.focusDefaultButton();
+                    UIManager.enableUI();
+                })
             }).catch((err) => {
                 throw ErrorHandler.log(err);
+            }).finally(() => {
+                LoginUIManager.clearInputs();
+                GlobalUIHelper.stopLoadingDots(loginButton, loginInterval)
             });
         });
         registerButton.addEventListener("click", async () => {
+            let registerInterval = GlobalUIHelper.startLoadingDots(registerButton);
             LoginUILogic.register(stateManager).then(() => {
-                //todo: loadAccountData
-                FooterHelper.focusDefaultButton();
+                AccountLoader.loadData(stateManager).then(() => {
+                    FooterHelper.focusDefaultButton();
+                    UIManager.enableUI();
+                });
             }).catch((err) => {
                 throw ErrorHandler.log(err);
+            }).finally(() => {
+                LoginUIManager.clearInputs();
+                GlobalUIHelper.stopLoadingDots(loginButton, registerInterval)
             });
         });
         logoutButton.addEventListener("click", async () => {
+            let logoutInterval = GlobalUIHelper.startLoadingDots(logoutButton);
             LoginUILogic.logout(stateManager).then(() => {
-                //TODO: disconnectPopup
+                stateManager.clearUI();
                 FooterHelper.focusDefaultButton();
+                UIManager.disableUI()
             }).catch((err) => {
                 throw ErrorHandler.log(err);
-            });
+            }).finally(() => GlobalUIHelper.stopLoadingDots(logoutButton, logoutInterval));
         });
         showPassButton.addEventListener("click", () => {
             LoginUILogic.togglePasswordVisibility(showPassButton);
         });
+    }
+
+    static clearInputs() {
+        const usernameInput = document.getElementById("formUsername");
+        const passwordInput = document.getElementById("formPassword");
+
+        usernameInput.value = "";
+        passwordInput.value = "";
     }
 
 
