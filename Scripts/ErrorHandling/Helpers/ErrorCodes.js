@@ -39,7 +39,10 @@ export class ErrorCodes {
         INVALID_AMOUNT_INPUT: "INVALID_AMOUNT_INPUT",
         INVALID_VOLUME: "INVALID_VOLUME",
         DIALOG_ELEMENTS_MISSING: "DIALOG_ELEMENTS_MISSING",
-        DIALOG_SHOW_FAILED: "DIALOG_SHOW_FAILED"
+        DIALOG_SHOW_FAILED: "DIALOG_SHOW_FAILED",
+        INVALID_API_RESPONSE: "INVALID_API_RESPONSE",
+        AUTH_TIMEOUT: "AUTH_TIMEOUT",
+        PRESET_APPLY_FAILED: "PRESET_APPLY_FAILED",
     });
 
     static UserMessages = Object.freeze({
@@ -86,6 +89,9 @@ export class ErrorCodes {
         INVALID_AMOUNT_INPUT: "Please enter a valid number between 1 and 100.",
         INVALID_VOLUME: "Please enter a valid volume between 0 and 100.",
         DIALOG_ELEMENTS_MISSING: "An internal error occurred. Please refresh the page.",
-        DIALOG_SHOW_FAILED: "Failed to show dialog. Please refresh the page and try again."
+        DIALOG_SHOW_FAILED: "Failed to show dialog. Please refresh the page and try again.",
+        INVALID_API_RESPONSE: "Received unexpected data from server. Please try again.",
+        AUTH_TIMEOUT: "WebSocket authentication timed out. Please check your connection and try again.",
+        PRESET_APPLY_FAILED: "Failed to apply preset. Please try again.",
     });
 }
