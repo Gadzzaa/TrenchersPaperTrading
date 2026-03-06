@@ -7,14 +7,12 @@ export class LoginUILogic {
         let usernameInput = document.getElementById("formUsername");
         let passwordInput = document.getElementById("formPassword");
 
-        // TODO: startLoadingDots
         stateManager.variables = new Variables({
             username: usernameInput.value,
-            password: passwordInput.value,
         });
         let authManager = new AuthManager(stateManager.variables);
 
-        await authManager.login();
+        await authManager.login(passwordInput.value);
     }
 
     static async register(stateManager) {
@@ -27,19 +25,16 @@ export class LoginUILogic {
         let agreedToTOS = await DialogsValidators.askTOSAgreement();
         if (!agreedToTOS) return;
 
-        // TODO: startLoadingDots
         stateManager.variables = new Variables({
             username: usernameInput.value,
-            password: passwordInput.value,
             balance: amount,
         });
         let authManager = new AuthManager(stateManager.variables);
 
-        await authManager.register();
+        await authManager.register(passwordInput.value);
     }
 
     static async logout(stateManager) {
-        //TODO: startLoadingDots(logoutButton, interval);
         let authManager = new AuthManager(stateManager.variables);
 
         await authManager.logout();
