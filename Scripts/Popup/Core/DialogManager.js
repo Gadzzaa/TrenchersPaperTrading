@@ -110,7 +110,7 @@ export class DialogManager {
             throw new AppError("Dialog title is required.", {
                 code: "DIALOG_ELEMENTS_MISSING"
             });
-        if (this.dialogElements.body.textContent)
+        if (!this.dialogElements.body.textContent)
             throw new AppError("Dialog message is required.", {
                 code: "DIALOG_ELEMENTS_MISSING"
             })
