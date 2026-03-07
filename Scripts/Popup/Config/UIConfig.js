@@ -66,6 +66,12 @@ export class UIConfig {
                     // disconnectPopup and internet
                 } else stateManager.initialize()
             }
+            if (message.type === "OFFLINE") {
+                // TODO: handle drawer
+            }
+            if (message.type === "OUTDATED") {
+                // TODO: handle drawer
+            }
         };/**/
     }
 }

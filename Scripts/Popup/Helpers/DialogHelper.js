@@ -51,6 +51,7 @@ export class DialogHelper {
         })
     }
 
+
     static #clearInputDialog(dialogElements, onConfirm) {
         dialogElements.input.classList.add("hidden");
         dialogElements.inputConfirmButton.removeEventListener("click", onConfirm);

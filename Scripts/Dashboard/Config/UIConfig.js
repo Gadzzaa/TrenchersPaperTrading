@@ -72,6 +72,15 @@ export class UIConfig {
                     stateManager.initialize();
                 }
             }
+            if (message.type === "OFFLINE") {
+                // TODO: handle blocker 
+            }
+            if (message.type === "OUTDATED") {
+                // TODO: handle blocker
+            }
+            if (message.type === "NOT_LOGGED_IN") {
+                // TODO: handle blocker
+            }
         };
     }
 }

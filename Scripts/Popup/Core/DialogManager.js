@@ -82,6 +82,9 @@ export class DialogManager {
             case "Info":
                 this.handler = () => DialogHelper.showInfoDialog(this.dialogElements);
                 break;
+            case "Blocker":
+
+                break;
             default:
                 throw new AppError("Unsupported dialog type: " + type);
         }
