@@ -1,5 +1,6 @@
 import {UILoader} from "../Core/UILoader.js"
 import {UIHelper} from "../Helpers/UIHelper.js";
+import {DialogManager} from "../Core/DialogManager.js";
 
 export class UIConfig {
     static settings = [
@@ -59,19 +60,20 @@ export class UIConfig {
     }
 
     static createRuntimeMessageListener(stateManager) {
-        return (message) => {
+        return async (message, sender, sendResponse) => {
+            if (message.origin !== "TrenchersPaperTrading") return;
             if (message.type === "STATUS_UPDATE") {
                 console.log("Health status update received:", message.status);
                 if (!message.status) {
                     // disconnectPopup and internet
                 } else stateManager.initialize()
             }
-            if (message.type === "OFFLINE") {
-                // TODO: handle drawer
-            }
             if (message.type === "OUTDATED") {
-                // TODO: handle drawer
+                await new DialogManager(stateManager).addTitle("Update Available").addMessage(
+                    "Your extension is out of date. Please update to the latest version to continue using it.").addType("Blocker").show()
+
+                return true;
             }
-        };/**/
+        };
     }
 }

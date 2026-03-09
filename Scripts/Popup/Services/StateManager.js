@@ -17,6 +17,8 @@ export class StateManager {
         this.isPremium = false;
 
         this.resetsTimer = null;
+
+        this.scheduledDialogs = [];
     }
 
     async initialize() {
@@ -26,10 +28,13 @@ export class StateManager {
         UIHelper.clearInputFields();
 
         InitHelper.loadSettings(UIConfig);
+       
+        //TODO: reorder those, using this only for checking
         await InitHelper.validateVersion(this)
+        await InitHelper.validateHealth(this);
+
         document.body.style.removeProperty("pointer-events");
 
-        await InitHelper.validateHealth(this);
         await InitHelper.validateSession(this);
 
         await AccountLoader.loadData(this);

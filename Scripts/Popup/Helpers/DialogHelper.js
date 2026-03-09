@@ -51,6 +51,27 @@ export class DialogHelper {
         })
     }
 
+    static showBlockerDialog(dialogElements) {
+        return new Promise(resolve => {
+            dialogElements.noInternet = document.getElementById("dialogNoInternet");
+            dialogElements.noInternet.classList.remove("hidden");
+
+            let chromeListener = (message) => {
+                if (message.origin !== "TrenchersPaperTrading") return;
+                if (message.type !== "UP_TO_DATE") return;
+                DialogHelper.#clearBlockerDialog(dialogElements, chromeListener);
+                resolve();
+            }
+
+            chrome.runtime.onMessage.addListener((message) => chromeListener(message));
+        })
+    }
+
+    static #clearBlockerDialog(dialogElements, chromeListener) {
+        dialogElements.noInternet.classList.add("hidden");
+        chrome.runtime.onMessage.removeListener(chromeListener);
+    }
+
 
     static #clearInputDialog(dialogElements, onConfirm) {
         dialogElements.input.classList.add("hidden");

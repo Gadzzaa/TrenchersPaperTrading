@@ -1,4 +1,5 @@
 import {BackendRequest} from "./BackendRequest.js";
+import {ChromeHandler} from "../ChromeHandler.js";
 
 export class ServerStatus {
     POLL_RATE = 1000 * 5;
@@ -47,18 +48,16 @@ export class ServerStatus {
             const response = await new BackendRequest()
                 .addEndpoint("/health")
                 .addMethod("GET")
+                .bypassStatusCheck()
                 .build();
             status = response.status === "ok";
         } catch (error) {
             status = false;
         } finally {
             console.log("Old status:", this.status, "New status:", status);
-            if (this.status !== status) {
+            if (this.status !== status || !this.status) {
                 this.status = status;
-                chrome.runtime.sendMessage({
-                    type: "STATUS_UPDATE",
-                    status: this.status,
-                });
+                ChromeHandler.sendMessage("STATUS_UPDATE", {status: this.status});
             }
             this.checking = false;
         }
