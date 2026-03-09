@@ -56,14 +56,14 @@ export class DialogHelper {
             dialogElements.noInternet = document.getElementById("dialogNoInternet");
             dialogElements.noInternet.classList.remove("hidden");
 
-            let chromeListener = (message) => {
+            const chromeListener = (message) => {
                 if (message.origin !== "TrenchersPaperTrading") return;
                 if (message.type !== "UP_TO_DATE") return;
                 DialogHelper.#clearBlockerDialog(dialogElements, chromeListener);
                 resolve();
-            }
+            };
 
-            chrome.runtime.onMessage.addListener((message) => chromeListener(message));
+            chrome.runtime.onMessage.addListener(chromeListener);
         })
     }
 

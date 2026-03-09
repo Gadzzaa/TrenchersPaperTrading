@@ -60,7 +60,7 @@ export class UIConfig {
     }
 
     static createRuntimeMessageListener(stateManager) {
-        return async (message, sender, sendResponse) => {
+        return (message, _sender, sendResponse) => {
             if (message.origin !== "TrenchersPaperTrading") return;
             if (message.type === "STATUS_UPDATE") {
                 console.log("Health status update received:", message.status);
@@ -68,10 +68,21 @@ export class UIConfig {
                     // disconnectPopup and internet
                 } else stateManager.initialize()
             }
-            if (message.type === "OUTDATED") {
-                await new DialogManager(stateManager).addTitle("Update Available").addMessage(
-                    "Your extension is out of date. Please update to the latest version to continue using it.").addType("Blocker").show()
-
+            if (message.type === "OUTDATED_UI") {
+                new DialogManager(stateManager)
+                    .addTitle("Update Available")
+                    .addMessage(
+                        "Your extension is out of date. Please update to the latest version to continue using it.",
+                    )
+                    .addType("Blocker")
+                    .show()
+                    .then(() => sendResponse({ok: true}))
+                    .catch((error) =>
+                        sendResponse({
+                            ok: false,
+                            error: error?.message || "Failed to show blocker dialog.",
+                        }),
+                    );
                 return true;
             }
         };
