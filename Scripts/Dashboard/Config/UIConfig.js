@@ -50,39 +50,41 @@ export class UIConfig {
      * @returns {(message: any, sender: any, sendResponse: (response?: any) => void) => void}
      */
     static createRuntimeMessageListener(stateManager) {
-        if (message.origin === "TrenchersPaperTrading")
-            return (message) => {
-                if (message.type === "initDashboard") {
-                    console.log("User registered, initializing dashboard...");
+        return (message) => {
+            if (message.origin !== "TrenchersPaperTrading") return;
+
+            if (message.type === "initDashboard") {
+                console.log("User registered, initializing dashboard...");
+                stateManager.initialize();
+            }
+
+            if (message.type === "logoutDashboard") {
+                console.log("User logged out, disabling dashboard...");
+                stateManager.logout();
+            }
+            if (message.type === "clearPositions") {
+                stateManager?.pnlService.clearPositions(true)
+            }
+            if (message.type === "updateBalanceUI") {
+                updateBalanceUI(true, stateManager);
+            }
+
+            if (message.type === "STATUS_UPDATE") {
+                const isHealthy = message?.payload?.status ?? message?.status;
+                console.log("Health status update received:", isHealthy);
+
+                if (!isHealthy) {
+                    stateManager.disconnect()
+                } else {
                     stateManager.initialize();
                 }
-
-                if (message.type === "logoutDashboard") {
-                    console.log("User logged out, disabling dashboard...");
-                    stateManager.logout();
-                }
-                if (message.type === "clearPositions") {
-                    stateManager?.pnlService.clearPositions(true)
-                }
-                if (message.type === "updateBalanceUI") {
-                    updateBalanceUI(true, stateManager);
-                }
-
-                if (message.type === "STATUS_UPDATE") {
-                    console.log("Health status update received:", message.status);
-
-                    if (!message.status) {
-                        stateManager.disconnect()
-                    } else {
-                        stateManager.initialize();
-                    }
-                }
-                if (message.type === "OUTDATED") {
-                    // TODO: handle blocker
-                }
-                if (message.type === "NOT_LOGGED_IN") {
-                    // TODO: handle blocker
-                }
-            };
+            }
+            if (message.type === "OUTDATED") {
+                // TODO: handle blocker
+            }
+            if (message.type === "NOT_LOGGED_IN") {
+                // TODO: handle blocker
+            }
+        };
     }
 }

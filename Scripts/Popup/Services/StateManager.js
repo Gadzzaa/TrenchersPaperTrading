@@ -28,7 +28,7 @@ export class StateManager {
         UIHelper.clearInputFields();
 
         InitHelper.loadSettings(UIConfig);
-       
+
         //TODO: reorder those, using this only for checking
         await InitHelper.validateVersion(this)
         await InitHelper.validateHealth(this);
@@ -41,6 +41,13 @@ export class StateManager {
 
         this.initializing = false;
         await UIManager.enableUI();
+    }
+
+    disconnect() {
+        this.healthy = false;
+        this.variables = null;
+        this.isPremium = false;
+        this.clearUI();
     }
 
     clearUI() {
