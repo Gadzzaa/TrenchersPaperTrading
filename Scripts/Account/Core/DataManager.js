@@ -1,5 +1,6 @@
 import {DataAPI} from "../Helpers/DataAPI.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class DataManager {
     /**
@@ -32,8 +33,8 @@ export class DataManager {
                 balance,
             );
 
-            chrome.runtime.sendMessage({type: "clearPositions"});
-            chrome.runtime.sendMessage({type: "updateBalanceUI"});
+            ChromeHandler.sendMessage("clearPositions")
+            ChromeHandler.sendMessage("updateBalanceUI")
 
             return {success: true, resetsRemaining: response.resetsLeft};
         } catch (error) {

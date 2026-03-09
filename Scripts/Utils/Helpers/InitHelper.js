@@ -4,6 +4,7 @@ import {DataManager} from "../../Account/Core/DataManager.js";
 import {Variables} from "../../Account/Core/Variables.js";
 import {StorageManager} from "../Core/StorageManager.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
+import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class InitHelper {
     static loadSettings(UIConfig) {
@@ -18,26 +19,22 @@ export class InitHelper {
     static validateHealth(stateManager) {
         return new Promise((resolve, reject) => {
             try {
-                chrome.runtime.sendMessage(
-                    {type: "HEALTH_PING"},
-                    async (response) => {
-                        stateManager.healthy = response?.status;
-                        if (stateManager.healthy === false) {
-                            await UIManager.disableUI("no-internet");
-                            stateManager.initializing = false;
-                            reject(
-                                new AppError("Health check failed.", {
-                                    code: "HEALTH_CHECK_FAILED",
-                                }),
-                            );
-                        }
-                        resolve(
-                            console.log(
-                                "[TrenchersPT] 🟢 Health check passed. Server is healthy.",
-                            ),
+                ChromeHandler.sendMessageAsync("HEALTH_PING").then((response) => {
+                    stateManager.healthy = response?.status;
+                    if (stateManager.healthy === false) {
+                        stateManager.initializing = false;
+                        reject(
+                            new AppError("Health check failed.", {
+                                code: "HEALTH_CHECK_FAILED",
+                            }),
                         );
-                    },
-                );
+                    }
+                    resolve(
+                        console.log(
+                            "[TrenchersPT] 🟢 Health check passed. Server is healthy.",
+                        ),
+                    );
+                })
             } catch (error) {
                 reject(
                     new AppError("Health check failed.", {
@@ -52,15 +49,13 @@ export class InitHelper {
     static async validateVersion(stateManager) {
         const validVersion = await ServerValidation.isLatestVersion();
         if (!validVersion) {
-            await UIManager.disableUI("outdated");
+            await ChromeHandler.sendMessageAsync("OUTDATED")
             stateManager.initializing = false;
-            throw new AppError("Outdated version.", {
-                code: "OUTDATED_VERSION",
-            });
-        }
-        console.log(
-            "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
-        );
+            console.log("[TrenchersPT] 🔴 Version check failed. Extension is outdated.");
+        } else
+            console.log(
+                "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
+            );
     }
 
     static async searchToken(stateManager) {
