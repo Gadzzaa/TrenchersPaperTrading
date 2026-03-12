@@ -183,15 +183,15 @@ export class BackendRequest {
                 });
                 clearTimeout(timeout);
                 responseJSON = await response.json();
-                if (response.ok && responseJSON?.ok !== false) break;
+                if (response.ok || responseJSON.ok) break;
                 this.checkStatus(response, responseJSON);
                 throw new AppError(
                     "Unknown error occurred: " +
                     (responseJSON?.error || responseJSON?.message || "No details"),
                     {
-                    code: "UNKNOWN",
-                    meta: {status: response.status, json: responseJSON},
-                },
+                        code: "UNKNOWN",
+                        meta: {status: response.status, json: responseJSON},
+                    },
                 );
             } catch (error) {
                 if (this.isNetworkError(error) || this.networkError) {
