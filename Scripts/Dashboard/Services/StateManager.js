@@ -10,7 +10,6 @@ export class StateManager {
     constructor() {
         this.initializing = false;
         this.running = false;
-        this.healthy = false;
 
         this.variables = null;
         this.pnlService = new PNLService(this);

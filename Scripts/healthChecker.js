@@ -4,7 +4,6 @@ const Server = new ServerStatus();
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === "HEALTH_PING") {
-        Server.ping();
         Server.getStatus().then((status) => {
             sendResponse(status);
             console.log("Health ping received. Status sent:", status);

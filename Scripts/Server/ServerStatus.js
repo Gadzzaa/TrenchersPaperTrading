@@ -3,9 +3,9 @@ import {ChromeHandler} from "../ChromeHandler.js";
 
 export class ServerStatus {
     POLL_RATE = 1000 * 5;
-    IDLE_TIMEOUT = 1000 * 20;
+    IDLE_TIMEOUT = 1000 * 60 * 60 * 1;
 
-    lastPing = 0;
+    lastPing = Date.now();
     interval = null;
     status = null;
 
@@ -14,27 +14,26 @@ export class ServerStatus {
     /**
      * Starts health checking the server and notes lastPing
      * */
-    ping() {
+    async ping() {
         this.lastPing = Date.now();
-        this.start();
+        await this.startAndPing();
     }
 
     /**
      * Checks for lastPing and if was longer than @IDLE_TIMEOUT stops checking
      */
-    start() {
-        if (this.interval) return;
+    async startAndPing() {
+        await this.check();
 
-        this.interval = setInterval(() => {
-            if (Date.now() - this.lastPing > this.IDLE_TIMEOUT) {
-                clearInterval(this.interval);
-                this.interval = null;
-                return;
-            }
-            this.check();
-        }, this.POLL_RATE);
-
-        this.check();
+        if (!this.interval)
+            this.interval = setInterval(() => {
+                if (Date.now() - this.lastPing > this.IDLE_TIMEOUT) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                    return;
+                }
+                this.check();
+            }, this.POLL_RATE);
     }
 
     /**
@@ -54,8 +53,8 @@ export class ServerStatus {
         } catch (error) {
             status = false;
         } finally {
-            console.log("Old status:", this.status, "New status:", status);
-            if (this.status !== status || !this.status) {
+            if (this.status !== status) {
+                console.log("Old status:", this.status, "New status:", status);
                 this.status = status;
                 ChromeHandler.sendMessage("STATUS_UPDATE", {status: this.status});
             }
@@ -67,8 +66,8 @@ export class ServerStatus {
      * @returns {Object<boolean>} - Returns the current server status
      */
     async getStatus() {
-        if (this.status == null)
-            await this.check();
-        return {status: this.status};
+        if (typeof this.status !== "boolean")
+            await this.startAndPing();
+        return this.status;
     }
 }

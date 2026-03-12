@@ -16,34 +16,17 @@ export class InitHelper {
         });
     }
 
-    static validateHealth(stateManager) {
-        return new Promise((resolve, reject) => {
-            try {
-                ChromeHandler.sendMessageAsync("HEALTH_PING").then((response) => {
-                    stateManager.healthy = response?.status;
-                    if (stateManager.healthy === false) {
-                        stateManager.initializing = false;
-                        reject(
-                            new AppError("Health check failed.", {
-                                code: "HEALTH_CHECK_FAILED",
-                            }),
-                        );
-                    }
-                    resolve(
-                        console.log(
-                            "[TrenchersPT] 🟢 Health check passed. Server is healthy.",
-                        ),
-                    );
-                })
-            } catch (error) {
-                reject(
-                    new AppError("Health check failed.", {
-                        code: "HEALTH_CHECK_FAILED",
-                        cause: error,
-                    }),
-                );
-            }
-        });
+    static async validateHealth(stateManager) {
+        let healthy = await ChromeHandler.sendMessageAsync("HEALTH_PING")
+        if (!healthy) {
+            stateManager.initializing = false;
+            throw new AppError("Health check failed.", {
+                code: "HEALTH_CHECK_FAILED",
+            })
+        }
+        console.log(
+            "[TrenchersPT] 🟢 Health check passed. Server is healthy.",
+        )
     }
 
     static async validateVersion(stateManager) {

@@ -8,8 +8,6 @@ import {FooterHelper} from "../Helpers/FooterHelper.js";
 export class StateManager {
     constructor() {
         this.initializing = false;
-        this.healthy = false;
-
         this.variables = null;
 
         this.tokens = [];
@@ -44,7 +42,6 @@ export class StateManager {
     }
 
     disconnect() {
-        this.healthy = false;
         this.variables = null;
         this.isPremium = false;
         this.clearUI();
