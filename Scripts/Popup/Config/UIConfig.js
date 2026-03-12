@@ -62,10 +62,12 @@ export class UIConfig {
 
     static createRuntimeMessageListener(stateManager) {
         return (message, _sender, sendResponse) => {
-            if (message.origin !== "TrenchersPaperTrading") return;
+            if (message.origin !== "TrenchersPaperTrading") return true;
             if (message.type === "STATUS_UPDATE") {
-                if (message.payload.status) stateManager.initialize(true);
-                else {
+                if (message.payload.status) {
+                    stateManager.initialize(true);
+                    sendResponse({ok: true});
+                } else {
                     stateManager.disconnect();
                     new DialogManager(stateManager)
                         .addTitle("Server Unavailable")
@@ -90,6 +92,22 @@ export class UIConfig {
                     .then(() => {
                         sendResponse({ok: true})
                     });
+
+                return true;
+            }
+
+            if (message.type === "NO_SESSION_UI") {
+                const loginPanel = document.getElementById("loginPanel");
+                loginPanel.classList.remove("loginHidden")
+                sendResponse({ok: true});
+
+                return true;
+            }
+
+            if (message.type === "SESSION_VALID_UI") {
+                const loginPanel = document.getElementById("loginPanel");
+                !loginPanel.classList.contains("loginHidden") && loginPanel.classList.add("loginHidden")
+                sendResponse({ok: true});
 
                 return true;
             }

@@ -1,5 +1,6 @@
 import {StateManager} from "../Services/StateManager.js";
 import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
+import {DialogManager} from "../Core/DialogManager.js"
 
 export class UIConfig {
     static settings = [
@@ -50,40 +51,71 @@ export class UIConfig {
      * @returns {(message: any, sender: any, sendResponse: (response?: any) => void) => void}
      */
     static createRuntimeMessageListener(stateManager) {
-        return (message) => {
-            if (message.origin !== "TrenchersPaperTrading") return;
+        return (message, _sender, sendResponse) => {
+            if (message.origin !== "TrenchersPaperTrading") return true;
 
             if (message.type === "initDashboard") {
                 console.log("User registered, initializing dashboard...");
                 stateManager.initialize();
+                sendResponse({ok: true})
+                return true;
             }
 
             if (message.type === "logoutDashboard") {
                 console.log("User logged out, disabling dashboard...");
                 stateManager.logout();
+                sendResponse({ok: true})
+                return true;
             }
             if (message.type === "clearPositions") {
                 stateManager?.pnlService.clearPositions(true)
+                sendResponse({ok: true})
+                return true;
             }
             if (message.type === "updateBalanceUI") {
                 updateBalanceUI(true, stateManager);
+                sendResponse({ok: true})
+                return true;
             }
 
             if (message.type === "STATUS_UPDATE") {
-                const isHealthy = message?.payload?.status ?? message?.status;
-                console.log("Health status update received:", isHealthy);
-
-                if (!isHealthy) {
-                    stateManager.disconnect()
+                if (message.payload.status) {
+                    stateManager.initialize(true);
+                    sendResponse({ok: true});
                 } else {
-                    stateManager.initialize();
+                    stateManager.disconnect();
+                    new DialogManager(stateManager)
+                        .addMessage("Please log in to trade")
+                        .addType("no-internet")
+                        .show()
+                        .then(() => {
+                            sendResponse({ok: true});
+                        })
                 }
+
+                return true;
             }
+
             if (message.type === "OUTDATED") {
-                // TODO: handle blocker
+                new DialogManager(stateManager)
+                    .addMessage("Update required!")
+                    .addType("outdated")
+                    .show()
+                    .then(() => {
+                        sendResponse({ok: true})
+                    })
+                return true;
             }
             if (message.type === "NOT_LOGGED_IN") {
-                // TODO: handle blocker
+                new DialogManager(stateManager)
+                    .addMessage("Server unavailable. Reconnecting...")
+                    .addType("no-session")
+                    .show()
+                    .then(() => {
+
+                        sendResponse({ok: true})
+                    })
+                return true;
             }
         };
     }

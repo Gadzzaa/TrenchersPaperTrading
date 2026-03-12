@@ -1,7 +1,6 @@
 import {InitHelper} from "../../Utils/Helpers/InitHelper.js"
 import {UIConfig} from "../Config/UIConfig.js"
 import {UIHelper} from "../Helpers/UIHelper.js"
-import {UIManager} from "../../Utils/Core/UIManager.js";
 import {AccountLoader} from "../Core/AccountLoader.js";
 import {FooterHelper} from "../Helpers/FooterHelper.js";
 
@@ -38,7 +37,6 @@ export class StateManager {
         await AccountLoader.loadData(this);
 
         this.initializing = false;
-        await UIManager.enableUI();
     }
 
     disconnect() {

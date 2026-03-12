@@ -2,8 +2,8 @@ import {LoginUILogic} from "../Helpers/LoginUILogic.js";
 import {FooterHelper} from "../Helpers/FooterHelper.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {AccountLoader} from "./AccountLoader.js";
-import {UIManager} from "../../Utils/Core/UIManager.js";
 import {UIHelper as GlobalUIHelper} from "../../Utils/Helpers/UIHelper.js"
+import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class LoginUIManager {
     static createButtons(stateManager) {
@@ -17,7 +17,7 @@ export class LoginUIManager {
             LoginUILogic.login(stateManager).then(() => {
                 AccountLoader.loadData(stateManager).then(() => {
                     FooterHelper.focusDefaultButton();
-                    UIManager.enableUI();
+                    ChromeHandler.sendMessageAsync("SESSION_VALID")
                 })
             }).catch((err) => {
                 throw ErrorHandler.log(err);
@@ -31,7 +31,7 @@ export class LoginUIManager {
             LoginUILogic.register(stateManager).then(() => {
                 AccountLoader.loadData(stateManager).then(() => {
                     FooterHelper.focusDefaultButton();
-                    UIManager.enableUI();
+                    ChromeHandler.sendMessageAsync("SESSION_VALID")
                 });
             }).catch((err) => {
                 throw ErrorHandler.log(err);
@@ -45,7 +45,7 @@ export class LoginUIManager {
             LoginUILogic.logout(stateManager).then(() => {
                 stateManager.clearUI();
                 FooterHelper.focusDefaultButton();
-                UIManager.disableUI()
+                ChromeHandler.sendMessageAsync("NO_SESSION")
             }).catch((err) => {
                 throw ErrorHandler.log(err);
             }).finally(() => GlobalUIHelper.stopLoadingDots(logoutButton, logoutInterval));

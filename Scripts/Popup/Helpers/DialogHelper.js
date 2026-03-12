@@ -64,7 +64,8 @@ export class DialogHelper {
                 DialogHelper.#clearBlockerDialog(dialogElements, chromeListener);
                 resolve();
             };
-
+           
+            !chrome.runtime.onMessage.hasListener(chromeListener) &&
             chrome.runtime.onMessage.addListener(chromeListener);
         })
     }

@@ -5,6 +5,7 @@ import {UIManager} from "../../Utils/Core/UIManager.js";
 import {PNLService} from "./PNLService.js";
 import {UIConfig} from "../Config/UIConfig.js"
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {ChromeHandler} from "../../ChromeHandler.js"
 
 export class StateManager {
     constructor() {
@@ -19,6 +20,8 @@ export class StateManager {
         this.fetchingBalance = false;
         this.currentPreset = null;
         this.currentContract = null;
+
+        this.scheduledBlockers = [];
     }
 
     async initialize() {
@@ -42,7 +45,6 @@ export class StateManager {
 
             this.updateInterval = startInterval(this);
 
-            await UIManager.enableUI();
             this.initializing = false;
             this.running = true;
         } catch (err) {
@@ -68,6 +70,6 @@ export class StateManager {
 
     async logout() {
         await this.disconnect();
-        await UIManager.disableUI("no-session");
+        await ChromeHandler.sendMessageAsync("NO_SESSION");
     }
 }

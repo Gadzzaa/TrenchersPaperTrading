@@ -1,4 +1,3 @@
-import {UIManager} from "../Core/UIManager.js";
 import {ServerValidation} from "../../Server/ServerValidation.js";
 import {DataManager} from "../../Account/Core/DataManager.js";
 import {Variables} from "../../Account/Core/Variables.js";
@@ -46,7 +45,7 @@ export class InitHelper {
     static async searchToken(stateManager) {
         let sessionToken = await StorageManager.getFromStorage("sessionToken");
         if (!sessionToken) {
-            await UIManager.disableUI("no-session");
+            await ChromeHandler.sendMessageAsync("NO_SESSION")
             stateManager.initializing = false;
             throw new AppError("No session token found.", {
                 code: "INVALID_TOKEN",
@@ -64,7 +63,7 @@ export class InitHelper {
         const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
             stateManager.pnlService?.clearPositions();
-            await UIManager.disableUI("no-session");
+            await ChromeHandler.sendMessageAsync("NO_SESSION")
             stateManager.initializing = false;
             throw new AppError("Session invalid.", {
                 code: "INVALID_TOKEN",
