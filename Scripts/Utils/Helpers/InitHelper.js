@@ -34,7 +34,9 @@ export class InitHelper {
         if (!validVersion) {
             await ChromeHandler.sendMessageAsync("OUTDATED")
             stateManager.initializing = false;
-            console.log("[TrenchersPT] 🔴 Version check failed. Extension is outdated.");
+            throw new AppError("Extension is outdated.", {
+                code: "OUTDATED_VERSION",
+            });
         } else
             console.log(
                 "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
