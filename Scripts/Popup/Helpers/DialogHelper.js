@@ -51,14 +51,16 @@ export class DialogHelper {
         })
     }
 
-    static showBlockerDialog(dialogElements) {
+    static showBlockerDialog(dialogElements, options = {}) {
         return new Promise(resolve => {
-            dialogElements.noInternet = document.getElementById("dialogNoInternet");
-            dialogElements.noInternet.classList.remove("hidden");
+            console.log("Showing dialog with options: ", options);
+            if (options.loading)
+                dialogElements.divSpinner.classList.remove("hidden");
 
             const chromeListener = (message) => {
                 if (message.origin !== "TrenchersPaperTrading") return;
-                if (message.type !== "UP_TO_DATE") return;
+                const shouldResolve = options.releaseOn === "STATUS_HEALTHY" ? message.type === "STATUS_UPDATE" && message.payload.status === true : false;
+                if (!shouldResolve) return;
                 DialogHelper.#clearBlockerDialog(dialogElements, chromeListener);
                 resolve();
             };
@@ -68,7 +70,7 @@ export class DialogHelper {
     }
 
     static #clearBlockerDialog(dialogElements, chromeListener) {
-        dialogElements.noInternet.classList.add("hidden");
+        dialogElements.divSpinner.classList.add("hidden");
         chrome.runtime.onMessage.removeListener(chromeListener);
     }
 

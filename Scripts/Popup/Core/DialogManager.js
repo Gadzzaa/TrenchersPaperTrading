@@ -2,8 +2,6 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js"
 import {DialogHelper} from "../Helpers/DialogHelper.js";
 
 export class DialogManager {
-    #running;
-    #overwrite;
 
     constructor(stateManager) {
         this.dialogElements = {
@@ -12,14 +10,18 @@ export class DialogManager {
             body: document.getElementById("dialogBody"),
             input: document.getElementById("dialogInput"),
             buttons: document.getElementById("dialogButtons"),
-            info: document.getElementById("dialogInfo")
+            info: document.getElementById("dialogInfo"),
+            divSpinner: document.getElementById("divSpinnerDiag"),
+        };
+
+        this.payload = {
+            title: null,
+            message: null,
         };
 
         this.stateManager = stateManager;
 
         this.#validateElements();
-        this.#running = false;
-        this.#overwrite = false;
 
         this.handler = null;
     }
@@ -44,6 +46,7 @@ export class DialogManager {
         this.dialogElements.input.classList.add("hidden");
         this.dialogElements.buttons.classList.add("hidden");
         this.dialogElements.info.classList.add("hidden");
+        this.dialogElements.divSpinner.classList.add("hidden");
     }
 
     #showBase() {
@@ -66,18 +69,18 @@ export class DialogManager {
     }
 
     addTitle(title) {
-        this.dialogElements.header.textContent = title;
+        this.payload.title = title;
 
         return this;
     }
 
     addMessage(message) {
-        this.dialogElements.body.textContent = message;
+        this.payload.message = message;
 
         return this;
     }
 
-    addType(type) {
+    addType(type, options = {}) {
         switch (type) {
             case "Input":
                 this.handler = () => DialogHelper.showInputDialog(this.dialogElements);
@@ -89,9 +92,8 @@ export class DialogManager {
                 this.handler = () => DialogHelper.showInfoDialog(this.dialogElements);
                 break;
             case "Blocker":
-                this.#overwrite = true;
                 this.handler = () =>
-                    DialogHelper.showBlockerDialog(this.dialogElements);
+                    DialogHelper.showBlockerDialog(this.dialogElements, options);
                 break;
             default:
                 throw new AppError("Unsupported dialog type: " + type);
@@ -101,13 +103,17 @@ export class DialogManager {
     }
 
     async show() {
-        this.#validateSettings();
-
-        if (this.#running && !this.#overwrite) {
+        if (this.stateManager.runningDialog) {
             console.warn("Another dialog is already running. Scheduling this dialog to show after the current one.");
             this.stateManager.scheduledDialogs.push(this);
+            console.log("Scheduled dialogs: ", this.stateManager.scheduledDialogs);
+            return;
         }
-        this.#running = true;
+
+        this.#loadUI();
+        this.#validateSettings();
+
+        this.stateManager.runningDialog = true;
 
         this.#showBase();
         try {
@@ -120,10 +126,14 @@ export class DialogManager {
         } finally {
             this.#resetDialog()
             this.#hideBase()
-            this.#overwrite = false;
-            this.#running = false;
-            this.#finishScheduled()
+            this.stateManager.runningDialog = false;
+            await this.#finishScheduled()
         }
+    }
+
+    #loadUI() {
+        this.dialogElements.header.textContent = this.payload.title;
+        this.dialogElements.body.textContent = this.payload.message;
     }
 
     #validateSettings() {
@@ -142,10 +152,8 @@ export class DialogManager {
 
     }
 
-    #finishScheduled() {
-        while (this.stateManager.scheduledDialogs.length > 0) {
-            const nextDialog = this.stateManager.scheduledDialogs.shift();
-            nextDialog.show();
-        }
+    async #finishScheduled() {
+        const nextDialog = this.stateManager.scheduledDialogs.shift();
+        await nextDialog.show();
     }
 }
