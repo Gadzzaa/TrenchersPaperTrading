@@ -3,6 +3,7 @@ import {UIHelper} from "../Helpers/UIHelper.js";
 import {DialogManager} from "../Core/DialogManager.js";
 
 export class UIConfig {
+
     static settings = [
         {
             key: "username",
@@ -63,10 +64,20 @@ export class UIConfig {
         return (message, _sender, sendResponse) => {
             if (message.origin !== "TrenchersPaperTrading") return;
             if (message.type === "STATUS_UPDATE") {
-                console.log("Health status update received:", message.status);
-                if (!message.status) {
-                    // disconnectPopup and internet
-                } else stateManager.initialize()
+                if (message.payload.status) stateManager.initialize(true);
+                else {
+                    stateManager.disconnect();
+                    new DialogManager(stateManager)
+                        .addTitle("Server Unavailable")
+                        .addMessage("Lost connection to the server. Reconnecting...")
+                        .addType("Blocker", {loading: true, releaseOn: "STATUS_HEALTHY"})
+                        .show()
+                        .then(() => {
+                            sendResponse({ok: true})
+                        })
+                }
+
+                return true;
             }
             if (message.type === "OUTDATED_UI") {
                 new DialogManager(stateManager)
@@ -74,15 +85,12 @@ export class UIConfig {
                     .addMessage(
                         "Your extension is out of date. Please update to the latest version to continue using it.",
                     )
-                    .addType("Blocker")
+                    .addType("Blocker", {loading: false})
                     .show()
-                    .then(() => sendResponse({ok: true}))
-                    .catch((error) =>
-                        sendResponse({
-                            ok: false,
-                            error: error?.message || "Failed to show blocker dialog.",
-                        }),
-                    );
+                    .then(() => {
+                        sendResponse({ok: true})
+                    });
+
                 return true;
             }
         };
