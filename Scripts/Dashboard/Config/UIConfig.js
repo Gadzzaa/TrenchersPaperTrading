@@ -1,6 +1,7 @@
 import {StateManager} from "../Services/StateManager.js";
 import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
 import {DialogManager} from "../Core/DialogManager.js"
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler";
 
 export class UIConfig {
     static settings = [
@@ -63,7 +64,9 @@ export class UIConfig {
 
             if (message.type === "logoutDashboard") {
                 console.log("User logged out, disabling dashboard...");
-                stateManager.logout();
+                stateManager.logout().catch((error) => {
+                    ErrorHandler.show(error);
+                });
                 sendResponse({ok: true})
                 return true;
             }
@@ -80,7 +83,9 @@ export class UIConfig {
 
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
-                    stateManager.initialize(true);
+                    stateManager.initialize(true).catch((error) => {
+                        ErrorHandler.show(error);
+                    });
                     sendResponse({ok: true});
                 } else {
                     stateManager.disconnect();
@@ -116,7 +121,9 @@ export class UIConfig {
                         stateManager.disconnect()
                         stateManager.initialize(true)
                         sendResponse({ok: true})
-                    })
+                    }).catch((error) => {
+                    ErrorHandler.show(error);
+                })
                 return true;
             }
         };
