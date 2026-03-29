@@ -43,6 +43,8 @@ export class ErrorCodes {
         INVALID_API_RESPONSE: "INVALID_API_RESPONSE",
         AUTH_TIMEOUT: "AUTH_TIMEOUT",
         PRESET_APPLY_FAILED: "PRESET_APPLY_FAILED",
+        WEBSOCKET_CONNECTION_ERROR: "WEBSOCKET_CONNECTION_ERROR",
+        INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
     });
 
     static UserMessages = Object.freeze({
@@ -93,5 +95,7 @@ export class ErrorCodes {
         INVALID_API_RESPONSE: "Received unexpected data from server. Please try again.",
         AUTH_TIMEOUT: "WebSocket authentication timed out. Please check your connection and try again.",
         PRESET_APPLY_FAILED: "Failed to apply preset. Please try again.",
+        WEBSOCKET_CONNECTION_ERROR: "Failed to connect to server. Check your connection and try again.",
+        INVALID_CREDENTIALS: "Login information is incorrect. Please check your username and password and try again.",
     });
 }
