@@ -53,17 +53,19 @@ export class ServerStatus {
         } catch (error) {
             status = false;
         } finally {
-            if (this.status !== status) {
-                console.log("Old status:", this.status, "New status:", status);
+            if (this.status !== status || status === false) {
+                if (typeof this.status === "boolean") {
+                    console.log("Old status:", this.status, "New status:", status);
+                    ChromeHandler.sendMessage("STATUS_UPDATE", {status: status});
+                }
                 this.status = status;
-                ChromeHandler.sendMessage("STATUS_UPDATE", {status: this.status});
             }
             this.checking = false;
         }
     }
 
     /**
-     * @returns {Object<boolean>} - Returns the current server status
+     * @returns {boolean} - Returns the current server status
      */
     async getStatus() {
         if (typeof this.status !== "boolean")

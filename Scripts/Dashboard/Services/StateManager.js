@@ -21,12 +21,15 @@ export class StateManager {
         this.currentPreset = null;
         this.currentContract = null;
 
-        this.scheduledBlockers = [];
+        this.activeDialog = null;
     }
 
-    async initialize() {
+    async initialize(force) {
         try {
-            if (this.initializing || this.running) return;
+            if (force) {
+                this.disconnect()
+            } else if ((this.initializing || this.running)) return;
+
             console.log("[TrenchersPT] 🟢 Initializing dashboard...");
             this.initializing = true;
 
@@ -36,6 +39,7 @@ export class StateManager {
 
             await InitHelper.validateVersion(this);
 
+            console.log("Validating session")
             await InitHelper.validateSession(this);
             await this.pnlService.start();
 
@@ -53,7 +57,8 @@ export class StateManager {
         }
     }
 
-    async disconnect() {
+    disconnect() {
+        if (!this.running) return;
         console.log("[TrenchersPT] 🔴 Disconnecting dashboard...");
 
         document.body.style.pointerEvents = "none";
@@ -69,7 +74,7 @@ export class StateManager {
     }
 
     async logout() {
-        await this.disconnect();
+        this.disconnect();
         await ChromeHandler.sendMessageAsync("NO_SESSION");
     }
 }

@@ -104,6 +104,7 @@ export class DialogManager {
 
     async show() {
         if (this.stateManager.runningDialog) {
+            if (this.stateManager.runningDialog === this.payload.title) return;
             console.warn("Another dialog is already running. Scheduling this dialog to show after the current one.");
             this.stateManager.scheduledDialogs.push(this);
             console.log("Scheduled dialogs: ", this.stateManager.scheduledDialogs);
@@ -113,7 +114,7 @@ export class DialogManager {
         this.#loadUI();
         this.#validateSettings();
 
-        this.stateManager.runningDialog = true;
+        this.stateManager.runningDialog = this.payload.title;
 
         this.#showBase();
         try {
@@ -126,7 +127,7 @@ export class DialogManager {
         } finally {
             this.#resetDialog()
             this.#hideBase()
-            this.stateManager.runningDialog = false;
+            this.stateManager.runningDialog = null;
             await this.#finishScheduled()
         }
     }

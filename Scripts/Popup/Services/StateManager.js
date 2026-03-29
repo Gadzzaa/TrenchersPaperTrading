@@ -16,7 +16,7 @@ export class StateManager {
         this.resetsTimer = null;
 
         this.scheduledDialogs = [];
-        this.runningDialog = false;
+        this.runningDialog = null;
     }
 
     async initialize(force = false) {

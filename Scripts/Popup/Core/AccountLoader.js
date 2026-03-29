@@ -7,6 +7,7 @@ export class AccountLoader {
     static async loadData(stateManager) {
         let dataManager = new DataManager(stateManager.variables);
         let data = await dataManager.fetchAccountData();
+        stateManager.clearUI();
         AccountLoader.#validateData(data);
         AccountLoader.#loadMainPage(stateManager, data);
         AccountLoader.#loadAccountPage(stateManager, data);

@@ -3,6 +3,7 @@ import {DialogHelper} from "../Helpers/DialogHelper.js"
 
 export class DialogManager {
     #dialogElements;
+    #type;
     #message;
     #handler;
     #neverResolve;
@@ -15,6 +16,7 @@ export class DialogManager {
             message: document.getElementById("blockerMessage"),
         };
 
+        this.#type = null;
         this.#message = null;
         this.#handler = null;
 
@@ -28,6 +30,7 @@ export class DialogManager {
     };
 
     addType(type) {
+        this.#type = type;
         switch (type) {
             case "no-internet":
                 this.#handler = () => DialogHelper.handleNoInternet()
@@ -51,25 +54,29 @@ export class DialogManager {
     }
 
     #showBase() {
-        this.#dialogElements.blocker.style.opacity = "0";
+        this.#dialogElements.blocker.style.opacity = "1";
+
         setTimeout(() => {
             this.#dialogElements.blocker.style.display = "flex";
         }, 300); // TODO: implement --anim time here
     }
 
     #hideBase() {
+        setTimeout(() => {
+            this.#dialogElements.blocker.style.opacity = "0";
+        }, 300) // TODO: implement --anim time here
+
         this.#dialogElements.blocker.style.display = "none";
 
-        setTimeout(() => {
-            this.#dialogElements.blocker.style.opacity = "1";
-        }, 300) // TODO: implement --anim time here
     }
 
     async show() {
+        if (this.stateManager.activeDialog === this.#type) return {dontRestart: true};
         this.#validateElements();
 
         this.#validateSettings();
         this.#dialogElements.message.textContent = this.#message;
+        this.stateManager.activeDialog = this.#type;
         console.log(this.#message, this.#dialogElements)
 
         this.#showBase();
@@ -84,12 +91,13 @@ export class DialogManager {
         } finally {
             this.#hideBase();
             this.#cleanup();
+            this.stateManager.activeDialog = null;
         }
     }
 
     #validateSettings() {
         let message = this.#message;
-        if (typeof message.textContent !== "string")
+        if (typeof message !== "string")
             throw new AppError('Message element does not support text content.', {
                 code: "DIALOG_ELEMENTS_MISSING",
                 meta: {
