@@ -85,7 +85,7 @@ export class UIConfig {
                 } else {
                     stateManager.disconnect();
                     new DialogManager(stateManager)
-                        .addMessage("Please log in to trade")
+                        .addMessage("Server unavailable. Reconnecting...")
                         .addType("no-internet")
                         .show()
                         .then(() => {
@@ -106,13 +106,15 @@ export class UIConfig {
                     })
                 return true;
             }
-            if (message.type === "NOT_LOGGED_IN") {
+            if (message.type === "NO_SESSION_UI") {
                 new DialogManager(stateManager)
-                    .addMessage("Server unavailable. Reconnecting...")
+                    .addMessage("Please log in to trade")
                     .addType("no-session")
                     .show()
-                    .then(() => {
-
+                    .then((value) => {
+                        if (value?.dontRestart) return;
+                        stateManager.disconnect()
+                        stateManager.initialize(true)
                         sendResponse({ok: true})
                     })
                 return true;

@@ -31,7 +31,7 @@ export class InitHelper {
     static async validateVersion(stateManager) {
         const validVersion = await ServerValidation.isLatestVersion();
         if (!validVersion) {
-            await ChromeHandler.sendMessageAsync("OUTDATED")
+            ChromeHandler.sendMessageAsync("OUTDATED")
             stateManager.initializing = false;
             throw new AppError("Extension is outdated.", {
                 code: "OUTDATED_VERSION",
@@ -45,7 +45,7 @@ export class InitHelper {
     static async searchToken(stateManager) {
         let sessionToken = await StorageManager.getFromStorage("sessionToken");
         if (!sessionToken) {
-            await ChromeHandler.sendMessageAsync("NO_SESSION")
+            ChromeHandler.sendMessageAsync("NO_SESSION")
             stateManager.initializing = false;
             throw new AppError("No session token found.", {
                 code: "INVALID_TOKEN",
@@ -63,7 +63,7 @@ export class InitHelper {
         const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
             stateManager.pnlService?.clearPositions();
-            await ChromeHandler.sendMessageAsync("NO_SESSION")
+            ChromeHandler.sendMessageAsync("NO_SESSION")
             stateManager.initializing = false;
             throw new AppError("Session invalid.", {
                 code: "INVALID_TOKEN",
