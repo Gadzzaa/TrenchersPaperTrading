@@ -5,12 +5,12 @@ import {UIManager} from "../../Utils/Core/UIManager.js";
 import {PNLService} from "./PNLService.js";
 import {UIConfig} from "../Config/UIConfig.js"
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {ChromeHandler} from "../../ChromeHandler.js"
 
 export class StateManager {
     constructor() {
         this.initializing = false;
         this.running = false;
-        this.healthy = false;
 
         this.variables = null;
         this.pnlService = new PNLService(this);
@@ -20,11 +20,16 @@ export class StateManager {
         this.fetchingBalance = false;
         this.currentPreset = null;
         this.currentContract = null;
+
+        this.activeDialog = null;
     }
 
-    async initialize() {
+    async initialize(force) {
         try {
-            if (this.initializing || this.running) return;
+            if (force) {
+                this.disconnect()
+            } else if ((this.initializing || this.running)) return;
+
             console.log("[TrenchersPT] 🟢 Initializing dashboard...");
             this.initializing = true;
 
@@ -34,6 +39,7 @@ export class StateManager {
 
             await InitHelper.validateVersion(this);
 
+            console.log("Validating session")
             await InitHelper.validateSession(this);
             await this.pnlService.start();
 
@@ -43,7 +49,6 @@ export class StateManager {
 
             this.updateInterval = startInterval(this);
 
-            await UIManager.enableUI();
             this.initializing = false;
             this.running = true;
         } catch (err) {
@@ -52,7 +57,8 @@ export class StateManager {
         }
     }
 
-    async disconnect() {
+    disconnect() {
+        if (!this.running) return;
         console.log("[TrenchersPT] 🔴 Disconnecting dashboard...");
 
         document.body.style.pointerEvents = "none";
@@ -68,7 +74,7 @@ export class StateManager {
     }
 
     async logout() {
-        await this.disconnect();
-        await UIManager.disableUI("no-session");
+        this.disconnect();
+        await ChromeHandler.sendMessageAsync("NO_SESSION");
     }
 }

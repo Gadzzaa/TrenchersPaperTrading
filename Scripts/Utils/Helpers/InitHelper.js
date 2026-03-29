@@ -1,9 +1,9 @@
-import {UIManager} from "../Core/UIManager.js";
 import {ServerValidation} from "../../Server/ServerValidation.js";
 import {DataManager} from "../../Account/Core/DataManager.js";
 import {Variables} from "../../Account/Core/Variables.js";
 import {StorageManager} from "../Core/StorageManager.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
+import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class InitHelper {
     static loadSettings(UIConfig) {
@@ -15,58 +15,37 @@ export class InitHelper {
         });
     }
 
-    static validateHealth(stateManager) {
-        return new Promise((resolve, reject) => {
-            try {
-                chrome.runtime.sendMessage(
-                    {type: "HEALTH_PING"},
-                    async (response) => {
-                        stateManager.healthy = response?.status;
-                        if (stateManager.healthy === false) {
-                            await UIManager.disableUI("no-internet");
-                            stateManager.initializing = false;
-                            reject(
-                                new AppError("Health check failed.", {
-                                    code: "HEALTH_CHECK_FAILED",
-                                }),
-                            );
-                        }
-                        resolve(
-                            console.log(
-                                "[TrenchersPT] 🟢 Health check passed. Server is healthy.",
-                            ),
-                        );
-                    },
-                );
-            } catch (error) {
-                reject(
-                    new AppError("Health check failed.", {
-                        code: "HEALTH_CHECK_FAILED",
-                        cause: error,
-                    }),
-                );
-            }
-        });
+    static async validateHealth(stateManager) {
+        let healthy = await ChromeHandler.sendMessageAsync("HEALTH_PING")
+        if (!healthy) {
+            stateManager.initializing = false;
+            throw new AppError("Health check failed.", {
+                code: "HEALTH_CHECK_FAILED",
+            })
+        }
+        console.log(
+            "[TrenchersPT] 🟢 Health check passed. Server is healthy.",
+        )
     }
 
     static async validateVersion(stateManager) {
         const validVersion = await ServerValidation.isLatestVersion();
         if (!validVersion) {
-            await UIManager.disableUI("outdated");
+            ChromeHandler.sendMessageAsync("OUTDATED")
             stateManager.initializing = false;
-            throw new AppError("Outdated version.", {
+            throw new AppError("Extension is outdated.", {
                 code: "OUTDATED_VERSION",
             });
-        }
-        console.log(
-            "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
-        );
+        } else
+            console.log(
+                "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
+            );
     }
 
     static async searchToken(stateManager) {
         let sessionToken = await StorageManager.getFromStorage("sessionToken");
         if (!sessionToken) {
-            await UIManager.disableUI("no-session");
+            ChromeHandler.sendMessageAsync("NO_SESSION")
             stateManager.initializing = false;
             throw new AppError("No session token found.", {
                 code: "INVALID_TOKEN",
@@ -84,7 +63,7 @@ export class InitHelper {
         const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
             stateManager.pnlService?.clearPositions();
-            await UIManager.disableUI("no-session");
+            ChromeHandler.sendMessageAsync("NO_SESSION")
             stateManager.initializing = false;
             throw new AppError("Session invalid.", {
                 code: "INVALID_TOKEN",

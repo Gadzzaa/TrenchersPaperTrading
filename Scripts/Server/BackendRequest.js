@@ -1,5 +1,6 @@
 import CONFIG from "../../config.js";
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
+import {ChromeHandler} from "../ChromeHandler.js";
 
 const DEFAULT_TIMEOUT = 1000 * 5;
 const API_BASE_URL = CONFIG.API_BASE_URL;
@@ -23,6 +24,7 @@ export class BackendRequest {
             headers: {},
             body: null,
             retries: 0,
+            checkStatus: true,
         };
         this.networkError = false;
     }
@@ -139,6 +141,11 @@ export class BackendRequest {
         );
     }
 
+    bypassStatusCheck() {
+        this.requestData.checkStatus = false;
+        return this;
+    }
+
     /**
      * @param {Promise<Object>} response -
      * @param {Promise<Object>} responseJSON -
@@ -148,6 +155,8 @@ export class BackendRequest {
         if (!entry) return;
 
         if (response.status >= 500) this.networkError = true;
+
+        if (!this.requestData.checkStatus) return;
 
         throw new AppError(`${entry.label}: ${responseJSON.error}`, {
             code: entry.code,
@@ -174,18 +183,21 @@ export class BackendRequest {
                 });
                 clearTimeout(timeout);
                 responseJSON = await response.json();
-                if (response?.ok) break;
+                if (response.ok || responseJSON.ok) break;
                 this.checkStatus(response, responseJSON);
-                throw new AppError("Unknown error occurred: " + responseJSON.error, {
-                    code: "UNKNOWN",
-                    meta: {status: response.status, json: responseJSON},
-                });
+                throw new AppError(
+                    "Unknown error occurred: " +
+                    (responseJSON?.error || responseJSON?.message || "No details"),
+                    {
+                        code: "UNKNOWN",
+                        meta: {status: response.status, json: responseJSON},
+                    },
+                );
             } catch (error) {
                 if (this.isNetworkError(error) || this.networkError) {
                     if (attempt === this.requestData.retries) {
-                        chrome.runtime.sendMessage({type: "no-internet"});
+                        ChromeHandler.sendMessage("no-internet");
                         this.networkError = true;
-                        // TODO: disable UI with chrome.sendMessage to dashboard and popup
                         throw new AppError("Network error: " + error.message, {
                             code: "NETWORK",
                             cause: error,
@@ -199,7 +211,7 @@ export class BackendRequest {
                     throw new AppError("Request failed: " + error.message, {
                         code: error.code,
                         cause: error,
-                        meta: {status: response.status, json: responseJSON},
+                        meta: {status: response?.status, json: responseJSON},
                     });
             }
         }

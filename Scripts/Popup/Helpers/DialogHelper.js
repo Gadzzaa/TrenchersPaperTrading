@@ -51,6 +51,31 @@ export class DialogHelper {
         })
     }
 
+    static showBlockerDialog(dialogElements, options = {}) {
+        return new Promise(resolve => {
+            console.log("Showing dialog with options: ", options);
+            if (options.loading)
+                dialogElements.divSpinner.classList.remove("hidden");
+
+            const chromeListener = (message) => {
+                if (message.origin !== "TrenchersPaperTrading") return;
+                const shouldResolve = options.releaseOn === "STATUS_HEALTHY" ? message.type === "STATUS_UPDATE" && message.payload.status === true : false;
+                if (!shouldResolve) return;
+                DialogHelper.#clearBlockerDialog(dialogElements, chromeListener);
+                resolve();
+            };
+           
+            !chrome.runtime.onMessage.hasListener(chromeListener) &&
+            chrome.runtime.onMessage.addListener(chromeListener);
+        })
+    }
+
+    static #clearBlockerDialog(dialogElements, chromeListener) {
+        dialogElements.divSpinner.classList.add("hidden");
+        chrome.runtime.onMessage.removeListener(chromeListener);
+    }
+
+
     static #clearInputDialog(dialogElements, onConfirm) {
         dialogElements.input.classList.add("hidden");
         dialogElements.inputConfirmButton.removeEventListener("click", onConfirm);

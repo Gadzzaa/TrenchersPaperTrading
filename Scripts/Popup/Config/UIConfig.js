@@ -1,7 +1,9 @@
 import {UILoader} from "../Core/UILoader.js"
 import {UIHelper} from "../Helpers/UIHelper.js";
+import {DialogManager} from "../Core/DialogManager.js";
 
 export class UIConfig {
+
     static settings = [
         {
             key: "username",
@@ -59,13 +61,56 @@ export class UIConfig {
     }
 
     static createRuntimeMessageListener(stateManager) {
-        return (message) => {
+        return (message, _sender, sendResponse) => {
+            if (message.origin !== "TrenchersPaperTrading") return true;
             if (message.type === "STATUS_UPDATE") {
-                console.log("Health status update received:", message.status);
-                if (!message.status) {
-                    // disconnectPopup and internet
-                } else stateManager.initialize()
+                if (message.payload.status) {
+                    stateManager.initialize(true);
+                    sendResponse({ok: true});
+                } else {
+                    stateManager.disconnect();
+                    new DialogManager(stateManager)
+                        .addTitle("Server Unavailable")
+                        .addMessage("Lost connection to the server. Reconnecting...")
+                        .addType("Blocker", {loading: true, releaseOn: "STATUS_HEALTHY"})
+                        .show()
+                        .then(() => {
+                            sendResponse({ok: true})
+                        })
+                }
+
+                return true;
             }
-        };/**/
+            if (message.type === "OUTDATED_UI") {
+                new DialogManager(stateManager)
+                    .addTitle("Update Available")
+                    .addMessage(
+                        "Your extension is out of date. Please update to the latest version to continue using it.",
+                    )
+                    .addType("Blocker", {loading: false})
+                    .show()
+                    .then(() => {
+                        sendResponse({ok: true})
+                    });
+
+                return true;
+            }
+
+            if (message.type === "NO_SESSION_UI") {
+                const loginPanel = document.getElementById("loginPanel");
+                loginPanel.classList.remove("loginHidden")
+                sendResponse({ok: true});
+
+                return true;
+            }
+
+            if (message.type === "SESSION_VALID_UI") {
+                const loginPanel = document.getElementById("loginPanel");
+                !loginPanel.classList.contains("loginHidden") && loginPanel.classList.add("loginHidden")
+                sendResponse({ok: true});
+
+                return true;
+            }
+        };
     }
 }

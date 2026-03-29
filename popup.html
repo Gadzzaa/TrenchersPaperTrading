@@ -16,35 +16,12 @@
     <link href="Styles/popup.css" rel="stylesheet"/>
 </head>
 <body id="popupTrenchersPT" style="pointer-events: none">
-<div class="hidden" id="noInternet">
-    <div id="noInternetBG"></div>
-    <div id="noInternetBox">
-        <div id="noInternetHeader">Offline</div>
-        <div id="noInternetBody">
-            Lost connection to the server. Reconnecting...
-        </div>
-        <div id="noInternetLoading">
-            <div id="noInternetSpinner"></div>
-        </div>
-    </div>
-</div>
-<div class="hidden" id="updateReq">
-    <div id="updateReqBG"></div>
-    <div id="updateReqBox">
-        <div id="updateReqHeader">UPDATE REQUIRED!</div>
-        <div id="updateReqBody">
-            Please update the extension to the latest version before continuing.
-        </div>
-    </div>
-</div>
 
 <div class="hidden" id="dialogOverlay">
     <div id="dialogBackground"></div>
     <div id="dialogBox">
-        <div id="dialogHeader">Offline</div>
-        <div id="dialogBody">
-            Lost connection to the server. Reconnecting...
-        </div>
+        <div id="dialogHeader"></div>
+        <div id="dialogBody"></div>
         <div class="hidden" id="dialogInput">
             <span class="hidden" id="warning"></span>
             <input id="dialogTextInput" max="100" min="0" type="number"/>
@@ -58,6 +35,9 @@
         </div>
         <div class="hidden" id="dialogInfo">
             <button class="confirmButton" id="dialogInfoButton">Okay</button>
+        </div>
+        <div class="hidden" id="divSpinnerDiag">
+            <div id="spinnerDialog"></div>
         </div>
     </div>
 </div>

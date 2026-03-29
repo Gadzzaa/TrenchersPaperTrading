@@ -1,5 +1,6 @@
 // TODO: Remake
 export class UIManager {
+   
     static async enableUI() {
         const blocker = document.getElementById("Blocker");
         const popup = document.getElementById("popupTrenchersPT");

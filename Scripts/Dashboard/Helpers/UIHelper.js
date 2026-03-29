@@ -5,6 +5,7 @@ import {StateManager} from "../Services/StateManager.js";
 
 export class UIHelper {
     /**
+     *
      * Binds dashboard action and utility button handlers.
      * @param {StateManager} stateManager
      */
