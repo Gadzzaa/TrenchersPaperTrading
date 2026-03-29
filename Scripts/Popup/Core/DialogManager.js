@@ -155,6 +155,7 @@ export class DialogManager {
 
     async #finishScheduled() {
         const nextDialog = this.stateManager.scheduledDialogs.shift();
-        await nextDialog.show();
+        if (nextDialog)
+            await nextDialog.show();
     }
 }

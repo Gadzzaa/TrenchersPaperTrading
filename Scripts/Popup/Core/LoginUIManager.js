@@ -20,7 +20,7 @@ export class LoginUIManager {
                 FooterHelper.focusDefaultButton();
                 await ChromeHandler.sendMessageAsync("SESSION_VALID");
             } catch (err) {
-                throw ErrorHandler.log(err);
+                ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
                 LoginUIManager.clearInputs();
                 GlobalUIHelper.stopLoadingDots(loginButton, loginInterval)
@@ -34,7 +34,7 @@ export class LoginUIManager {
                 FooterHelper.focusDefaultButton();
                 await ChromeHandler.sendMessageAsync("SESSION_VALID");
             } catch (err) {
-                throw ErrorHandler.log(err);
+                ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
                 LoginUIManager.clearInputs();
                 GlobalUIHelper.stopLoadingDots(registerButton, registerInterval)
@@ -48,7 +48,7 @@ export class LoginUIManager {
                 FooterHelper.focusDefaultButton();
                 await ChromeHandler.sendMessageAsync("NO_SESSION");
             } catch (err) {
-                throw ErrorHandler.log(err);
+                ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
                 GlobalUIHelper.stopLoadingDots(logoutButton, logoutInterval);
             }

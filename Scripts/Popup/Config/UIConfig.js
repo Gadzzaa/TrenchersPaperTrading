@@ -1,6 +1,7 @@
 import {UILoader} from "../Core/UILoader.js"
 import {UIHelper} from "../Helpers/UIHelper.js";
 import {DialogManager} from "../Core/DialogManager.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler";
 
 export class UIConfig {
 
@@ -65,7 +66,9 @@ export class UIConfig {
             if (message.origin !== "TrenchersPaperTrading") return true;
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
-                    stateManager.initialize(true);
+                    stateManager.initialize(true).catch((error) => {
+                        ErrorHandler.show(error, {show: false}, {show: true, stateManager});
+                    });
                     sendResponse({ok: true});
                 } else {
                     stateManager.disconnect();

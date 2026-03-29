@@ -3,9 +3,10 @@ import {GlobalUIManager} from "../Core/GlobalUIManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js"
 import {FooterHelper} from "../Helpers/FooterHelper.js";
 
+let stateManager;
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        let stateManager = new StateManager();
+        stateManager = new StateManager();
         GlobalUIManager.disableArrowKeys();
         GlobalUIManager.createButtons(stateManager)
         GlobalUIManager.createStorageEvents(stateManager);
@@ -15,6 +16,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         await stateManager.initialize();
     } catch (err) {
-        ErrorHandler.show(err);
+        ErrorHandler.show(err, {show: false}, {show: true, stateManager});
     }
 });
