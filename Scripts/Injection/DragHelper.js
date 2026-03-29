@@ -78,8 +78,8 @@ export class DragHelper {
             document.body.style.userSelect = "";
             helper.target.style.opacity = "1";
             helper.target.style.transform = "scale(1)";
-            helper.handle.style.width = "12px";
-            helper.handle.style.height = "8px";
+            helper.handle.style.width = "24px";
+            helper.handle.style.height = "16px";
             helper.handle.style.left = "174.5px";
             helper.handle.style.top = "6px";
 
