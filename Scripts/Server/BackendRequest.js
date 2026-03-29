@@ -159,7 +159,7 @@ export class BackendRequest {
         if (!this.requestData.checkStatus) return;
 
         throw new AppError(`${entry.label}: ${responseJSON.error}`, {
-            code: entry.code,
+            code: responseJSON.error || entry.code,
             meta: {status: response.status, json: responseJSON},
         });
     }
