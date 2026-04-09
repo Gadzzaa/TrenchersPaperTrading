@@ -8,16 +8,27 @@ export class PoolWatcher {
     }
 
     /**
+     * @param {any} poolAddress
+     * @returns {string}
+     */
+    #normalizePoolAddress(poolAddress) {
+        return String(poolAddress?.toString?.() ?? poolAddress ?? "");
+    }
+
+    /**
      * Starts watching a pool through websocket.
      * @param {string} poolAddress
      * @param {any} pnlData
      */
     watch(poolAddress, pnlData) {
-        if (!this.watchedPools.has(poolAddress)) {
-            this.watchedPools.set(poolAddress, {price: null, liquidity: null});
+        const normalizedPoolAddress = this.#normalizePoolAddress(poolAddress);
+        if (!normalizedPoolAddress) return;
+
+        if (!this.watchedPools.has(normalizedPoolAddress)) {
+            this.watchedPools.set(normalizedPoolAddress, {price: null, liquidity: null});
         }
 
-        this.ws.send({type: "watchPool", poolAddress, poolData: pnlData});
+        this.ws.send({type: "watchPool", poolAddress: normalizedPoolAddress, poolData: pnlData});
     }
 
     /**
@@ -25,10 +36,11 @@ export class PoolWatcher {
      * @param {string} poolAddress
      */
     unwatch(poolAddress) {
-        if (!this.watchedPools.has(poolAddress)) return;
+        const normalizedPoolAddress = this.#normalizePoolAddress(poolAddress);
+        if (!normalizedPoolAddress || !this.watchedPools.has(normalizedPoolAddress)) return;
 
-        this.ws.send({type: "unwatchPool", poolAddress});
-        this.watchedPools.delete(poolAddress);
+        this.ws.send({type: "unwatchPool", poolAddress: normalizedPoolAddress});
+        this.watchedPools.delete(normalizedPoolAddress);
     }
 
     /**
@@ -36,13 +48,14 @@ export class PoolWatcher {
      * @param {{poolAddress: string, price: number, liquidity: number}} data
      */
     updatePool(data) {
-        const pool = this.watchedPools.get(data.poolAddress);
+        const normalizedPoolAddress = this.#normalizePoolAddress(data?.poolAddress);
+        const pool = this.watchedPools.get(normalizedPoolAddress);
 
         if (pool) {
             pool.price = data.price;
             pool.liquidity = data.liquidity;
         } else {
-            this.unwatch(data.poolAddress);
+            this.unwatch(normalizedPoolAddress);
         }
     }
 
@@ -52,7 +65,7 @@ export class PoolWatcher {
      * @returns {{price: number|null, liquidity: number|null}|undefined}
      */
     get(poolAddress) {
-        return this.watchedPools.get(poolAddress);
+        return this.watchedPools.get(this.#normalizePoolAddress(poolAddress));
     }
 
     /**

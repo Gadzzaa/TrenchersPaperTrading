@@ -48,7 +48,7 @@ export class DataAPI {
             .addRetries(2)
             .build();
 
-        if (!response.resetsLeft)
+        if (response?.resetsLeft == null)
             throw new AppError("Resets not received from server", {
                 code: "NO_DATA",
                 meta: {response},
@@ -72,8 +72,13 @@ export class DataAPI {
 
             return Boolean(response.success);
         } catch (error) {
-            const code = error?.code || error?.cause?.code;
-            if (code === "UNAUTHORIZED") return false;
+            const code = error?.code || error?.cause?.code || error?.meta?.json?.code;
+            const authFailureCodes = new Set([
+                "UNAUTHORIZED",
+                "INVALID_SESSION",
+                "AUTHORIZATION_TOKEN_REQUIRED",
+            ]);
+            if (authFailureCodes.has(code)) return false;
             throw error;
         }
     }

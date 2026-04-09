@@ -6,6 +6,12 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class InitHelper {
+    static #showLoginPanelIfPresent() {
+        const loginPanel = document.getElementById("loginPanel");
+        if (loginPanel)
+            loginPanel.classList.remove("loginHidden");
+    }
+
     static loadSettings(UIConfig) {
         UIConfig.settings.forEach(({key, default: def, apply}) => {
             chrome.storage.local.get(key, ({[key]: value}) => {
@@ -45,7 +51,12 @@ export class InitHelper {
     static async searchToken(stateManager) {
         let sessionToken = await StorageManager.getFromStorage("sessionToken");
         if (!sessionToken) {
-            ChromeHandler.sendMessageAsync("NO_SESSION")
+            try {
+                await ChromeHandler.sendMessageAsync("NO_SESSION");
+            } catch (error) {
+                console.error("Failed to notify NO_SESSION state:", error);
+            }
+            InitHelper.#showLoginPanelIfPresent();
             stateManager.initializing = false;
             throw new AppError("No session token found.", {
                 code: "INVALID_TOKEN",
@@ -63,7 +74,17 @@ export class InitHelper {
         const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
             stateManager.pnlService?.clearPositions();
-            ChromeHandler.sendMessageAsync("NO_SESSION")
+            try {
+                await StorageManager.removeFromStorage("sessionToken");
+            } catch (error) {
+                console.error("Failed to clear invalid session token:", error);
+            }
+            try {
+                await ChromeHandler.sendMessageAsync("NO_SESSION");
+            } catch (error) {
+                console.error("Failed to notify NO_SESSION state:", error);
+            }
+            InitHelper.#showLoginPanelIfPresent();
             stateManager.initializing = false;
             throw new AppError("Session invalid.", {
                 code: "INVALID_TOKEN",

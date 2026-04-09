@@ -16,6 +16,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         await stateManager.initialize();
     } catch (err) {
+        const code = err?.code || err?.cause?.code;
+        if (code === "INVALID_TOKEN" || code === "INVALID_SESSION") {
+            const loginPanel = document.getElementById("loginPanel");
+            if (loginPanel) loginPanel.classList.remove("loginHidden");
+            return;
+        }
         ErrorHandler.show(err, {show: false}, {show: true, stateManager});
     }
 });

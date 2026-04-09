@@ -62,7 +62,7 @@ function loadConstants(Constants, stateManager) {
  */
 async function fetchBalanceAPI(transactionManager, solBalance) {
     const result = await transactionManager.getPortfolio();
-    if (!result?.solBalance) {
+    if (result?.solBalance == null) {
         ErrorHandler.log(
             new AppError("Failed to fetch balance", {
                 code: "INVALID_DATA",

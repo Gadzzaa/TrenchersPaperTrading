@@ -150,7 +150,7 @@ export class TransactionManager {
                 meta: {percentage, poolAddress: this.#poolAddress, portfolio},
             });
 
-        const totalAmount = portfolio.tokens[this.#poolAddress].amount;
+        const totalAmount = portfolio.tokens[this.#poolAddress]?.amount;
         if (!totalAmount)
             throw new AppError("No tokens found for this pool.", {
                 code: "INVALID_AMOUNT",

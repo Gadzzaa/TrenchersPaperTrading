@@ -23,20 +23,22 @@ export class StateManager {
         if (this.initializing && !force) return;
         this.initializing = true;
 
-        UIHelper.clearInputFields();
+        try {
+            UIHelper.clearInputFields();
 
-        InitHelper.loadSettings(UIConfig);
+            InitHelper.loadSettings(UIConfig);
 
-        await InitHelper.validateHealth(this);
-        await InitHelper.validateVersion(this)
+            await InitHelper.validateHealth(this);
+            await InitHelper.validateVersion(this)
 
-        document.body.style.removeProperty("pointer-events");
+            document.body.style.removeProperty("pointer-events");
 
-        await InitHelper.validateSession(this);
+            await InitHelper.validateSession(this);
 
-        await AccountLoader.loadData(this);
-
-        this.initializing = false;
+            await AccountLoader.loadData(this);
+        } finally {
+            this.initializing = false;
+        }
     }
 
     disconnect() {

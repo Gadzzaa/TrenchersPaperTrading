@@ -15,13 +15,19 @@ export class WebsocketManager {
         this.lastPong = Date.now();
         this.onMessage = null;
         this.shouldReconnect = true;
+
+        this.reconnectInterval = null;
+
+        this.connectAttemptSeq = 0;
+        this.activeAttemptId = 0;
     }
+
 
     /**
      * Opens and authenticates the websocket connection.
      * @returns {Promise<void>}
      */
-    async connect() {
+    async connect(onMessage) {
         if (
             this.ws &&
             (this.ws.readyState === WebSocket.OPEN ||
@@ -31,79 +37,193 @@ export class WebsocketManager {
             return;
         }
 
+        const attemptId = ++this.connectAttemptSeq
+        this.activeAttemptId = attemptId;
+
         const token = await StorageManager.getFromStorage("sessionToken");
-        this.ws = new WebSocket(this.url);
+        if (!token) throw new AppError("No session token provided.", {
+            code: "INVALID_SESSION",
+            meta: {
+                ws: this.ws,
+                activeAttemptId: this.activeAttemptId,
+            }
+        })
+        const ws = new WebSocket(this.url);
+        this.ws = ws;
+
+        const isStale = () => attemptId !== this.activeAttemptId || ws !== this.ws;
+        const logCtx = (phase, extra = {}) => ({
+            phase,
+            ts: new Date().toISOString(),
+            attemptId,
+            activeAttemptId: this.activeAttemptId,
+            isStale: isStale(),
+            shouldReconnect: this.shouldReconnect,
+            reconnectAttempts: this.reconnectAttempts,
+            wsReadyState: ws?.readyState,
+            ...extra
+        });
+
 
         return new Promise((resolve, reject) => {
-            let authTimeout;
+            let authTimeout, settled = false;
 
-            this.ws.onopen = () => {
+            ws.onopen = () => {
+                if (isStale() || settled) return;
                 console.log("🔄 WebSocket connecting...");
-                this.ws.send(
+                ws.send(
                     JSON.stringify({
                         type: "authenticate",
-                        token,
+                        token: token,
                     }),
                 );
 
                 // Set a timeout for authentication (10s)
                 authTimeout = setTimeout(() => {
+                    settled = true;
                     reject(new AppError("WebSocket authentication timeout", {
                         code: "AUTH_TIMEOUT",
                         meta: {
-                            token
+                            ws: this.ws,
+                            activeAttemptId: this.activeAttemptId,
                         }
                     }));
-                    this.ws.close();
-                }, 10000);
+                    this.disconnect();
+                }, 15000);
             };
 
-            this.ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
+            ws.onmessage = (event) => {
+                if (isStale() || settled) return;
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.error) {
+                        settled = true;
+                        authTimeout && clearTimeout(authTimeout);
+                        reject(new AppError(`WebSocket authentication failed: ${data.error}`, {
+                            code: "WEBSOCKET_AUTH_FAILED",
+                            meta: {
+                                ws: this.ws,
+                                activeAttemptId: this.activeAttemptId,
+                                response: data,
+                            }
+                        }));
+                        this.disconnect();
+                        return;
+                    }
 
-                if (data.type === "authenticated") {
+                    if (data.type === "authenticate" && data.success === true) {
+                        console.log("Websocket authenticated.")
+                        settled = true;
+                        authTimeout && clearTimeout(authTimeout);
+                        this.reconnectInterval && clearTimeout(this.reconnectInterval)
+                        this.reconnectAttempts = 0;
+                        this.shouldReconnect = true;
+                        this.lastPong = Date.now();
+                        this.#startHeartbeat();
+                        this.#loadWsEvents(onMessage, isStale, logCtx);
+                        resolve();
+                    }
+                } catch (e) {
+                    settled = true;
                     authTimeout && clearTimeout(authTimeout);
-                    this.reconnectAttempts = 0;
-                    this.shouldReconnect = true;
-                    this.#startHeartbeat();
-                    resolve();
+                    reject(new AppError("WebSocket authentication response was invalid JSON.", {
+                        code: "WEBSOCKET_BAD_AUTH_RESPONSE",
+                        cause: e,
+                        meta: {
+                            ws: this.ws,
+                            activeAttemptId: this.activeAttemptId,
+                            payload: event?.data,
+                        }
+                    }));
+                    this.disconnect();
                 }
             }
 
-            this.ws.onerror = (err) => reject(new AppError(err));
+            let safeReject = () => {
+                settled = true;
+                this.ws = null;
+                authTimeout && clearTimeout(authTimeout);
+                reject(new AppError("WebSocket disconnected during connection attempt.", {
+                    code: "WEBSOCKET_CONNECTION_ERROR",
+                    meta: {
+                        attemptId,
+                        ws,
+                        activeAttemptId: this.activeAttemptId,
+                        activeWs: this.ws
+                    }
+                }));
+            }
+
+            ws.onclose = (e) => {
+                if (isStale() || settled) return;
+                console.error("[WS_CLOSE]", logCtx("connect", {
+                    code: e.code, reason: e.reason, wasClean: e.wasClean
+                }));
+                safeReject();
+            }
+
+            ws.onerror = (e) => {
+                if (isStale() || settled) return;
+                console.error("[WS_ERROR]", logCtx("connect", {
+                    errorType: e.type
+                }));
+                safeReject();
+            }
         });
     }
 
     /**
      * Attaches runtime websocket event handlers.
      * @param {(data: any) => void} onMessage
+     * @param {Function} isStale
+     * @param {Function} logCtx
      */
-    loadWsEvents(onMessage) {
+    #loadWsEvents(onMessage, isStale, logCtx) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
         this.onMessage = onMessage;
 
+        this.ws.onopen = null;
+        this.ws.onmessage = null;
+        this.ws.onerror = null;
+
         this.ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+            if (isStale()) return;
+            try {
+                const data = JSON.parse(event.data);
 
-            if (data.type === "pong") {
-                this.lastPong = Date.now();
-                console.log("🏓 Pong received");
-            } else if (data.type === "poolUpdate") {
-                this.onMessage?.(data);
-            } else
-                console.warn("Unknown message type:", data.type, data);
-
-            this.onMessage?.(data);
+                if (data.type === "pong") {
+                    this.lastPong = Date.now();
+                    console.log("🏓 Pong received");
+                } else if (data.type === "poolUpdate") {
+                    this.onMessage?.(data);
+                } else if (data.error) {
+                    console.warn("[WS_SERVER_ERROR]", data.error);
+                } else
+                    console.warn("Unknown message type:", data.type, data);
+            } catch (e) {
+                console.error("[WS_ERROR]", e);
+            }
         };
 
-        this.ws.onclose = () => {
-            console.log("🛑 WebSocket disconnected, reconnecting...");
+        this.ws.onclose = (e) => {
+            if (isStale()) return;
+            console.error("[WS_CLOSE]", logCtx("loadWsEvents", {
+                code: e.code, reason: e.reason, wasClean: e.wasClean
+            }));
             this.ws = null;
             this.heartbeatInterval && clearInterval(this.heartbeatInterval);
+            this.reconnectInterval && clearTimeout(this.reconnectInterval);
             if (this.shouldReconnect)
                 this.#reconnect();
         };
 
-        this.ws.onerror = (err) => ErrorHandler.log(new AppError(err));
+        this.ws.onerror = (e) => {
+            console.error("[WS_ERROR]", logCtx("loadWsEvents", {
+                errorType: e.type
+            }));
+            ErrorHandler.log(new AppError(e));
+        }
     }
 
     /**
@@ -122,7 +242,9 @@ export class WebsocketManager {
     disconnect() {
         this.shouldReconnect = false;
         this.reconnectAttempts = 0;
+        this.activeAttemptId = ++this.connectAttemptSeq;
         this.heartbeatInterval && clearInterval(this.heartbeatInterval);
+        this.reconnectInterval && clearTimeout(this.reconnectInterval);
         this.ws?.close();
         this.ws = null;
         this.onMessage = null;
@@ -132,6 +254,7 @@ export class WebsocketManager {
      * Starts heartbeat ping cycle to monitor connection health.
      */
     #startHeartbeat() {
+        this.heartbeatInterval && clearInterval(this.heartbeatInterval);
         this.heartbeatInterval = setInterval(() => {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
@@ -149,17 +272,21 @@ export class WebsocketManager {
      * Schedules reconnect with exponential backoff.
      */
     #reconnect() {
-        if (this.reconnectAttempts >= CONFIG.MAX_RECONNECT_ATTEMPTS) return;
+        if (this.reconnectAttempts >= CONFIG.MAX_RECONNECT_ATTEMPTS) {
+            console.error("Websocket reconnect failed.")
+            return;
+        }
 
         const delay = CONFIG.BASE_DELAY * Math.pow(2, this.reconnectAttempts);
 
-        setTimeout(() => {
+        this.reconnectInterval = setTimeout(async () => {
             this.reconnectAttempts++;
-            this.connect().catch((err) => {
-                console.error("Reconnection failed:", err);
-            }).finally(() =>
-                this.loadWsEvents(this.onMessage)
-            );
+
+            try {
+                await this.connect(this.onMessage);
+            } catch (e) {
+                console.error(e);
+            }
         }, delay);
     }
 }

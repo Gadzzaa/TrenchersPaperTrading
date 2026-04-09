@@ -7,10 +7,10 @@ import {AccountLoader} from "../Core/AccountLoader.js";
 
 export class AccountUILogic {
     static async resetAccount(stateManager) {
-        let amount = await DialogsValidators.askStartupBalance();
+        let amount = await DialogsValidators.askStartupBalance(stateManager);
         if (!amount) return;
 
-        let confirmed = await DialogsValidators.askResetConfirmation();
+        let confirmed = await DialogsValidators.askResetConfirmation(stateManager);
         if (!confirmed) return;
 
         let dataManager = new DataManager(stateManager.variables);

@@ -28,7 +28,7 @@ export class DataManager {
      */
     async resetAccount(balance) {
         try {
-            const response = await this.api.resetAccount(
+            const resetsRemaining = await this.api.resetAccount(
                 this.variables.getSessionToken(),
                 balance,
             );
@@ -36,7 +36,7 @@ export class DataManager {
             ChromeHandler.sendMessage("clearPositions")
             ChromeHandler.sendMessage("updateBalanceUI")
 
-            return {success: true, resetsRemaining: response.resetsLeft};
+            return {success: true, resetsRemaining};
         } catch (error) {
             throw ErrorHandler.log(error);
         }

@@ -1,7 +1,7 @@
 import {UILoader} from "../Core/UILoader.js"
 import {UIHelper} from "../Helpers/UIHelper.js";
 import {DialogManager} from "../Core/DialogManager.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class UIConfig {
 
@@ -77,9 +77,12 @@ export class UIConfig {
                         .addMessage("Lost connection to the server. Reconnecting...")
                         .addType("Blocker", {loading: true, releaseOn: "STATUS_HEALTHY"})
                         .show()
-                        .then(() => {
-                            sendResponse({ok: true})
+                        .catch((error) => {
+                            ErrorHandler.show(error, {show: false}, {show: true, stateManager});
                         })
+                        .finally(() => {
+                            sendResponse({ok: true});
+                        });
                 }
 
                 return true;
@@ -92,8 +95,11 @@ export class UIConfig {
                     )
                     .addType("Blocker", {loading: false})
                     .show()
-                    .then(() => {
-                        sendResponse({ok: true})
+                    .catch((error) => {
+                        ErrorHandler.show(error, {show: false}, {show: true, stateManager});
+                    })
+                    .finally(() => {
+                        sendResponse({ok: true});
                     });
 
                 return true;

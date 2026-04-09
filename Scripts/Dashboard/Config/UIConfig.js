@@ -1,7 +1,7 @@
 import {StateManager} from "../Services/StateManager.js";
 import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
 import {DialogManager} from "../Core/DialogManager.js"
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class UIConfig {
     static settings = [
@@ -93,22 +93,28 @@ export class UIConfig {
                         .addMessage("Server unavailable. Reconnecting...")
                         .addType("no-internet")
                         .show()
-                        .then(() => {
-                            sendResponse({ok: true});
+                        .catch((error) => {
+                            ErrorHandler.show(error);
                         })
+                        .finally(() => {
+                            sendResponse({ok: true});
+                        });
                 }
 
                 return true;
             }
 
-            if (message.type === "OUTDATED") {
+            if (message.type === "OUTDATED_UI") {
                 new DialogManager(stateManager)
                     .addMessage("Update required!")
                     .addType("outdated")
                     .show()
-                    .then(() => {
-                        sendResponse({ok: true})
+                    .catch((error) => {
+                        ErrorHandler.show(error);
                     })
+                    .finally(() => {
+                        sendResponse({ok: true});
+                    });
                 return true;
             }
             if (message.type === "NO_SESSION_UI") {
@@ -120,10 +126,11 @@ export class UIConfig {
                         if (value?.dontRestart) return;
                         stateManager.disconnect()
                         stateManager.initialize(true)
-                        sendResponse({ok: true})
                     }).catch((error) => {
                     ErrorHandler.show(error);
-                })
+                }).finally(() => {
+                    sendResponse({ok: true});
+                });
                 return true;
             }
         };

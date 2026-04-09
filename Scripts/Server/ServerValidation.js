@@ -18,6 +18,9 @@ export class ServerValidation {
         if (!response)
             throw new AppError("No data received from server", {code: "NO_DATA"});
 
+        if (typeof response.ok === "boolean")
+            return response.ok;
+
         return response.message !== "UPDATE_REQUIRED";
     }
 }

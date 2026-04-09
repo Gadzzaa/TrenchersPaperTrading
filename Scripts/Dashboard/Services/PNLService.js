@@ -23,18 +23,17 @@ export class PNLService {
     }
 
     async start() {
-        await this.wsManager.connect().catch((err) => {
-            throw ErrorHandler.log(err);
-        })
-        console.log(
-            "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
-        );
-        this.wsManager.loadWsEvents((data) => {
-            if (data.type === "poolUpdate") {
+        try {
+            await this.wsManager.connect((data) => {
                 this.poolWatcher.updatePool(data);
                 this.update();
-            }
-        });
+            })
+            console.log(
+                "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
+            );
+        } catch (err) {
+            throw ErrorHandler.log(err);
+        }
     }
 
     stop() {
