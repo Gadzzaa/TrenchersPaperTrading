@@ -9,12 +9,15 @@ export class BackendRequest {
     static STATUS_MAP = Object.freeze({
         400: {code: "BAD_REQUEST", label: "Bad request"},
         401: {code: "UNAUTHORIZED", label: "Unauthorized"},
+        408: {code: "TIMEOUT", label: "Request timeout"},
         403: {code: "FORBIDDEN", label: "Forbidden"},
         404: {code: "NOT_FOUND", label: "Not found"},
         429: {code: "RATE_LIMITED", label: "Too many requests"},
         500: {code: "SERVER", label: "Server error"},
         501: {code: "SERVER", label: "Server error"},
         502: {code: "SERVER", label: "Server error"},
+        503: {code: "SERVER", label: "Server error"},
+        504: {code: "SERVER", label: "Server error"},
     });
 
     constructor() {
@@ -26,7 +29,6 @@ export class BackendRequest {
             retries: 0,
             checkStatus: true,
         };
-        this.networkError = false;
     }
 
     /**
@@ -141,27 +143,75 @@ export class BackendRequest {
         );
     }
 
+    /**
+     * @param {Error} error
+     * @returns {boolean}
+     */
+    isTimeoutError(error) {
+        return error?.name === "AbortError";
+    }
+
     bypassStatusCheck() {
         this.requestData.checkStatus = false;
         return this;
     }
 
     /**
-     * @param {Promise<Object>} response -
-     * @param {Promise<Object>} responseJSON -
+     * @param {Response} response
+     * @param {Object} responseJSON
      */
     checkStatus(response, responseJSON) {
-        const entry = BackendRequest.STATUS_MAP[response.status];
-        if (!entry) return;
-
-        if (response.status >= 500) this.networkError = true;
+        const entry = BackendRequest.STATUS_MAP[response.status] || {
+            code: "UNKNOWN",
+            label: `HTTP ${response.status}`,
+        };
 
         if (!this.requestData.checkStatus) return;
 
-        throw new AppError(`${entry.label}: ${responseJSON.error}`, {
-            code: responseJSON.error || entry.code,
-            meta: {status: response.status, json: responseJSON},
+        const backendMessage =
+            (typeof responseJSON?.error === "string" && responseJSON.error.trim()) ||
+            (typeof responseJSON?.message === "string" && responseJSON.message.trim()) ||
+            entry.label;
+        const errorLooksLikeCode =
+            typeof responseJSON?.error === "string" &&
+            /^[A-Z0-9_]+$/.test(responseJSON.error.trim());
+        const backendCode =
+            (errorLooksLikeCode && responseJSON.error.trim()) ||
+            (typeof responseJSON?.code === "string" && responseJSON.code.trim()) ||
+            entry.code;
+
+        throw new AppError(backendMessage, {
+            code: backendCode,
+            meta: {
+                status: response.status,
+                json: responseJSON,
+                requestId: responseJSON?.requestId,
+            },
         });
+    }
+
+    /**
+     * @param {Response} response
+     * @returns {Promise<Object>}
+     */
+    async parseResponse(response) {
+        const contentType = response.headers.get("content-type") || "";
+        const rawText = await response.text();
+
+        if (!rawText) return {};
+
+        if (contentType.includes("application/json")) {
+            try {
+                return JSON.parse(rawText);
+            } catch (_error) {
+            }
+        }
+
+        try {
+            return JSON.parse(rawText);
+        } catch (_error) {
+            return {message: rawText};
+        }
     }
 
     /**
@@ -171,7 +221,6 @@ export class BackendRequest {
     async build() {
         let response, responseJSON;
         for (let attempt = 0; attempt <= this.requestData.retries; attempt++) {
-            this.networkError = false;
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
             try {
@@ -181,38 +230,40 @@ export class BackendRequest {
                     body: this.requestData.body,
                     signal: controller.signal,
                 });
-                clearTimeout(timeout);
-                responseJSON = await response.json();
-                if (response.ok || responseJSON.ok) break;
+                responseJSON = await this.parseResponse(response);
+                if (response.ok || responseJSON?.ok === true) return responseJSON;
                 this.checkStatus(response, responseJSON);
-                throw new AppError(
-                    "Unknown error occurred: " +
-                    (responseJSON?.error || responseJSON?.message || "No details"),
-                    {
-                        code: "UNKNOWN",
-                        meta: {status: response.status, json: responseJSON},
-                    },
-                );
+                return responseJSON;
             } catch (error) {
-                if (this.isNetworkError(error) || this.networkError) {
-                    if (attempt === this.requestData.retries) {
-                        ChromeHandler.sendMessage("no-internet");
-                        this.networkError = true;
-                        throw new AppError("Network error: " + error.message, {
-                            code: "NETWORK",
-                            cause: error,
-                            meta: {status: response?.status, json: responseJSON},
-                        });
-                    }
-
+                const isTimeout = this.isTimeoutError(error);
+                const isNetwork = this.isNetworkError(error);
+                if ((isTimeout || isNetwork) && attempt < this.requestData.retries) {
                     continue;
                 }
-                if (attempt === this.requestData.retries)
-                    throw new AppError("Request failed: " + error.message, {
-                        code: error.code,
+
+                if (isTimeout || isNetwork) {
+                    ChromeHandler.sendMessage("no-internet");
+                    throw new AppError(
+                        `${isTimeout ? "Request timed out" : "Network error"}: ${error.message}`,
+                        {
+                            code: isTimeout ? "TIMEOUT" : "NETWORK",
+                            cause: error,
+                            meta: {status: response?.status, json: responseJSON},
+                        },
+                    );
+                }
+
+                if (error instanceof AppError) throw error;
+
+                if (attempt === this.requestData.retries) {
+                    throw new AppError("Request failed: " + (error?.message || "Unknown error"), {
+                        code: error?.code || "UNKNOWN",
                         cause: error,
                         meta: {status: response?.status, json: responseJSON},
                     });
+                }
+            } finally {
+                clearTimeout(timeout);
             }
         }
         return responseJSON;

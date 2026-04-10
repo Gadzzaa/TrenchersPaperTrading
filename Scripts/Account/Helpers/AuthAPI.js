@@ -1,4 +1,3 @@
-import {AccountValidators} from "./AccountValidators.js";
 import {BackendRequest} from "../../Server/BackendRequest.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
@@ -9,8 +8,6 @@ export class AuthAPI {
      * @returns {Promise<string>} - Session token for the logged in account.
      */
     async login(username, password) {
-        AccountValidators.loginValidator(username, password);
-
         const response = await new BackendRequest()
             .addEndpoint("/login")
             .addMethod("POST")
@@ -33,8 +30,6 @@ export class AuthAPI {
      * @returns {Promise<string>} - Session token for the newly created account.
      */
     async register(username, password, balance) {
-        AccountValidators.registerValidator(username, password, balance);
-
         const response = await new BackendRequest()
             .addEndpoint("/create-account")
             .addMethod("POST")

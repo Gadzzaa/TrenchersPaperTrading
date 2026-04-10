@@ -12,7 +12,16 @@ export class ErrorHandler {
      */
     static userMessage(err) {
         const e = ErrorHelper.normalize(err);
-        return ErrorCodes.UserMessages[e.code] || ErrorCodes.UserMessages.UNKNOWN;
+        if (ErrorCodes.UserMessages[e.code]) return ErrorCodes.UserMessages[e.code];
+
+        const status = Number(e?.meta?.status);
+        const isClientErrorStatus = Number.isInteger(status) && status >= 400 && status < 500;
+        const backendMessage =
+            typeof e?.message === "string" ? e.message.trim() : "";
+
+        if (isClientErrorStatus && backendMessage) return backendMessage;
+
+        return ErrorCodes.UserMessages.UNKNOWN;
     }
 
     /**
