@@ -58,7 +58,7 @@ export class PresetManager {
      * @returns {string|null}
      */
     static getUsingPreset() {
-        return localStorage.getItem("usingPreset");
+        return localStorage.getItem("usingPreset") || "preset1";
     }
 
     /**
