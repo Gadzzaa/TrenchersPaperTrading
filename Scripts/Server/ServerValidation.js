@@ -12,6 +12,7 @@ export class ServerValidation {
             .addEndpoint("/latest?version=" + this.#version)
             .addMethod("GET")
             .bypassStatusCheck()
+            .bypassCredentials()
             .addRetries(2)
             .build();
 

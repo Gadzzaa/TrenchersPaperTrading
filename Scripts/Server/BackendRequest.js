@@ -1,6 +1,7 @@
 import CONFIG from "../../config.js";
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
 import {ChromeHandler} from "../ChromeHandler.js";
+import {AuthRefreshManager} from "./AuthRefreshManager.js";
 
 const DEFAULT_TIMEOUT = 1000 * 5;
 const API_BASE_URL = CONFIG.API_BASE_URL;
@@ -28,6 +29,8 @@ export class BackendRequest {
             body: null,
             retries: 0,
             checkStatus: true,
+            autoRefreshAuth: true,
+            bypassCredentials: false,
         };
     }
 
@@ -85,7 +88,7 @@ export class BackendRequest {
     }
 
     /**
-     * @param {string} token - Session token to be added to the request
+     * @param {string} token - JWT access token to be added to the request
      * @returns {this}
      */
     addAuthParams(token) {
@@ -128,6 +131,12 @@ export class BackendRequest {
         return this;
     }
 
+    bypassCredentials() {
+        this.requestData.bypassCredentials = true;
+        return this;
+    }
+
+
     /**
      * @param {Error} error - Error to be checked
      * @returns {boolean | null}
@@ -154,6 +163,25 @@ export class BackendRequest {
     bypassStatusCheck() {
         this.requestData.checkStatus = false;
         return this;
+    }
+
+    disableAuthRefresh() {
+        this.requestData.autoRefreshAuth = false;
+        return this;
+    }
+
+    getRequestUrl() {
+        return API_BASE_URL + this.requestData.endpoint;
+    }
+
+    getFetchOptions(signal) {
+        return {
+            method: this.requestData.method,
+            headers: this.requestData.headers,
+            body: this.requestData.body,
+            credentials: this.requestData.bypassCredentials ? "omit" : "include",
+            signal,
+        };
     }
 
     /**
@@ -215,57 +243,92 @@ export class BackendRequest {
     }
 
     /**
+     * @returns {Promise<{response: Response, json: Object}>}
+     */
+    async executeRequest() {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+        try {
+            const response = await fetch(this.getRequestUrl(), this.getFetchOptions(controller.signal));
+            const json = await this.parseResponse(response);
+            return {response, json};
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+
+    /**
+     * @param {unknown} error
+     * @param {{response?: Response, json?: Object}} context
+     */
+    throwMappedError(error, context = {}) {
+        const isTimeout = this.isTimeoutError(error);
+        const isNetwork = this.isNetworkError(error);
+        const response = context.response;
+        const json = context.json;
+
+        if (isTimeout || isNetwork) {
+            ChromeHandler.sendMessage("no-internet");
+            throw new AppError(
+                `${isTimeout ? "Request timed out" : "Network error"}: ${error.message}`,
+                {
+                    code: isTimeout ? "TIMEOUT" : "NETWORK",
+                    cause: error,
+                    meta: {status: response?.status, json},
+                },
+            );
+        }
+
+        if (error instanceof AppError) throw error;
+
+        throw new AppError("Request failed: " + (error?.message || "Unknown error"), {
+            code: error?.code || "UNKNOWN",
+            cause: error,
+            meta: {status: response?.status, json},
+        });
+    }
+
+    /**
      * Builder function to execute the request
      * @returns {Promise<Object>}
      */
     async build() {
-        let response, responseJSON;
+        let authRefreshAttempted = false;
+
         for (let attempt = 0; attempt <= this.requestData.retries; attempt++) {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
             try {
-                response = await fetch(API_BASE_URL + this.requestData.endpoint, {
-                    method: this.requestData.method,
-                    headers: this.requestData.headers,
-                    body: this.requestData.body,
-                    signal: controller.signal,
-                });
-                responseJSON = await this.parseResponse(response);
-                if (response.ok || responseJSON?.ok === true) return responseJSON;
-                this.checkStatus(response, responseJSON);
-                return responseJSON;
+                const {response, json} = await this.executeRequest();
+                if (response.ok || json?.ok === true) return json;
+                this.checkStatus(response, json);
+                return json;
             } catch (error) {
-                const isTimeout = this.isTimeoutError(error);
-                const isNetwork = this.isNetworkError(error);
-                if ((isTimeout || isNetwork) && attempt < this.requestData.retries) {
+                if (
+                    !authRefreshAttempted &&
+                    AuthRefreshManager.shouldAttempt({
+                        requestData: this.requestData,
+                        error,
+                    })
+                ) {
+                    try {
+                        const refreshedToken = await AuthRefreshManager.refreshAccessToken();
+                        AuthRefreshManager.attachRefreshedToken(this.requestData, refreshedToken);
+                        authRefreshAttempted = true;
+                        continue;
+                    } catch {
+                        authRefreshAttempted = true;
+                    }
+                }
+
+                if ((this.isTimeoutError(error) || this.isNetworkError(error)) && attempt < this.requestData.retries) {
                     continue;
                 }
 
-                if (isTimeout || isNetwork) {
-                    ChromeHandler.sendMessage("no-internet");
-                    throw new AppError(
-                        `${isTimeout ? "Request timed out" : "Network error"}: ${error.message}`,
-                        {
-                            code: isTimeout ? "TIMEOUT" : "NETWORK",
-                            cause: error,
-                            meta: {status: response?.status, json: responseJSON},
-                        },
-                    );
-                }
-
-                if (error instanceof AppError) throw error;
-
                 if (attempt === this.requestData.retries) {
-                    throw new AppError("Request failed: " + (error?.message || "Unknown error"), {
-                        code: error?.code || "UNKNOWN",
-                        cause: error,
-                        meta: {status: response?.status, json: responseJSON},
-                    });
+                    this.throwMappedError(error);
                 }
-            } finally {
-                clearTimeout(timeout);
             }
         }
-        return responseJSON;
+
+        return {};
     }
 }

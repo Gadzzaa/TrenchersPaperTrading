@@ -48,6 +48,7 @@ export class ServerStatus {
                 .addEndpoint("/health")
                 .addMethod("GET")
                 .bypassStatusCheck()
+                .bypassCredentials()
                 .build();
             status = response.status === "ok";
         } catch (error) {
