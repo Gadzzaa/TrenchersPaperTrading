@@ -17,7 +17,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         await stateManager.initialize();
     } catch (err) {
         const code = err?.code || err?.cause?.code;
-        if (code === "INVALID_TOKEN" || code === "INVALID_SESSION") {
+        if (
+            code === "INVALID_TOKEN" ||
+            code === "INVALID_SESSION" ||
+            code === "REFRESH_TOKEN_REQUIRED" ||
+            code === "UNAUTHORIZED"
+        ) {
             const loginPanel = document.getElementById("loginPanel");
             if (loginPanel) loginPanel.classList.remove("loginHidden");
             return;

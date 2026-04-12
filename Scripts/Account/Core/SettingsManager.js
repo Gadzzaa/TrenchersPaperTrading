@@ -15,7 +15,7 @@ export class SettingsManager {
      */
     async saveSettings(settings) {
         try {
-            await this.api.saveSettings(this.variables.getSessionToken(), settings);
+            await this.api.saveSettings(this.variables.getAuthToken(), settings);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -27,7 +27,7 @@ export class SettingsManager {
     async getSettings() {
         try {
             return await this.api.getSettings(
-                this.variables.getSessionToken(),
+                this.variables.getAuthToken(),
             );
         } catch (error) {
             throw ErrorHandler.log(error);

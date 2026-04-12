@@ -1,13 +1,15 @@
 import {WebsocketConfig as CONFIG} from "../Config/Websocket.js";
-import {StorageManager} from "../../Utils/Core/StorageManager.js";
+import APP_CONFIG from "../../../config.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {AuthRefreshManager} from "../../Server/AuthRefreshManager.js";
 
 export class WebsocketManager {
     /**
      * Initializes websocket connection state.
+     * @param {string} accessToken
      */
-    constructor() {
+    constructor(accessToken) {
         this.url = CONFIG.WS_URL;
         this.ws = null;
         this.reconnectAttempts = 0;
@@ -20,8 +22,9 @@ export class WebsocketManager {
 
         this.connectAttemptSeq = 0;
         this.activeAttemptId = 0;
-    }
 
+        this.accessToken = accessToken ?? null;
+    }
 
     /**
      * Opens and authenticates the websocket connection.
@@ -39,9 +42,10 @@ export class WebsocketManager {
 
         const attemptId = ++this.connectAttemptSeq
         this.activeAttemptId = attemptId;
+        const token = await AuthRefreshManager.resolveAccessToken(this.accessToken);
+        this.accessToken = token;
 
-        const token = await StorageManager.getFromStorage("sessionToken");
-        if (!token) throw new AppError("No session token provided.", {
+        if (!token) throw new AppError("No access token provided.", {
             code: "INVALID_SESSION",
             meta: {
                 ws: this.ws,

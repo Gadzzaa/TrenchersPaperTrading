@@ -1,25 +1,25 @@
 export class Variables {
     #username = "";
     #balance = null;
-    #sessionToken = null;
+    #authToken = null;
 
     /**
      * @param {Object} params
      * @param {string?} params.username
      * @param {number?} params.balance
-     * @param {string?} params.sessionToken
+     * @param {string?} params.authToken
      */
-    constructor({username, balance, sessionToken} = {}) {
+    constructor({username, balance, authToken} = {}) {
         username && (this.#username = username);
         balance && (this.#balance = balance);
-        sessionToken && (this.#sessionToken = sessionToken);
+        authToken && (this.#authToken = authToken);
     }
 
     /**
-     * @param {string | null} sessionToken
+     * @param {string | null} authToken
      */
-    setSessionToken(sessionToken) {
-        this.#sessionToken = sessionToken;
+    setAuthToken(authToken) {
+        this.#authToken = authToken;
     }
 
     /**
@@ -37,9 +37,9 @@ export class Variables {
     }
 
     /**
-     * @returns {string|null} sessionToken
+     * @returns {string|null} authToken
      */
-    getSessionToken() {
-        return this.#sessionToken;
+    getAuthToken() {
+        return this.#authToken;
     }
 }

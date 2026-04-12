@@ -11,7 +11,7 @@ import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 export class PNLService {
     constructor(stateManager) {
         this.stateManager = stateManager;
-        this.wsManager = new WebsocketManager();
+        this.wsManager = new WebsocketManager(stateManager.variables.getAuthToken());
 
         this.positionManager = new PositionManager();
         this.poolWatcher = new PoolWatcher(this.wsManager);

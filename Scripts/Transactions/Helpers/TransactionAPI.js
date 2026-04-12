@@ -4,7 +4,7 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 export class TransactionAPI {
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {string} sessionToken - User session token for authentication.
+     * @param {string} authToken - User session token for authentication.
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *   success: boolean,
@@ -15,11 +15,11 @@ export class TransactionAPI {
      *   tokenData: Object
      * }
      */
-    async buy(payload, sessionToken) {
+    async buy(payload, authToken) {
         const response = await new BackendRequest()
             .addEndpoint("/buy")
             .addMethod("POST")
-            .addAuthParams(sessionToken)
+            .addAuthParams(authToken)
             .addBody(JSON.stringify(payload))
             .addRetries(2)
             .build();
@@ -29,7 +29,6 @@ export class TransactionAPI {
                 code: "BUY_FAILED",
                 meta: {
                     payload,
-                    sessionToken,
                     response,
                 },
             });
@@ -39,7 +38,7 @@ export class TransactionAPI {
 
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {string} sessionToken - User session token for authentication.
+     * @param {string} authToken - User session token for authentication.
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *  success: boolean,
@@ -48,11 +47,11 @@ export class TransactionAPI {
      *  effectivePrice: number
      * }
      */
-    async sell(payload, sessionToken) {
+    async sell(payload, authToken) {
         const response = await new BackendRequest()
             .addEndpoint("/sell")
             .addMethod("POST")
-            .addAuthParams(sessionToken)
+            .addAuthParams(authToken)
             .addBody(JSON.stringify(payload))
             .addRetries(2)
             .build();
@@ -62,7 +61,6 @@ export class TransactionAPI {
                 code: "SELL_FAILED",
                 meta: {
                     payload,
-                    sessionToken,
                     response,
                 },
             });
@@ -71,14 +69,14 @@ export class TransactionAPI {
     }
 
     /**
-     * @param {string} sessionToken - User session token for authentication.
+     * @param {string} authToken - User session token for authentication.
      * @returns {Promise<Object>} - Object containing user's portfolio data.
      */
-    async getPortfolio(sessionToken) {
+    async getPortfolio(authToken) {
         const response = await new BackendRequest()
             .addEndpoint("/portfolio")
             .addMethod("GET")
-            .addAuthParams(sessionToken)
+            .addAuthParams(authToken)
             .build();
 
         if (!response)

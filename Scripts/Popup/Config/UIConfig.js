@@ -67,6 +67,17 @@ export class UIConfig {
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
                     stateManager.initialize(true).catch((error) => {
+                        const code = error?.code || error?.cause?.code;
+                        const isExpectedNoSession =
+                            code === "INVALID_TOKEN" ||
+                            code === "INVALID_SESSION" ||
+                            code === "REFRESH_TOKEN_REQUIRED" ||
+                            code === "UNAUTHORIZED";
+                        if (isExpectedNoSession) {
+                            const loginPanel = document.getElementById("loginPanel");
+                            if (loginPanel) loginPanel.classList.remove("loginHidden");
+                            return;
+                        }
                         ErrorHandler.show(error, {show: false}, {show: true, stateManager});
                     });
                     sendResponse({ok: true});

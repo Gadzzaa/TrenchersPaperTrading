@@ -7,7 +7,7 @@ export class TransactionManager {
     #amount = 0;
     #slippagePercentage = 0;
     #feeAmount = 0;
-    #sessionToken;
+    #authToken;
 
     /**
      * @param {Object} tokenData - Contains token transaction details.
@@ -29,11 +29,10 @@ export class TransactionManager {
         this.api = new TransactionAPI();
         this.variables = variables;
 
-        this.#sessionToken = this.variables.getSessionToken();
-        if (this.#sessionToken == null)
+        this.#authToken = this.variables.getAuthToken();
+        if (this.#authToken == null)
             throw ErrorHandler.log(new AppError("User is not authenticated."), {
                 code: "INVALID_TOKEN",
-                meta: {sessionToken: this.#sessionToken},
             });
     }
 
@@ -55,14 +54,13 @@ export class TransactionManager {
                 slippage: this.#slippagePercentage,
                 fee: this.#feeAmount,
             };
-            let sessionToken = this.#sessionToken;
+            let authToken = this.#authToken;
 
-            if (!sessionToken)
-                throw new AppError("Session token is required for transactions.", {
+            if (!authToken)
+                throw new AppError("Authorization token is required for transactions.", {
                     code: "INVALID_TOKEN",
-                    meta: {sessionToken},
                 });
-            const response = await this.api.buy(payload, sessionToken);
+            const response = await this.api.buy(payload, authToken);
 
 
             stateManager.pnlService.pnlDataManager.add(
@@ -107,7 +105,7 @@ export class TransactionManager {
                 fee: this.#feeAmount,
             };
 
-            const response = await this.api.sell(payload, this.#sessionToken);
+            const response = await this.api.sell(payload, this.#authToken);
 
             await stateManager.pnlService.syncTradeLog(stateManager.variables)
 
@@ -132,7 +130,7 @@ export class TransactionManager {
      * */
     async getPortfolio() {
         try {
-            return await this.api.getPortfolio(this.#sessionToken);
+            return await this.api.getPortfolio(this.#authToken);
         } catch (error) {
             throw ErrorHandler.log(error);
         }

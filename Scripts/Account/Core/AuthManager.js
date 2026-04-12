@@ -18,13 +18,12 @@ export class AuthManager {
      * */
     async login(password) {
         try {
-            const sessionToken = await this.api.login(
+            const authToken = await this.api.login(
                 this.variables.getCredentials().username,
                 password
             );
 
-            await StorageManager.setToStorage("sessionToken", sessionToken);
-            this.variables.setSessionToken(sessionToken);
+            this.variables.setAuthToken(authToken);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -35,14 +34,13 @@ export class AuthManager {
      * */
     async register(password) {
         try {
-            const sessionToken = await this.api.register(
+            const authToken = await this.api.register(
                 this.variables.getCredentials().username,
                 password,
                 this.variables.getBalance(),
             );
 
-            await StorageManager.setToStorage("sessionToken", sessionToken);
-            this.variables.setSessionToken(sessionToken);
+            this.variables.setAuthToken(authToken);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -53,10 +51,9 @@ export class AuthManager {
      * */
     async logout() {
         try {
-            await this.api.logout(this.variables.getSessionToken());
+            await this.api.logout(this.variables.getAuthToken());
 
-            await StorageManager.removeFromStorage("sessionToken");
-            this.variables.setSessionToken(null);
+            this.variables.setAuthToken(null);
         } catch (error) {
             throw ErrorHandler.log(error);
         }

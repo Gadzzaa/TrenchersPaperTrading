@@ -16,7 +16,7 @@ export class DataManager {
      * */
     async fetchAccountData() {
         try {
-            return await this.api.getAccData(this.variables.getSessionToken());
+            return await this.api.getAccData(this.variables.getAuthToken());
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -29,7 +29,7 @@ export class DataManager {
     async resetAccount(balance) {
         try {
             const resetsRemaining = await this.api.resetAccount(
-                this.variables.getSessionToken(),
+                this.variables.getAuthToken(),
                 balance,
             );
 
@@ -43,15 +43,15 @@ export class DataManager {
     }
 
     async checkSession() {
-        console.log("Checking session: ", this.variables.getSessionToken());
+        console.log("Checking session: ", this.variables.getAuthToken());
         return await this.api.checkSession(
-            this.variables.getSessionToken().toString(),
+            this.variables.getAuthToken()?.toString(),
         );
     }
 
     async getTradeLog() {
         try {
-            return await this.api.getTradeLog(this.variables.getSessionToken());
+            return await this.api.getTradeLog(this.variables.getAuthToken());
         } catch (error) {
             throw ErrorHandler.log(error);
         }

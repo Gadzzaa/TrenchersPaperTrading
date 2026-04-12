@@ -1,9 +1,9 @@
 import {ServerValidation} from "../../Server/ServerValidation.js";
 import {DataManager} from "../../Account/Core/DataManager.js";
 import {Variables} from "../../Account/Core/Variables.js";
-import {StorageManager} from "../Core/StorageManager.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {ChromeHandler} from "../../ChromeHandler.js";
+import {AuthRefreshManager} from "../../Server/AuthRefreshManager.js";
 
 export class InitHelper {
     static #showLoginPanelIfPresent() {
@@ -49,8 +49,24 @@ export class InitHelper {
     }
 
     static async searchToken(stateManager) {
-        let sessionToken = await StorageManager.getFromStorage("sessionToken");
-        if (!sessionToken) {
+        let authToken;
+        try {
+            authToken = await AuthRefreshManager.resolveAccessToken(null, {
+                swallowErrors: false,
+            });
+        } catch (error) {
+            const code =
+                error?.code ||
+                error?.meta?.json?.code ||
+                error?.meta?.json?.error ||
+                error?.meta?.json?.message;
+            const isNoSession =
+                code === "REFRESH_TOKEN_REQUIRED" ||
+                code === "INVALID_SESSION" ||
+                code === "UNAUTHORIZED";
+            if (!isNoSession) throw error;
+        }
+        if (!authToken) {
             try {
                 await ChromeHandler.sendMessageAsync("NO_SESSION");
             } catch (error) {
@@ -62,20 +78,19 @@ export class InitHelper {
                 code: "INVALID_TOKEN",
             });
         }
-        return sessionToken;
+        return authToken;
     }
 
     static async validateSession(stateManager) {
-        let sessionToken = await InitHelper.searchToken(stateManager);
+        let authToken = await InitHelper.searchToken(stateManager);
 
-        stateManager.variables = new Variables({sessionToken});
+        stateManager.variables = new Variables({authToken});
         let dataManager = new DataManager(stateManager.variables);
 
         const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
             stateManager.pnlService?.clearPositions();
             try {
-                await StorageManager.removeFromStorage("sessionToken");
             } catch (error) {
                 console.error("Failed to clear invalid session token:", error);
             }

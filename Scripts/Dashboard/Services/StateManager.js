@@ -13,7 +13,7 @@ export class StateManager {
         this.running = false;
 
         this.variables = null;
-        this.pnlService = new PNLService(this);
+        this.pnlService = null;
 
         this.updateInterval = null;
 
@@ -41,6 +41,7 @@ export class StateManager {
 
             console.log("Validating session")
             await InitHelper.validateSession(this);
+            this.pnlService = new PNLService(this)
             await this.pnlService.start();
 
             UIHelper.clearUI();

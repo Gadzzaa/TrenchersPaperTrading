@@ -53,14 +53,14 @@ export class AuthAPI {
     }
 
     /**
-     * @param {string} sessionToken - Session token of the account to log out.
+     * @param {string} authToken - Session token of the account to log out.
      * @returns {Promise<boolean>} - Marking the success of the logout operation.
      */
-    async logout(sessionToken) {
+    async logout(authToken) {
         await new BackendRequest()
             .addEndpoint("/logout")
             .addMethod("DELETE")
-            .addAuthParams(sessionToken)
+            .addAuthParams(authToken)
             .addRetries(2)
             .build();
         return true;
