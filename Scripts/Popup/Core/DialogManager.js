@@ -105,6 +105,10 @@ export class DialogManager {
     async show() {
         if (this.stateManager.runningDialog) {
             if (this.stateManager.runningDialog === this.payload.title) return;
+            const alreadyScheduled = this.stateManager.scheduledDialogs.some(
+                (dialog) => dialog?.payload?.title === this.payload.title,
+            );
+            if (alreadyScheduled) return;
             console.warn("Another dialog is already running. Scheduling this dialog to show after the current one.");
             this.stateManager.scheduledDialogs.push(this);
             console.log("Scheduled dialogs: ", this.stateManager.scheduledDialogs);
