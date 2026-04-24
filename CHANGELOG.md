@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.10.0...v1.10.1) (2026-01-05)
+
+
+### Bug Fixes
+
+* temporary center the sub drawer ([da0334c](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/da0334c499891a00000629d478f0dae3640f6e96))
+
 # [1.10.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.9.0...v1.10.0) (2026-01-05)
 
 
