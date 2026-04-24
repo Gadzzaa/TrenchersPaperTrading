@@ -1,347 +1,330 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="Styles/themes.css" />
+<head>
+    <meta charset="UTF-8"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="Styles/themes.css" rel="stylesheet"/>
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-      rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+            rel="stylesheet"
     />
     <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+            rel="stylesheet"
     />
-    <link rel="stylesheet" href="Styles/popup.css" />
-  </head>
-  <body id="popupTrenchersPT" style="pointer-events: none">
-    <div id="noInternet" class="hidden">
-      <div id="noInternetBG"></div>
-      <div id="noInternetBox">
-        <div id="noInternetHeader">Offline</div>
-        <div id="noInternetBody">
-          Lost connection to the server. Reconnecting...
-        </div>
-        <div id="noInternetLoading">
-          <div id="noInternetSpinner"></div>
-        </div>
-      </div>
-    </div>
-    <div id="updateReq" class="hidden">
-      <div id="updateReqBG"></div>
-      <div id="updateReqBox">
-        <div id="updateReqHeader">UPDATE REQUIRED!</div>
-        <div id="updateReqBody">
-          Please update the extension to the latest version before continuing.
-        </div>
-      </div>
-    </div>
+    <link href="Styles/popup.css" rel="stylesheet"/>
+</head>
+<body id="popupTrenchersPT" style="pointer-events: none">
 
-    <div id="dialogOverlay" class="hidden">
-      <div id="dialogBackground"></div>
-      <div id="dialogBox">
-        <div id="dialogHeader">Offline</div>
-        <div id="dialogBody">
-          Lost connection to the server. Reconnecting...
+<div class="hidden" id="dialogOverlay">
+    <div id="dialogBackground"></div>
+    <div id="dialogBox">
+        <div id="dialogHeader"></div>
+        <div id="dialogBody"></div>
+        <div class="hidden" id="dialogInput">
+            <span class="hidden" id="warning"></span>
+            <input id="dialogTextInput" max="100" min="0" type="number"/>
+            <button class="confirmButton" id="inputConfirmButton">Confirm</button>
         </div>
-        <div id="dialogInput" class="hidden">
-          <span id="warning" class="hidden"></span>
-          <input type="number" id="dialogTextInput" min="0" max="100" />
-          <button id="inputConfirmButton" class="confirmButton">Confirm</button>
+        <div class="hidden" id="dialogButtons">
+            <button class="confirmButton" id="dialogConfirmButton">
+                Confirm
+            </button>
+            <button class="cancelButton" id="dialogCancelButton">Cancel</button>
         </div>
-        <div id="dialogButtons" class="hidden">
-          <button id="dialogConfirmButton" class="confirmButton">
-            Confirm
-          </button>
-          <button id="dialogCancelButton" class="cancelButton">Cancel</button>
+        <div class="hidden" id="dialogInfo">
+            <button class="confirmButton" id="dialogInfoButton">Okay</button>
         </div>
-        <div id="dialogInfo" class="hidden">
-          <button id="dialogInfoButton" class="confirmButton">Okay</button>
+        <div class="hidden" id="divSpinnerDiag">
+            <div id="spinnerDialog"></div>
         </div>
-      </div>
     </div>
-    <div id="loginPanel" class="fade loginHidden">
-      <div id="welcomeText">
+</div>
+<div class="fade loginHidden" id="loginPanel">
+    <div id="welcomeText">
         <h1>Welcome to</h1>
         <h1>Trenchers Paper Trading</h1>
-      </div>
-      <div id="loginForm">
+    </div>
+    <div id="loginForm">
         <div class="inputGroup">
-          <label for="formUsername">Username</label>
-          <input type="text" id="formUsername" />
+            <label for="formUsername">Username</label>
+            <input id="formUsername" type="text"/>
         </div>
         <div class="inputGroup">
-          <label for="formPassword">Password</label>
-          <div id="passwordWrapper">
-            <input type="password" id="formPassword" />
-            <button id="showPasswordButton">
-              <i class="fa-solid fa-eye-slash"></i>
-            </button>
-          </div>
+            <label for="formPassword">Password</label>
+            <div id="passwordWrapper">
+                <input id="formPassword" type="password"/>
+                <button id="showPasswordButton">
+                    <i class="fa-solid fa-eye-slash"></i>
+                </button>
+            </div>
         </div>
-      </div>
-      <div id="formButtons">
+    </div>
+    <div id="formButtons">
         <button id="loginButton">Login</button>
         <button id="registerButton">Register</button>
-      </div>
     </div>
-    <div class="pageCarousel">
-      <div id="Home" class="menuItem">
+</div>
+<div class="pageCarousel">
+    <div class="menuItem" id="Home">
         <div class="header" id="usernameText">@username</div>
 
         <div id="balance">
-          <strong id="solBalance">100.00 SOL</strong>
-          <small id="pnlData">+0.00 SOL / 24h</small>
+            <strong id="solBalance">100.00 SOL</strong>
+            <small id="pnlData">+0.00 SOL / 24h</small>
         </div>
         <div id="tokensData">
-          <p1 id="tokensText">Tokens</p1>
-          <div id="tokenList"></div>
+            <p id="tokensText">Tokens</p>
+            <div id="tokenList"></div>
         </div>
-      </div>
+    </div>
 
-      <div id="History" class="menuItem" style="display: none">
+    <div class="menuItem" id="History" style="display: none">
         <!-- TODO later -->
-      </div>
+    </div>
 
-      <div id="Settings" class="menuItem">
+    <div class="menuItem" id="Settings">
         <div class="header">Settings</div>
-        <div id="Preferences" class="Category">
-          <p class="categoryText">Preferences</p>
-          <div id="themes">
-            <p class="settingsSubText">Theme:</p>
-            <button id="darkTheme" class="theme">Dark</button>
-            <button id="lightTheme" class="theme">Light</button>
-          </div>
-          <div id="volume" class="settingsSubText">
-            <label id="volumeText" for="volumeSlider">Volume:</label>
-            <div class="slider-container">
-              <input
-                id="volumeSlider"
-                type="range"
-                min="0"
-                max="100"
-                value="0"
-                class="slider"
-              />
-              <div id="tickDiv">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-              <div id="track"></div>
+        <div class="Category" id="Preferences">
+            <p class="categoryText">Preferences</p>
+            <div id="themes">
+                <p class="settingsSubText">Theme:</p>
+                <button class="theme" id="darkTheme">Dark</button>
+                <button class="theme" id="lightTheme">Light</button>
             </div>
-          </div>
-          <div id="animation" class="settingsSubText">
-            <label id="animationText" for="animationSlider"
-              >Animation Quality:</label
-            >
-            <div class="slider-container">
-              <input
-                id="animationSlider"
-                type="range"
-                min="0"
-                max="3"
-                value="0"
-                class="slider"
-              />
-              <div id="tickDiv">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-              <div id="track"></div>
+            <div class="settingsSubText" id="volume">
+                <label for="volumeSlider" id="volumeText">Volume:</label>
+                <div class="slider-container">
+                    <input
+                            class="slider"
+                            id="volumeSlider"
+                            max="100"
+                            min="0"
+                            type="range"
+                            value="0"
+                    />
+                    <div class="tickDiv">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div class="track"></div>
+                </div>
             </div>
-          </div>
+            <div class="settingsSubText" id="animation">
+                <label for="animationSlider" id="animationText"
+                >Animation Quality:</label
+                >
+                <div class="slider-container">
+                    <input
+                            class="slider"
+                            id="animationSlider"
+                            max="3"
+                            min="0"
+                            type="range"
+                            value="0"
+                    />
+                    <div class="tickDiv">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div class="track"></div>
+                </div>
+            </div>
         </div>
-        <div id="Premium" class="Category">
-          <p class="categoryText">Premium Features</p>
-          <div id="pnlRefresh" class="settingsSubText">
-            <label id="pnlRefreshText" for="pnlSlider"
-              >PNL Refresh Interval:</label
-            >
-            <div class="slider-container">
-              <input
-                id="pnlSlider"
-                type="range"
-                min="1"
-                max="5"
-                value="0"
-                class="slider"
-              />
-              <div id="tickDiv">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
-              <div id="track"></div>
+        <div class="Category" id="Premium">
+            <p class="categoryText">Premium Features</p>
+            <div class="settingsSubText" id="pnlRefresh">
+                <label for="pnlSlider" id="pnlRefreshText"
+                >PNL Refresh Interval:</label
+                >
+                <div class="slider-container">
+                    <input
+                            class="slider"
+                            id="pnlSlider"
+                            max="5"
+                            min="1"
+                            type="range"
+                            value="0"
+                    />
+                    <div class="tickDiv">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <div class="track"></div>
+                </div>
             </div>
-          </div>
-          <div id="saveWindow" class="settingsSubText">
-            <label id="saveWindowText" for="saveWindowBox" class="checkbox"
-              >Save Window Position:
-              <input type="checkbox" id="saveWindowBox" />
-              <span class="checkmark">
+            <div class="settingsSubText" id="saveWindow">
+                <label class="checkbox" for="saveWindowBox" id="saveWindowText"
+                >Save Window Position:
+                    <input id="saveWindowBox" type="checkbox"/>
+                    <span class="checkmark">
                 <svg viewBox="0 0 24 24">
-                  <path d="M4 12l6 6L20 6" />
+                  <path d="M4 12l6 6L20 6"/>
                 </svg>
               </span>
-            </label>
-          </div>
-          <div id="connectMobileApp" class="settingsSubText hiddenButton">
-            <p id="mobileText">Connect Mobile App</p>
-          </div>
+                </label>
+            </div>
+            <div class="settingsSubText hiddenButton" id="connectMobileApp">
+                <p id="mobileText">Connect Mobile App</p>
+            </div>
         </div>
-        <div id="Advanced" class="Category">
-          <p class="categoryText">Advanced</p>
-          <div class="advancedButtons">
-            <button id="debugButton" class="">Debug Mode</button>
-            <button id="updateHistoryButton">Update History</button>
-          </div>
+        <div class="Category" id="Advanced">
+            <p class="categoryText">Advanced</p>
+            <div class="advancedButtons">
+                <button class="" id="debugButton">Debug Mode</button>
+                <button id="updateHistoryButton">Update History</button>
+            </div>
         </div>
-      </div>
+    </div>
 
-      <div id="Account" class="Category menuItem">
-        <div id="SubscriptionSelectorDiv" class="hidden">
-          <div id="subscriptionBackground"></div>
-          <div id="SubscriptionSelector">
-            <p id="subscriptionText" class="header">Choose your plan:</p>
-            <div id="subOptions">
-              <div id="Monthly">
-                <p class="subscriptionSubText">Monthly Subscription</p>
-                <button id="monthlyButton" class="subscriptionOption">
-                  6.99$ / mo
-                </button>
-              </div>
-              <div id="Yearly">
-                <div>
-                  <p class="subscriptionSubText">Yearly Subscription</p>
-                  <p id="subscriptionDiscountText">Save 15%!</p>
+    <div class="Category menuItem" id="Account">
+        <div class="hidden" id="SubscriptionSelectorDiv">
+            <div id="subscriptionBackground"></div>
+            <div id="SubscriptionSelector">
+                <p class="header" id="subscriptionText">Choose your plan:</p>
+                <div id="subOptions">
+                    <div id="Monthly">
+                        <p class="subscriptionSubText">Monthly Subscription</p>
+                        <button class="subscriptionOption" id="monthlyButton">
+                            6.99$ / mo
+                        </button>
+                    </div>
+                    <div id="Yearly">
+                        <div>
+                            <p class="subscriptionSubText">Yearly Subscription</p>
+                            <p id="subscriptionDiscountText">Save 15%!</p>
+                        </div>
+                        <button class="subscriptionOption" id="yearlyButton">
+                            69.99$ / mo
+                        </button>
+                    </div>
                 </div>
-                <button id="yearlyButton" class="subscriptionOption">
-                  69.99$ / mo
+                <button id="closeSubscriptionButton">
+                    <i class="fa-solid fa-xmark" id="closeMark"></i>
                 </button>
-              </div>
-              <!--
-              <button id="closeSubscriptionButton" class="subscriptionOption">
-                Close
-              </button>
-              -->
             </div>
-          </div>
         </div>
 
-        <div id="accountDetails" class="header">Account Details</div>
+        <div class="header" id="accountDetails">Account Details</div>
         <div class="accountInfo">
-          <p class="accountText">Account</p>
-          <div class="accountSubtext">
-            <div class="flexHorizontal">
-              <p id="accUsernameText">Username:</p>
-              <p id="username">gadzzaa</p>
+            <p class="accountText">Account</p>
+            <div class="accountSubtext">
+                <div class="flexHorizontal">
+                    <p id="accUsernameText">Username:</p>
+                    <p id="username">gadzzaa</p>
+                </div>
+                <div class="flexHorizontal">
+                    <p id="idText">ID:</p>
+                    <button id="id">01</button>
+                </div>
+                <div class="flexHorizontal">
+                    <p id="resetsText">Resets left:</p>
+                    <p id="resets">2/5</p>
+                    <p id="resetsWhenText">(next refill in 23h 54m)</p>
+                </div>
             </div>
-            <div class="flexHorizontal">
-              <p id="idText">ID:</p>
-              <button id="id">01</button>
+            <div class="accountButtons">
+                <button id="resetButton">Reset Account</button>
+                <button id="logoutButton">Logout</button>
             </div>
-            <div class="flexHorizontal">
-              <p id="resetsText">Resets left:</p>
-              <p id="resets">2/5</p>
-              <p id="resetsWhenText">(next refill in 23h 54m)</p>
-            </div>
-          </div>
-          <div class="accountButtons">
-            <button id="resetButton">Reset Account</button>
-            <button id="logoutButton">Logout</button>
-          </div>
         </div>
-        <div id="subscriptionDiv" class="accountInfo">
-          <p class="accountText">Subscription</p>
-          <div class="accountSubtext">
-            <div class="flexHorizontal">
-              <p id="subscriptionTypeText">Subscription type:</p>
-              <p id="subscriptionType">Free</p>
+        <div class="accountInfo" id="subscriptionDiv">
+            <p class="accountText">Subscription</p>
+            <div class="accountSubtext">
+                <div class="flexHorizontal">
+                    <p id="subscriptionTypeText">Subscription type:</p>
+                    <p id="subscriptionType">Free</p>
+                </div>
+                <div class="flexHorizontal">
+                    <p id="nextPaymentText">Renews:</p>
+                    <p id="subscriptionStatus">None</p>
+                </div>
+                <div class="flexHorizontal">
+                    <p id="priceText">Price:</p>
+                    <p id="price">$0.00</p>
+                </div>
+                <div class="flexHorizontal">
+                    <p id="methodText">Payment method:</p>
+                    <p id="method">PayPal</p>
+                </div>
             </div>
-            <div class="flexHorizontal">
-              <p id="nextPaymentText">Renews:</p>
-              <p id="subscriptionStatus">None</p>
+            <div class="accountButtons">
+                <button id="manageButton">Manage</button>
+                <button id="upgradeButton">Upgrade</button>
             </div>
-            <div class="flexHorizontal">
-              <p id="priceText">Price:</p>
-              <p id="price">$0.00</p>
-            </div>
-            <div class="flexHorizontal">
-              <p id="methodText">Payment method:</p>
-              <p id="method">PayPal</p>
-            </div>
-          </div>
-          <div class="accountButtons">
-            <button id="manageButton">Manage</button>
-            <button id="upgradeButton">Upgrade</button>
-          </div>
         </div>
 
         <div id="accountFooter">
-          <div id="contactInfo">
-            <p id="helpText">Need Help?</p>
-            <div id="twitterDiv" class="flexHorizontal">
-              <i class="fa-brands fa-square-x-twitter fa-2x"></i>
-              <p id="twitterText">@TrenchersPT</p>
+            <div id="contactInfo">
+                <p id="helpText">Need Help?</p>
+                <div class="flexHorizontal" id="twitterDiv">
+                    <i class="fa-brands fa-square-x-twitter fa-2x"></i>
+                    <p id="twitterText">@TrenchersPT</p>
+                </div>
+                <div class="flexHorizontal" id="mailDiv">
+                    <i class="fa-solid fa-envelope fa-2x"></i>
+                    <p id="mailText">trencherspapertrading@gmail.com</p>
+                </div>
             </div>
-            <div id="mailDiv" class="flexHorizontal">
-              <i class="fa-solid fa-envelope fa-2x"></i>
-              <p id="mailText">trencherspapertrading@gmail.com</p>
+            <div id="appInfo">
+                <p id="versionInfo">v1.0.0</p>
+                <p id="copyrightInfo">©2025 gadzzaa</p>
             </div>
-          </div>
-          <div id="appInfo">
-            <p id="versionInfo">v1.0.0</p>
-            <p id="copyrightInfo">©2025 gadzzaa</p>
-          </div>
         </div>
         <div id="iconsCredit">
-          Font Awesome Icons (CC BY 4.0) https://fontawesome.com
+            Font Awesome Icons (CC BY 4.0) https://fontawesome.com
         </div>
-      </div>
     </div>
+</div>
 
-    <div id="footerBar">
-      <div class="indicator"></div>
-      <div id="footerButtons">
-        <button class="footerButton active" data-menu="Home" data-index="0">
-          <i id="homeIcon" class="fa-solid fa-house fa-2x"></i>
+<div id="footerBar">
+    <div class="indicator"></div>
+    <div id="footerButtons">
+        <button
+                class="footerButton active"
+                data-index="0"
+                data-menu="Home"
+                id="defaultFooterButton"
+        >
+            <i class="fa-solid fa-house fa-2x" id="homeIcon"></i>
         </button>
         <button
-          id="historyButton"
-          class="hiddenButton footerButton"
-          data-menu="History"
-          data-index="1"
+                class="hiddenButton footerButton"
+                data-index="1"
+                data-menu="History"
+                id="historyButton"
         >
-          <i id="historyIcon" class="fa-solid fa-clock-rotate-left fa-2x"></i>
+            <i class="fa-solid fa-clock-rotate-left fa-2x" id="historyIcon"></i>
         </button>
         <button
-          id="settingsButton"
-          class="footerButton"
-          data-menu="Settings"
-          data-index="1"
+                class="footerButton"
+                data-index="1"
+                data-menu="Settings"
+                id="settingsButton"
         >
-          <i id="settingsIcon" class="fa-solid fa-gear fa-2x"></i>
+            <i class="fa-solid fa-gear fa-2x" id="settingsIcon"></i>
         </button>
         <button
-          id="accountButton"
-          class="footerButton"
-          data-menu="Account"
-          data-index="2"
+                class="footerButton"
+                data-index="2"
+                data-menu="Account"
+                id="accountButton"
         >
-          <i id="accountIcon" class="fa-solid fa-user fa-2x"></i>
+            <i class="fa-solid fa-user fa-2x" id="accountIcon"></i>
         </button>
-      </div>
     </div>
+</div>
 
-    <div id="background"></div>
-  </body>
-  <script type="module" src="Scripts/popup.js"></script>
+<div id="background"></div>
+</body>
+<script src="Scripts/Popup/Services/popupService.js" type="module"></script>
 </html>
