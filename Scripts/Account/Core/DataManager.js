@@ -43,7 +43,6 @@ export class DataManager {
     }
 
     async checkSession() {
-        console.log("Checking session: ", this.variables.getAuthToken());
         return await this.api.checkSession(
             this.variables.getAuthToken()?.toString(),
         );

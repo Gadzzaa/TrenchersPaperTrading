@@ -71,6 +71,9 @@ export class StateManager {
 
         this.pnlService.stop();
 
+        localStorage.removeItem("cachedBalance");
+        localStorage.removeItem("cachedBalanceTime");
+
         this.running = false;
     }
 
