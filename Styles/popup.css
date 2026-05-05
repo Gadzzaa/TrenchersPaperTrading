@@ -980,148 +980,224 @@ input[type="number"] {
 
 #SubscriptionSelectorDiv {
     display: flex;
-    align-content: center;
+    align-items: center;
     justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 #subscriptionDiv {
     margin-top: 10px;
 }
 
+#subscriptionBackground {
+    background: radial-gradient(circle at 50% 0%, rgba(var(--blue), 0.18) 0%, rgba(var(--base), 0) 55%),
+    rgba(var(--mantle), 0.78);
+    backdrop-filter: blur(5px);
+}
+
 #SubscriptionSelector {
-    position: absolute;
-    left: 5.5%; /* TODO: To modify */
+    position: relative;
     z-index: 100;
-    width: 300px;
-    height: 225px;
+    width: min(320px, 100%);
+    min-height: 250px;
     display: flex;
     flex-direction: column;
-    align-content: center;
     justify-content: flex-start;
-    gap: 20px;
-    padding: 10px;
-    border-radius: 15px;
-    background-color: rgb(var(--mantle));
+    gap: 16px;
+    padding: 18px 14px 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(var(--surface2), 0.65);
+    background: linear-gradient(155deg, rgba(var(--mantle), 0.96) 0%, rgba(var(--surface0), 0.72) 100%);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(var(--blue), 0.12);
 }
 
 #subscriptionText {
     text-align: center;
     font-weight: 600;
-    font-size: 18px;
-    justify-self: flex-start;
-    margin: 10px 0 0;
+    font-size: 17px;
+    letter-spacing: 0.2px;
+    color: rgb(var(--text));
+    margin: 2px 0 0;
 }
 
 #subOptions {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
     justify-content: center;
-    gap: 25px;
+    gap: 12px;
 }
 
 .subscriptionOption {
-    margin-top: 30%;
-    padding: 10px 15px;
+    margin-top: auto;
+    width: 100%;
+    height: 42px;
+    padding: 0 10px;
     cursor: pointer;
-    border-radius: 8px;
-    height: 40px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.35px;
+    border: 1px solid transparent;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
     transition: background-color var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
-    color var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+    color var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
+    transform var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
+    border-color var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .subscriptionSubText {
-    margin-bottom: 0;
+    margin: 0;
+    text-align: center;
+    color: rgb(var(--text));
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
 }
 
 #subscriptionDiscountText {
     text-align: center;
-    margin: 0;
+    margin: 6px auto 0;
+    width: fit-content;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: rgb(var(--blue));
+    border: 1px solid rgba(var(--blue), 0.55);
+    background-color: rgba(var(--blue), 0.14);
 }
 
 #closeSubscriptionButton {
     position: absolute;
-    top: 5%;
+    top: 10px;
     right: 10px;
-    width: 15px;
-    height: 15px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: rgb(var(--red));
-    border: none;
+    background: rgba(var(--surface2), 0.5);
+    border: 1px solid rgba(var(--surface2), 0.8);
     cursor: pointer;
+    color: rgb(var(--subtext1));
     transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #closeMark {
     position: absolute;
-    top: -0.05%;
+    top: 51%;
     left: 50%;
-    transform: translateX(-50%) scale(0.9);
-    font-size: var(--spacing-md);
-    /* opacity: 0.5;    Base Opacity  */
-    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.94);
+    font-size: 12px;
+    opacity: 0.75;
     transition: all var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+#closeSubscriptionButton:hover {
+    background-color: rgba(var(--red), 0.2);
+    border-color: rgba(var(--red), 0.7);
+    color: rgb(var(--red));
+}
+
 #closeSubscriptionButton:hover #closeMark {
-    opacity: 0.5;
+    opacity: 1;
 }
 
 #closeSubscriptionButton:active #closeMark {
-    transform: translateX(-50%) scale(0.8);
+    transform: translate(-50%, -50%) scale(0.82);
 }
 
 #closeSubscriptionButton:active {
-    opacity: 0.9;
+    transform: scale(0.96);
 }
 
 
 #Monthly,
 #Yearly {
-    height: 150px;
     display: flex;
     flex-direction: column;
-    padding: 0;
-    gap: 30px;
-    margin-bottom: 30px;
+    justify-content: space-between;
+    min-height: 146px;
+    padding: 12px 10px 10px;
+    gap: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(var(--surface2), 0.65);
+    background: rgba(var(--base), 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition: transform var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
+    border-color var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow var(--anim-time) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#Monthly:hover,
+#Yearly:hover {
+    transform: translateY(-2px);
+}
+
+#Yearly {
+    position: relative;
+    border-color: rgba(var(--blue), 0.65);
+    background: linear-gradient(160deg, rgba(var(--blue), 0.08) 0%, rgba(var(--base), 0.25) 100%);
+    box-shadow: 0 4px 12px rgba(var(--blue), 0.2);
+}
+
+#Yearly::before {
+    content: "BEST VALUE";
+    position: absolute;
+    top: -9px;
+    right: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: rgb(var(--base));
+    background-color: rgb(var(--blue));
+}
+
+#Yearly > div {
+    display: flex;
+    flex-direction: column;
 }
 
 #monthlyButton {
-    padding: 0 15px;
-    background-color: rgba(var(--green), 0.15);
+    background-color: rgba(var(--green), 0.2);
     border: 1px solid rgb(var(--green));
     color: rgb(var(--green));
-    justify-self: flex-end;
-    margin-top: auto;
 }
 
 #monthlyButton:hover {
-    background-color: rgba(var(--green), 0.2);
-    box-shadow: 0 2px 6px rgba(var(--green), 0.4);
+    background-color: rgba(var(--green), 0.28);
+    box-shadow: 0 6px 14px rgba(var(--green), 0.28);
 }
 
 #monthlyButton:active {
-    transform: scale(0.96);
-    box-shadow: 0 1px 3px rgba(var(--green), 0.5);
+    transform: translateY(1px) scale(0.97);
+    box-shadow: 0 3px 8px rgba(var(--green), 0.28);
 }
 
 #yearlyButton {
-    padding: 0 15px;
-    background-color: rgba(var(--blue), 0.15);
+    background-color: rgba(var(--blue), 0.2);
     border: 1px solid rgb(var(--blue));
     color: rgb(var(--blue));
-    justify-self: flex-end;
-    margin-top: auto;
 }
 
 #yearlyButton:hover {
-    background-color: rgba(var(--blue), 0.2);
-    box-shadow: 0 2px 6px rgba(var(--blue), 0.4);
+    background-color: rgba(var(--blue), 0.3);
+    box-shadow: 0 8px 16px rgba(var(--blue), 0.3);
 }
 
 #yearlyButton:active {
-    transform: scale(0.96);
-    box-shadow: 0 1px 3px rgba(var(--blue), 0.5);
+    transform: translateY(1px) scale(0.97);
+    box-shadow: 0 3px 8px rgba(var(--blue), 0.3);
+}
+
+.subscriptionOption:focus-visible,
+#closeSubscriptionButton:focus-visible {
+    outline: 2px solid rgba(var(--lavender), 0.8);
+    outline-offset: 1px;
 }
 
 
