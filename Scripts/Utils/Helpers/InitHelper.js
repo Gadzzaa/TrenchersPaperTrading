@@ -4,6 +4,8 @@ import {Variables} from "../../Account/Core/Variables.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {ChromeHandler} from "../../ChromeHandler.js";
 import {AuthRefreshManager} from "../../Server/AuthRefreshManager.js";
+import {DialogManager} from "../../Dashboard/Core/DialogManager.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class InitHelper {
     static #showLoginPanelIfPresent() {
@@ -116,7 +118,13 @@ export class InitHelper {
         const limits = await dataManager.getWebsocketLimits();
 
         if (!limits.allowed) {
-            // TODO: Implement drawer which blocks access
+            new DialogManager(stateManager)
+                .addMessage("Premium required!" + "\n" + "Too many active sessions detected.")
+                .addType("multiple-sessions")
+                .show()
+                .catch((error) => {
+                    ErrorHandler.show(error);
+                });
             stateManager.initializing = false;
             throw new AppError("Websocket Limit not allowed.", {
                 code: "TOO_MANY_SESSIONS",

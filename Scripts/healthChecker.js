@@ -39,7 +39,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return true;
     }
     if (msg.type === "SESSION_VALID") {
-        console.log("Received SESSION_VALID message, validating session...");
         ChromeHandler.sendMessageAsync("SESSION_VALID_UI")
             .then((response) => {
                 sendResponse(response ?? {ok: true});
@@ -50,4 +49,5 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             });
         return true;
     }
+
 });

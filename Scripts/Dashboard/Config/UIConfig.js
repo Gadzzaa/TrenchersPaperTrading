@@ -117,6 +117,7 @@ export class UIConfig {
                     });
                 return true;
             }
+
             if (message.type === "NO_SESSION_UI") {
                 new DialogManager(stateManager)
                     .addMessage("Please log in to trade")
