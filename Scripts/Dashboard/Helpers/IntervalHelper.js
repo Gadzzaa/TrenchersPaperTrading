@@ -79,13 +79,8 @@ async function searchPosition(stateManager) {
 
     const parsed = JSON.parse(storedPositions);
     if (!Array.isArray(parsed) || parsed.length < 1)
-        throw new AppError("Parsing positions failed.", {
-            code: "PARSE_ERROR",
-            meta: {
-                parsed,
-                storedPositions,
-            },
-        });
+        console.warn("[TrenchersPT] No open positions found in localStorage.");
+
 
     const match = parsed.find((p) => p.pool === stateManager.currentContract);
     if (match) {

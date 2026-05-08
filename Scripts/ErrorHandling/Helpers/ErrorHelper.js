@@ -61,6 +61,7 @@ export class ErrorHelper {
     // AbortController / timeout-ish
     if (
       err?.name === "AbortError" ||
+      err?.name === "TimeoutError" ||
       msg.includes("aborted") ||
       msg.includes("timeout")
     )

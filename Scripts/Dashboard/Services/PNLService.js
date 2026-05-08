@@ -75,6 +75,7 @@ export class PNLService {
         const dataManager = new DataManager(variables);
         let tradeLog = await dataManager.getTradeLog();
         let tokens = tradeLog?.tokens;
+        if (!tokens) console.warn("⚠️ No trade log found!");
         this.positionManager.setPositions(tokens);
     }
 
