@@ -102,4 +102,23 @@ export class DataAPI {
 
         return response;
     }
+
+    /**
+     * @param {string} authToken - Session token of the user
+     * @returns {Promise<Object>}
+     */
+    async getWebsocketLimits(authToken) {
+        const response = await new BackendRequest()
+            .addEndpoint("/websocket-limits")
+            .addMethod("GET")
+            .addAuthParams(authToken)
+            .build();
+
+        if (!response)
+            throw new AppError("No websocket limits received from server", {
+                code: "NO_DATA",
+                meta: {response}
+            });
+        return response;
+    }
 }

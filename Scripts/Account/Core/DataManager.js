@@ -55,4 +55,12 @@ export class DataManager {
             throw ErrorHandler.log(error);
         }
     }
+
+    async getWebsocketLimits() {
+        try {
+            return await this.api.getWebsocketLimits(this.variables.getAuthToken())
+        } catch (error) {
+            throw ErrorHandler.log(error);
+        }
+    }
 }

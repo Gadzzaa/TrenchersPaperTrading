@@ -109,4 +109,26 @@ export class InitHelper {
             "[TrenchersPT] 🟢 Session check passed. Valid session token found.",
         );
     }
+
+    static async validateWebsocketLimits(stateManager) {
+        const dataManager = new DataManager(stateManager.variables);
+
+        const limits = await dataManager.getWebsocketLimits();
+
+        if (!limits.allowed) {
+            // TODO: Implement drawer which blocks access
+            stateManager.initializing = false;
+            throw new AppError("Websocket Limit not allowed.", {
+                code: "TOO_MANY_SESSIONS",
+                meta: {
+                    allowed: limits.allowed,
+                    remaining: limits.remaining,
+                }
+            })
+        }
+        console.log(
+            "[TrenchersPT] 🟢 Websocket limits check passed."
+        )
+
+    }
 }

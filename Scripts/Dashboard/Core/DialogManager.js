@@ -43,6 +43,10 @@ export class DialogManager {
             case "no-session":
                 this.#handler = () => DialogHelper.handleNoSession();
                 break;
+
+            case "multiple-sessions":
+                this.#neverResolve = true;
+                break;
         }
 
         return this;

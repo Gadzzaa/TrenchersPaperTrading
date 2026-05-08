@@ -36,11 +36,10 @@ export class StateManager {
             InitHelper.loadSettings(UIConfig);
 
             await InitHelper.validateHealth(this);
-
             await InitHelper.validateVersion(this);
-
-            console.log("Validating session")
             await InitHelper.validateSession(this);
+            await InitHelper.validateWebsocketLimits(this);
+
             this.pnlService = new PNLService(this)
             await this.pnlService.start();
 
