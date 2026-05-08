@@ -157,7 +157,40 @@ export class BackendRequest {
      * @returns {boolean}
      */
     isTimeoutError(error) {
-        return error?.name === "AbortError";
+        const name = error?.name;
+        if (name === "AbortError" || name === "TimeoutError") return true;
+
+        const message = String(error?.message ?? error ?? "").toLowerCase();
+        return message.includes("aborted") || message.includes("timeout");
+    }
+
+    getRequestLabel() {
+        const method = this.requestData.method || "GET";
+        const endpoint = this.requestData.endpoint || "<unknown-endpoint>";
+        return `${method} ${endpoint}`;
+    }
+
+    createTimeoutReason() {
+        const message = `Exceeded ${DEFAULT_TIMEOUT}ms for ${this.getRequestLabel()}`;
+        if (typeof DOMException === "function") {
+            return new DOMException(message, "TimeoutError");
+        }
+
+        const fallback = new Error(message);
+        fallback.name = "TimeoutError";
+        return fallback;
+    }
+
+    getTimeoutMessage(error) {
+        const message = String(error?.message ?? "").trim();
+        if (
+            message &&
+            !message.toLowerCase().includes("signal is aborted without reason")
+        ) {
+            return message;
+        }
+
+        return `Exceeded ${DEFAULT_TIMEOUT}ms for ${this.getRequestLabel()}`;
     }
 
     bypassStatusCheck() {
@@ -247,7 +280,11 @@ export class BackendRequest {
      */
     async executeRequest() {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+        const timeoutReason = this.createTimeoutReason();
+        const timeout = setTimeout(
+            () => controller.abort(timeoutReason),
+            DEFAULT_TIMEOUT,
+        );
         try {
             const response = await fetch(this.getRequestUrl(), this.getFetchOptions(controller.signal));
             const json = await this.parseResponse(response);
@@ -270,11 +307,18 @@ export class BackendRequest {
         if (isTimeout || isNetwork) {
             ChromeHandler.sendMessage("no-internet");
             throw new AppError(
-                `${isTimeout ? "Request timed out" : "Network error"}: ${error.message}`,
+                `${isTimeout ? "Request timed out" : "Network error"}: ${
+                    isTimeout ? this.getTimeoutMessage(error) : error.message
+                }`,
                 {
                     code: isTimeout ? "TIMEOUT" : "NETWORK",
                     cause: error,
-                    meta: {status: response?.status, json},
+                    meta: {
+                        status: response?.status,
+                        json,
+                        request: this.getRequestLabel(),
+                        timeoutMs: DEFAULT_TIMEOUT,
+                    },
                 },
             );
         }
