@@ -523,6 +523,7 @@ body.edit-mode-exit::before {
     border-radius: var(--radius-md);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     text-align: center;
+    white-space: pre-line;
 }
 
 

@@ -45,6 +45,7 @@ export class ErrorCodes {
         PRESET_APPLY_FAILED: "PRESET_APPLY_FAILED",
         WEBSOCKET_CONNECTION_ERROR: "WEBSOCKET_CONNECTION_ERROR",
         INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
+        WS_NOT_CONNECTED: "WS_NOT_CONNECTED",
     });
 
     static UserMessages = Object.freeze({
@@ -97,5 +98,6 @@ export class ErrorCodes {
         PRESET_APPLY_FAILED: "Failed to apply preset. Please try again.",
         WEBSOCKET_CONNECTION_ERROR: "Failed to connect to server. Check your connection and try again.",
         INVALID_CREDENTIALS: "Login information is incorrect. Please check your username and password and try again.",
+        WS_NOT_CONNECTED: "No connection to the server found. Please try again.",
     });
 }

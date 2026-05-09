@@ -93,9 +93,11 @@ export class DialogManager {
                 cause: e
             })
         } finally {
-            this.#hideBase();
-            this.#cleanup();
-            this.stateManager.activeDialog = null;
+            if (!this.#neverResolve) {
+                this.#hideBase();
+                this.#cleanup();
+                this.stateManager.activeDialog = null;
+            }
         }
     }
 
