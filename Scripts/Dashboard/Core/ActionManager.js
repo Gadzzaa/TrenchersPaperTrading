@@ -4,8 +4,9 @@ import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {ActionHelper} from "../Helpers/ActionHelper.js";
 import {EditHelper} from "../Helpers/EditHelper.js";
-import {PresetManager} from "../Core/PresetManager.js";
+import {PresetManager} from "./PresetManager.js";
 import {StateManager} from "../Services/StateManager.js";
+import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
 export class ActionManager {
     /**
@@ -42,6 +43,15 @@ export class ActionManager {
      * @returns {Promise<void>}
      */
     static async #handleBasicActions(button, stateManager) {
+        let ws = stateManager.pnlService?.wsManager?.ws;
+        if (!ws || ws.readyState !== WebSocket.OPEN)
+            throw new AppError("WebSocket is not connected.", {
+                code: "WS_NOT_CONNECTED",
+                meta: {
+                    ws
+                }
+            })
+
         UIHelper.disableAllTradeButtons();
         let loadingDotsInterval = GlobalUIHelper.startLoadingDots(button)
 
