@@ -73,10 +73,14 @@ export class PNLService {
 
     async syncTradeLog(variables) {
         const dataManager = new DataManager(variables);
-        let tradeLog = await dataManager.getTradeLog();
-        let tokens = tradeLog?.tokens;
-        if (!tokens) console.warn("⚠️ No trade log found!");
+        const tradeLog = await dataManager.getTradeLog();
+        const tokens = tradeLog?.tokens;
+        if (!Array.isArray(tokens)) {
+            console.warn("⚠️ Trade log response did not include token positions.");
+            return false;
+        }
         this.positionManager.setPositions(tokens);
+        return true;
     }
 
     isActive() {
