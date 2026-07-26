@@ -61,16 +61,27 @@ export class TransactionManager {
                     code: "INVALID_TOKEN",
                 });
             const response = await this.api.buy(payload, authToken);
+            const activePoolAddress = response.poolAddress || this.#poolAddress;
 
-
-            stateManager.pnlService.pnlDataManager.add(
-                this.#poolAddress,
-                response.pnlData,
-            );
+            if (activePoolAddress !== this.#poolAddress) {
+                stateManager.pnlService.pnlDataManager.replacePoolAddress(
+                    this.#poolAddress,
+                    activePoolAddress,
+                    response.pnlData,
+                );
+                // Subscribe first. WebSocket messages are ordered, so the
+                // subsequent unwatch removes only the old alias without ever
+                // leaving the live pool unsubscribed during the handoff.
+                stateManager.pnlService.poolWatcher.watch(activePoolAddress, response.pnlData);
+                stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
+                this.#poolAddress = activePoolAddress;
+            } else {
+                stateManager.pnlService.pnlDataManager.add(activePoolAddress, response.pnlData);
+            }
 
             await stateManager.pnlService.syncTradeLog(stateManager.variables)
 
-            stateManager.pnlService.setActiveToken(this.#poolAddress);
+            stateManager.pnlService.setActiveToken(activePoolAddress);
             stateManager.pnlService.update(true)
 
             return {
@@ -96,21 +107,30 @@ export class TransactionManager {
      * */
     async sellToken(stateManager) {
         try {
-            const tokenAmount = await this.#calculatePricePercentage(this.#amount);
-
             const payload = {
                 poolAddress: this.#poolAddress,
-                tokenAmount,
+                sellPercentage: this.#amount,
                 slippage: this.#slippagePercentage,
                 fee: this.#feeAmount,
             };
 
             const response = await this.api.sell(payload, this.#authToken);
+            const activePoolAddress = response.poolAddress || this.#poolAddress;
 
             await stateManager.pnlService.syncTradeLog(stateManager.variables)
 
             if (this.#amount === 100)
+                stateManager.pnlService.poolWatcher.unwatch(activePoolAddress);
+
+            if (activePoolAddress !== this.#poolAddress) {
+                stateManager.pnlService.poolWatcher.watch(
+                    activePoolAddress,
+                    stateManager.pnlService.pnlDataManager.get(activePoolAddress),
+                );
                 stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
+                this.#poolAddress = activePoolAddress;
+                stateManager.pnlService.setActiveToken(activePoolAddress);
+            }
 
             stateManager.pnlService.update(true)
 
@@ -134,34 +154,5 @@ export class TransactionManager {
         } catch (error) {
             throw ErrorHandler.log(error);
         }
-    }
-
-    /**
-     * @param {number} percentage - Percentage of tokens to sell.
-     * @returns {Promise<number>} - Amount of tokens to sell.
-     */
-    async #calculatePricePercentage(percentage) {
-        let portfolio = await this.getPortfolio();
-        if (!portfolio?.tokens)
-            throw new AppError("Portfolio data is missing tokens information.", {
-                code: "INVALID_PORTFOLIO",
-                meta: {percentage, poolAddress: this.#poolAddress, portfolio},
-            });
-
-        const totalAmount = portfolio.tokens[this.#poolAddress]?.amount;
-        if (!totalAmount)
-            throw new AppError("No tokens found for this pool.", {
-                code: "INVALID_AMOUNT",
-                meta: {percentage, totalAmount, poolAddress: this.#poolAddress},
-            });
-
-        const amountToSell = parseFloat(totalAmount * (percentage / 100));
-        if (amountToSell <= 0)
-            throw new AppError("Calculated token amount is zero or negative.", {
-                code: "INVALID_AMOUNT",
-                meta: {percentage, totalAmount, poolAddress: this.#poolAddress},
-            });
-
-        return amountToSell;
     }
 }
