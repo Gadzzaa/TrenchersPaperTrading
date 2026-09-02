@@ -121,17 +121,17 @@ export class TransactionManager {
 
             if (this.#amount === 100)
                 stateManager.pnlService.poolWatcher.unwatch(activePoolAddress);
-
-            if (activePoolAddress !== this.#poolAddress) {
-                stateManager.pnlService.poolWatcher.watch(
-                    activePoolAddress,
-                    stateManager.pnlService.pnlDataManager.get(activePoolAddress),
-                );
-                stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
-                this.#poolAddress = activePoolAddress;
-                stateManager.pnlService.setActiveToken(activePoolAddress);
+            else {
+                if (activePoolAddress !== this.#poolAddress) {
+                    stateManager.pnlService.poolWatcher.watch(
+                        activePoolAddress,
+                        stateManager.pnlService.pnlDataManager.get(activePoolAddress),
+                    );
+                    stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
+                    this.#poolAddress = activePoolAddress;
+                    stateManager.pnlService.setActiveToken(activePoolAddress);
+                }
             }
-
             stateManager.pnlService.update(true)
 
             return {
