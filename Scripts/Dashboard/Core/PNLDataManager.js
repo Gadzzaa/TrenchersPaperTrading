@@ -38,6 +38,33 @@ export class PNLDataManager {
     }
 
     /**
+     * Moves locally persisted PnL metadata to a migrated pool address.
+     * If the destination already exists, its fresh metadata wins and the old
+     * record is removed so one token cannot be watched under two pool keys.
+     * @param {string} oldPoolAddress
+     * @param {string} newPoolAddress
+     * @param {Record<string, any>} pnlData
+     */
+    replacePoolAddress(oldPoolAddress, newPoolAddress, pnlData) {
+        const oldKey = oldPoolAddress?.toString();
+        const newKey = newPoolAddress?.toString();
+        const oldIndex = this.pnlDataArray.findIndex((entry) => entry.poolAddress?.toString() === oldKey);
+        const newIndex = this.pnlDataArray.findIndex((entry) => entry.poolAddress?.toString() === newKey);
+        const nextEntry = {...pnlData, poolAddress: newPoolAddress};
+
+        if (newIndex >= 0) {
+            this.pnlDataArray[newIndex] = {...this.pnlDataArray[newIndex], ...nextEntry};
+            if (oldIndex >= 0 && oldIndex !== newIndex) this.pnlDataArray.splice(oldIndex, 1);
+        } else if (oldIndex >= 0) {
+            this.pnlDataArray[oldIndex] = {...this.pnlDataArray[oldIndex], ...nextEntry};
+        } else {
+            this.pnlDataArray.push(nextEntry);
+        }
+
+        localStorage.setItem("pnlDataArray", JSON.stringify(this.pnlDataArray));
+    }
+
+    /**
      * Returns pnl data for a pool.
      * @param {string} poolAddress
      * @returns {any}

@@ -357,6 +357,7 @@ export class BackendRequest {
                         const refreshedToken = await AuthRefreshManager.refreshAccessToken();
                         AuthRefreshManager.attachRefreshedToken(this.requestData, refreshedToken);
                         authRefreshAttempted = true;
+                        attempt--;
                         continue;
                     } catch {
                         authRefreshAttempted = true;

@@ -12,8 +12,7 @@ export class PositionManager {
      * @param {any[]} positions
      */
     setPositions(positions) {
-        this.openPositions.length = 0;
-        this.openPositions = positions;
+        this.openPositions = Array.isArray(positions) ? positions : [];
         localStorage.setItem("openPositions", JSON.stringify(this.openPositions));
     }
 
@@ -31,6 +30,7 @@ export class PositionManager {
      * @returns {any}
      */
     getPosition(poolAddress) {
+        if (!Array.isArray(this.openPositions)) return undefined;
         return this.openPositions.find(
             (p) => p.pool.toString() === poolAddress?.toString(),
         );
