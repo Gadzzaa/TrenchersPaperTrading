@@ -50,7 +50,7 @@ export class PNLDataManager {
         const newKey = newPoolAddress?.toString();
         const oldIndex = this.pnlDataArray.findIndex((entry) => entry.poolAddress?.toString() === oldKey);
         const newIndex = this.pnlDataArray.findIndex((entry) => entry.poolAddress?.toString() === newKey);
-        const nextEntry = {poolAddress: newPoolAddress, ...pnlData};
+        const nextEntry = {...pnlData, poolAddress: newPoolAddress};
 
         if (newIndex >= 0) {
             this.pnlDataArray[newIndex] = {...this.pnlDataArray[newIndex], ...nextEntry};
