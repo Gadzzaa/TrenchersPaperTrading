@@ -93,21 +93,25 @@ export class ActionManager {
             `Enter new ${action.toUpperCase()} label:`,
             button.dataset.amount,
         );
-        if (amount?.trim() === "") throw new Error("Invalid input.");
+        if (!amount || amount?.trim() === "") throw new Error("Invalid input.");
 
-        if (action === "buy") {
-            amount = parseFloat(amount).toFixed(2);
-            button.textContent = `${amount}`;
-            button.dataset.amount = amount;
+        amount = Number(amount);
 
+        if (!Number.isFinite(amount))
+            throw new Error("Invalid input.");
+
+        amount = Number.isInteger(amount)
+            ? amount
+            : amount.toFixed(2);
+
+        button.textContent = `${amount}`;
+        button.dataset.amount = amount.toString();
+
+        if (action === "buy")
             EditHelper.editBuyPresets({presets, activePreset}, {button, amount});
-        } else {
-            amount = Number(amount);
-            button.textContent = `${amount} %`;
-            button.dataset.amount = amount.toFixed(0);
-
+        else
             EditHelper.editSellPresets({presets, activePreset}, {button, amount});
-        }
+
 
         PresetManager.setPresets(presets);
     }

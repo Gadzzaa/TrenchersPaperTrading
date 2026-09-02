@@ -39,12 +39,11 @@ export class EditHelper {
         presetData,
         buttonData,
     ) {
-        let presets,
-            activePreset = presetData;
-        let button,
-            amount = buttonData;
+        const {presets, activePreset} = presetData;
+        const {button, amount} = buttonData;
+        const buttonIndex = presets?.[activePreset]?.buys?.[button.dataset.index];
 
-        if (!presets[activePreset]?.buys[button.id])
+        if (!buttonIndex)
             throw new AppError(
                 `Buy button with id "${button.id}" not found in active preset.`,
                 {
@@ -56,7 +55,7 @@ export class EditHelper {
                 },
             );
 
-        presets[activePreset].buys[button.id].amount = amount;
+        buttonIndex.amount = amount;
     }
 
     /**
@@ -68,16 +67,21 @@ export class EditHelper {
         presetData,
         buttonData,
     ) {
-        let presets,
-            activePreset = presetData;
-        let button,
-            amount = buttonData;
+        const {
+            presets,
+            activePreset
+        } = presetData;
+        const {
+            button,
+            amount
+        } = buttonData;
+        const buttonIndex = presets?.[activePreset]?.sells?.[button.dataset.index];
 
-        if (!presets[activePreset]?.sells[button.id])
+        if (!buttonIndex)
             throw new Error(
                 `Sell button with id ${button.id} not found in active preset.`,
             );
 
-        presets[activePreset].sells[button.id].amount = amount;
+        buttonIndex.amount = amount;
     }
 }
