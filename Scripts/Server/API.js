@@ -1,9 +1,13 @@
-import {API_Request} from "./API_Request";
-import {AppError} from "../ErrorHandling/Helpers/AppError";
+import {API_Request} from "./API_Request.js";
+import {AppError} from "../ErrorHandling/Helpers/AppError.js";
+import {requestFreshToken} from "./API_Token_Refresher.js";
 
 export class API {
     #accessToken = "";
-    #refreshInFlight = false;
+
+    /** @type {Promise<string> | null} */
+    #refreshInFlight = null;
+    #loggingOut = false;
 
     constructor(token) {
         token ? this.#accessToken = token : null;
@@ -19,7 +23,9 @@ export class API {
                 code: "INVALID_SESSION"
             })
 
-        return new API_Request().addJWT(this.#accessToken)
+        return new API_Request({
+            tokenRefresher: () => this.#refreshAccessToken()
+        }).addJWT(this.#accessToken)
     }
 
 
@@ -32,17 +38,33 @@ export class API {
 
     async register(username, password, balance) {
         return this.#establish_session(
-            "/register",
+            "/create-account",
             {username, password, balance},
         )
     }
 
     async restoreSession() {
-        return this.#establish_session("/refresh-session")
+        await this.#refreshAccessToken();
+        return true
     }
 
     async logout() {
+        if (this.#loggingOut)
+            return;
+
+        this.#loggingOut = true;
+
         try {
+            if (this.#refreshInFlight) {
+                try {
+                    await this.#refreshInFlight;
+                } catch {
+                }
+            }
+
+            if (!this.#accessToken)
+                return;
+
             return await this.createRequest()
                 .includeCredentials()
                 .addEndpoint("/logout")
@@ -50,6 +72,33 @@ export class API {
                 .build();
         } finally {
             this.#accessToken = null;
+            this.#loggingOut = false;
+        }
+    }
+
+    async #refreshAccessToken() {
+        if (this.#loggingOut) {
+            throw new AppError("Session is logging out", {
+                code: "SESSION_ENDING",
+            });
+        }
+        if (this.#refreshInFlight)
+            return this.#refreshInFlight;
+
+        const operation = requestFreshToken(
+            () => this.createPublicRequest(),
+        ).then(token => {
+            this.#accessToken = token;
+            return token;
+        })
+
+        this.#refreshInFlight = operation
+
+        try {
+            return await operation;
+        } finally {
+            if (this.#refreshInFlight === operation)
+                this.#refreshInFlight = null;
         }
     }
 
