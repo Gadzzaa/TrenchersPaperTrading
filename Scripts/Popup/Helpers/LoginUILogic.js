@@ -1,5 +1,3 @@
-import {Variables} from "../../Account/Core/Variables.js";
-import {AuthManager} from "../../Account/Core/AuthManager.js";
 import {DialogsValidators} from "./DialogsValidators.js";
 
 export class LoginUILogic {
@@ -7,12 +5,7 @@ export class LoginUILogic {
         let usernameInput = document.getElementById("formUsername");
         let passwordInput = document.getElementById("formPassword");
 
-        stateManager.variables = new Variables({
-            username: usernameInput.value,
-        });
-        let authManager = new AuthManager(stateManager.variables);
-
-        await authManager.login(passwordInput.value);
+        await stateManager.api.login(usernameInput.value, passwordInput.value);
     }
 
     static async register(stateManager) {
@@ -25,19 +18,7 @@ export class LoginUILogic {
         let agreedToTOS = await DialogsValidators.askTOSAgreement(stateManager);
         if (!agreedToTOS) return;
 
-        stateManager.variables = new Variables({
-            username: usernameInput.value,
-            balance: amount,
-        });
-        let authManager = new AuthManager(stateManager.variables);
-
-        await authManager.register(passwordInput.value);
-    }
-
-    static async logout(stateManager) {
-        let authManager = new AuthManager(stateManager.variables);
-
-        await authManager.logout();
+        await stateManager.api.register(usernameInput.value, passwordInput.value, amount);
     }
 
     static togglePasswordVisibility(button) {

@@ -43,7 +43,7 @@ export class LoginUIManager {
         logoutButton.addEventListener("click", async () => {
             const logoutInterval = GlobalUIHelper.startLoadingDots(logoutButton);
             try {
-                await LoginUILogic.logout(stateManager);
+                await stateManager.api.logout();
                 stateManager.clearUI();
                 FooterHelper.focusDefaultButton();
                 await ChromeHandler.sendMessageAsync("NO_SESSION");
