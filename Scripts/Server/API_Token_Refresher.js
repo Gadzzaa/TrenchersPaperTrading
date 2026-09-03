@@ -1,5 +1,5 @@
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
-import {ChromeHandler} from "../ChromeHandler";
+import {ChromeHandler} from "../ChromeHandler.js";
 
 const AUTH_ERROR_CODES = new Set([
     "UNAUTHORIZED",
