@@ -9,10 +9,6 @@ export class API {
     #refreshInFlight = null;
     #loggingOut = false;
 
-    constructor(token) {
-        token ? this.#accessToken = token : null;
-    }
-
     createPublicRequest() {
         return new API_Request();
     }

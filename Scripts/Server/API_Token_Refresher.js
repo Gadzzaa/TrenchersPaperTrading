@@ -1,4 +1,5 @@
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
+import {ChromeHandler} from "../ChromeHandler";
 
 const AUTH_ERROR_CODES = new Set([
     "UNAUTHORIZED",
@@ -30,6 +31,7 @@ export async function requestFreshToken(createRequest) {
         .build();
 
     if (typeof response?.token !== "string" || !response.token) {
+        await ChromeHandler.sendMessageAsync("NO_SESSION");
         throw new AppError("Access token missing", {
             code: "INVALID_SESSION",
         });
