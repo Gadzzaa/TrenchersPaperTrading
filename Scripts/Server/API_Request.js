@@ -1,4 +1,5 @@
 import * as APIHelper from './API_Helper.js';
+import {shouldAttempt} from "./API_Token_Refresher.js";
 
 const API_BASE_URL = APIHelper.API_BASE_URL
 const NUM_OF_RETRIES = APIHelper.NUM_OF_RETRIES
@@ -9,14 +10,19 @@ const DEFAULT_TIMEOUT = APIHelper.DEFAULT_TIMEOUT
  */
 
 export class API_Request {
-    endpoint = "";
-    method = "";
-    headers = {};
+    #tokenRefresher
+
+    #endpoint = "";
+    #method = "";
+    #headers = {};
     /** @type {Object | null} */
-    body = null;
-    retry = true;
+    #body = null;
+    retry = false;
     credentials = false;
 
+    constructor({tokenRefresher = null} = {}) {
+        this.#tokenRefresher = tokenRefresher;
+    }
 
     addJWT(token) {
         this.addHeaders({Authorization: `Bearer ${token}`});
@@ -30,7 +36,7 @@ export class API_Request {
 
     addEndpoint(endpoint) {
         APIHelper.validateEndpoint(endpoint)
-        this.endpoint = endpoint;
+        this.#endpoint = endpoint;
         return this;
     }
 
@@ -39,37 +45,38 @@ export class API_Request {
      */
     addMethod(method) {
         APIHelper.validateMethod(method);
-        this.method = method;
+        this.#method = method;
         return this;
     }
 
     addHeaders(headers) {
         APIHelper.validateHeaders(headers);
-        this.headers = {...this.headers, ...headers};
+        this.#headers = {...this.#headers, ...headers};
         return this;
     }
 
     addBody(body) {
         APIHelper.validateBody(body);
-        this.body = body;
+        this.#body = body;
         this.addHeaders({"Content-Type": "application/json"});
         return this;
     }
 
-    noRetries() {
-        this.retry = false;
+    addRetries() {
+        this.retry = true;
         return this;
     }
 
     async build() {
+        let authRefreshAttempted = false;
         let maxAttempts = this.retry ? NUM_OF_RETRIES : 1;
-        for (let retry = 1; retry <= NUM_OF_RETRIES; retry++) {
+        for (let retry = 1; retry <= maxAttempts; retry++) {
             const controller = new AbortController();
             let response, json;
 
             const timeout = setTimeout(
                 () => controller.abort(
-                    APIHelper.createTimeoutReason(this.method, this.endpoint)
+                    APIHelper.createTimeoutReason(this.#method, this.#endpoint)
                 ),
                 DEFAULT_TIMEOUT,
             );
@@ -80,7 +87,7 @@ export class API_Request {
                     this.#getFetchParams(controller.signal)
                 );
 
-                json = await response.json()
+                json = await APIHelper.parseResponse(response);
 
                 if (response.ok || json?.ok === true)
                     return json;
@@ -88,8 +95,24 @@ export class API_Request {
                 APIHelper.throwForErrorResponse(response, json);
             } catch (error) {
                 if (
+                    !authRefreshAttempted &&
+                    shouldAttempt(this.#endpoint, this.#headers, error)
+                ) {
+                    authRefreshAttempted = true;
+
+                    if (typeof this.#tokenRefresher === "function") {
+                        let token = await this.#tokenRefresher();
+                        this.addJWT(token);
+
+                        retry--;
+
+                        continue;
+                    }
+                }
+
+                if (
                     (APIHelper.isTimeoutError(error) || APIHelper.isNetworkError(error)) &&
-                    retry < NUM_OF_RETRIES
+                    retry < maxAttempts
                 ) {
                     continue;
                 }
@@ -98,9 +121,9 @@ export class API_Request {
                     response,
                     json,
                     url: this.#getRequestUrl(),
-                    method: this.method,
+                    method: this.#method,
                     retry,
-                    max_retries: NUM_OF_RETRIES
+                    max_retries: maxAttempts
                 });
             } finally {
                 clearTimeout(timeout);
@@ -110,16 +133,16 @@ export class API_Request {
     }
 
     #getRequestUrl() {
-        return API_BASE_URL + this.endpoint;
+        return API_BASE_URL + this.#endpoint;
     }
 
     #getFetchParams(signal) {
         return {
-            method: this.method,
-            headers: this.headers,
-            body: this.body == null
+            method: this.#method,
+            headers: this.#headers,
+            body: this.#body == null
                 ? undefined
-                : JSON.stringify(this.body),
+                : JSON.stringify(this.#body),
             credentials: this.credentials ? "include" : "omit",
             signal
         }

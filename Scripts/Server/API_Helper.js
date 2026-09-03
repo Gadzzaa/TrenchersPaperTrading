@@ -1,6 +1,6 @@
-import {ChromeHandler} from "../ChromeHandler";
-import {AppError} from "../ErrorHandling/Helpers/AppError";
-import CONFIG from "../../config";
+import {ChromeHandler} from "../ChromeHandler.js";
+import {AppError} from "../ErrorHandling/Helpers/AppError.js";
+import CONFIG from "../../config.js";
 
 const ALLOWED_METHODS = new Set(["GET", "POST", "PUT", "DELETE", "PATCH"]);
 export const DEFAULT_TIMEOUT = 1000 * 5;
@@ -58,8 +58,8 @@ export function validateHeaders(headers) {
 }
 
 export function validateBody(body) {
-    if (typeof body !== "string" && typeof body !== "object" && body !== null)
-        throw new AppError("Body must be a string, object, or null", {
+    if (typeof body !== "object" && body !== null)
+        throw new AppError("Body must be an array, object, or null", {
             code: "INVALID_BODY",
             meta: {
                 body,
@@ -133,7 +133,6 @@ export function throwMappedError(error, context = {}) {
         statusText: context.response?.statusText,
         requestId: context.json?.requestId,
         url: context.url,
-        endpoint: context.endpoint,
         method: context.method,
         retry: context.retry,
         maxRetries: context.max_retries,
@@ -160,4 +159,17 @@ export function throwMappedError(error, context = {}) {
         cause: error,
         meta,
     });
+}
+
+export async function parseResponse(response) {
+    const text = await response.text();
+
+    if (!text)
+        return {};
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        return {message: text};
+    }
 }
