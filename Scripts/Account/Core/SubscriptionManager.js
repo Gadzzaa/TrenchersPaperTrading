@@ -3,11 +3,11 @@ import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SubscriptionManager {
     /**
-     * @param {Variables} variables - Contains session and user variables.
+     * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(variables) {
-        this.api = new SubscriptionAPI();
-        this.variables = variables;
+    constructor(stateManager) {
+        this.subscriptionAPI = new SubscriptionAPI();
+        this.api = stateManager.api;
     }
 
     /**
@@ -16,13 +16,13 @@ export class SubscriptionManager {
      */
     async upgradeSubscription(type) {
         try {
-            const response = await this.api.upgradeSubscription(
+            const response = await this.subscriptionAPI.upgradeSubscription(
                 type,
-                this.variables.getAuthToken(),
+                this.api
             );
 
             const url = response.url;
-            chrome.tabs.create({url});
+            await chrome.tabs.create({url});
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -33,11 +33,11 @@ export class SubscriptionManager {
      * */
     async manageSubscription() {
         try {
-            const response = await this.api.manageSubscription(
-                this.variables.getAuthToken(),
+            const response = await this.subscriptionAPI.manageSubscription(
+                this.api
             );
             const url = response.url;
-            chrome.tabs.create({url});
+            await chrome.tabs.create({url});
         } catch (error) {
             throw ErrorHandler.log(error);
         }
