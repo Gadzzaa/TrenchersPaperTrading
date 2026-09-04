@@ -1,18 +1,21 @@
 import {InitHelper} from "../../Utils/Helpers/InitHelper.js";
 import {UIHelper} from "../Helpers/UIHelper.js";
 import {startInterval} from "../Helpers/IntervalHelper.js";
-import {UIManager} from "../../Utils/Core/UIManager.js";
 import {PNLService} from "./PNLService.js";
 import {UIConfig} from "../Config/UIConfig.js"
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {ChromeHandler} from "../../ChromeHandler.js"
+import {API} from "../../Server/API.js"
+import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
 export class StateManager {
+    #initAttemptId = 0;
+
     constructor() {
         this.initializing = false;
         this.running = false;
 
-        this.variables = null;
+        this.api = new API()
         this.pnlService = null;
 
         this.updateInterval = null;
@@ -25,59 +28,84 @@ export class StateManager {
     }
 
     async initialize(force) {
+        if (force) {
+            this.disconnect()
+        } else if ((this.initializing || this.running)) return;
+
+        const attemptId = ++this.#initAttemptId
+        console.log("[TrenchersPT] 🟢 Initializing dashboard...");
+        this.initializing = true;
+
+        const assertCurrent = () => {
+            if (attemptId !== this.#initAttemptId) {
+                throw new AppError("Initialization cancelled.", {
+                    code: "INIT_CANCELLED",
+                });
+            }
+        };
+
         try {
-            if (force) {
-                this.disconnect()
-            } else if ((this.initializing || this.running)) return;
-
-            console.log("[TrenchersPT] 🟢 Initializing dashboard...");
-            this.initializing = true;
-
             InitHelper.loadSettings(UIConfig);
 
             await InitHelper.validateHealth(this);
-            await InitHelper.validateVersion(this);
-            await InitHelper.validateSession(this);
-            await InitHelper.validateWebsocketLimits(this);
+            assertCurrent();
 
-            this.pnlService = new PNLService(this)
-            await this.pnlService.start();
+            await InitHelper.validateVersion(this);
+            assertCurrent();
+
+            await InitHelper.validateSession(this);
+            assertCurrent();
+
+            await InitHelper.validateWebsocketLimits(this);
+            assertCurrent();
+
+            const pnlService = new PNLService(this);
+            this.pnlService = pnlService;
+
+            await pnlService.start();
+            assertCurrent();
 
             UIHelper.clearUI();
-
             document.body.style.removeProperty("pointer-events");
-
             this.updateInterval = startInterval(this);
 
-            this.initializing = false;
             this.running = true;
         } catch (err) {
-            this.initializing = false;
+            if (attemptId !== this.#initAttemptId) {
+                throw new AppError("Initialization cancelled.", {
+                    code: "INIT_CANCELLED",
+                    cause: err,
+                });
+            }
+
             throw ErrorHandler.log(err);
+        } finally {
+            if (attemptId === this.#initAttemptId)
+                this.initializing = false;
         }
     }
 
     disconnect() {
-        if (!this.running) return;
-        console.log("[TrenchersPT] 🔴 Disconnecting dashboard...");
+        ++this.#initAttemptId;
 
-        document.body.style.pointerEvents = "none";
+        this.initializing = false;
+        this.running = false;
 
         clearInterval(this.updateInterval);
         this.updateInterval = null;
 
+        this.pnlService?.stop();
+        this.pnlService = null;
+
         this.currentContract = null;
-
-        this.pnlService.stop();
-
+        document.body.style.pointerEvents = "none";
         localStorage.removeItem("cachedBalance");
         localStorage.removeItem("cachedBalanceTime");
-
-        this.running = false;
     }
 
     async logout() {
         this.disconnect();
+        await this.api.logout()
         await ChromeHandler.sendMessageAsync("NO_SESSION");
     }
 }
