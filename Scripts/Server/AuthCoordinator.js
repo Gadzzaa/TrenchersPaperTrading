@@ -58,53 +58,18 @@ export class AuthCoordinator {
         return operation;
     }
 
-    async login(username, password) {
-        await this.#ensureWorkerRevisionReady();
-
-        if (this.#loggingOut)
-            throw new AppError("Session is logging out", {
-                code: "SESSION_ENDING",
-            });
-
-        if (this.#sessionInFlight || this.#refreshInFlight)
-            throw new AppError("Another authentication operation is running.", {
-                code: "AUTH_BUSY",
-            });
-
-        const operation = this.#establishSession("/login", {
-            username,
-            password,
-        }).finally(() => {
-            this.#sessionInFlight = null;
-        });
-
-        this.#sessionInFlight = operation;
-        return operation
+    login(username, password) {
+        return this.#runSessionOperation(
+            "/login",
+            {username, password}
+        );
     }
 
-    async register(username, password, balance) {
-        await this.#ensureWorkerRevisionReady();
-
-        if (this.#loggingOut)
-            throw new AppError("Session is logging out", {
-                code: "SESSION_ENDING",
-            });
-
-        if (this.#sessionInFlight || this.#refreshInFlight)
-            throw new AppError("Another authentication operation is running.", {
-                code: "AUTH_BUSY",
-            });
-
-        const operation = this.#establishSession("/create-account", {
-            username,
-            password,
-            balance,
-        }).finally(() => {
-            this.#sessionInFlight = null;
-        })
-
-        this.#sessionInFlight = operation;
-        return operation
+    register(username, password, balance) {
+        return this.#runSessionOperation(
+            "/create-account",
+            {username, password, balance}
+        );
     }
 
     async logout() {
@@ -143,6 +108,37 @@ export class AuthCoordinator {
             this.#loggingOut = false;
         }
 
+    }
+
+    async #runSessionOperation(endpoint, body) {
+        await this.#ensureWorkerRevisionReady();
+
+        if (this.#loggingOut) {
+            throw new AppError("Session is logging out", {
+                code: "SESSION_ENDING",
+            });
+        }
+
+        if (this.#sessionInFlight || this.#refreshInFlight) {
+            throw new AppError(
+                "Another authentication operation is running.",
+                {
+                    code: "AUTH_BUSY",
+                }
+            );
+        }
+
+        const operation =
+            this.#establishSession(endpoint, body);
+
+        this.#sessionInFlight = operation;
+
+        try {
+            return await operation;
+        } finally {
+            if (this.#sessionInFlight === operation)
+                this.#sessionInFlight = null;
+        }
     }
 
     #establishSession(endpoint, body = null) {

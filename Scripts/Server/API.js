@@ -35,51 +35,18 @@ export class API {
         }).addJWT(this.#accessToken)
     }
 
-    async login(username, password) {
-        this.#throwIfLogginOut()
-
-        if (this.#sessionInFlight || this.#refreshInFlight)
-            throw new AppError("Another authentication operation is running.", {
-                code: "AUTH_BUSY",
-            });
-
-
-        const operation = this.#establish_session(
+    login(username, password) {
+        return this.#runSessionOperation(
             "AUTH_LOGIN",
-            {username, password},
-        )
-
-        this.#sessionInFlight = operation
-
-        try {
-            return await operation
-        } finally {
-            if (this.#sessionInFlight === operation)
-                this.#sessionInFlight = null
-        }
+            {username, password}
+        );
     }
 
-    async register(username, password, balance) {
-        this.#throwIfLogginOut()
-
-        if (this.#sessionInFlight || this.#refreshInFlight)
-            throw new AppError("Another authentication operation is running.", {
-                code: "AUTH_BUSY",
-            });
-
-        const operation = this.#establish_session(
+    register(username, password, balance) {
+        return this.#runSessionOperation(
             "AUTH_REGISTER",
-            {username, password, balance},
-        )
-
-        this.#sessionInFlight = operation
-
-        try {
-            return await operation
-        } finally {
-            if (this.#sessionInFlight === operation)
-                this.#sessionInFlight = null
-        }
+            {username, password, balance}
+        );
     }
 
     async restoreSession() {
@@ -207,6 +174,31 @@ export class API {
         } finally {
             if (this.#refreshInFlight === operation)
                 this.#refreshInFlight = null;
+        }
+    }
+
+    async #runSessionOperation(messageType, body) {
+        this.#throwIfLogginOut();
+
+        if (this.#sessionInFlight || this.#refreshInFlight) {
+            throw new AppError(
+                "Another authentication operation is running.",
+                {
+                    code: "AUTH_BUSY",
+                }
+            );
+        }
+
+        const operation =
+            this.#establish_session(messageType, body);
+
+        this.#sessionInFlight = operation;
+
+        try {
+            return await operation;
+        } finally {
+            if (this.#sessionInFlight === operation)
+                this.#sessionInFlight = null;
         }
     }
 
