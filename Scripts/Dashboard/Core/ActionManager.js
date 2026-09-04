@@ -30,9 +30,9 @@ export class ActionManager {
      */
     static toggleEditMode(stateManager) {
         if (document.body.classList.contains("edit-mode")) {
-            EditHelper.activateEditMode(stateManager);
+            EditHelper.exitEditMode(stateManager);
         } else {
-            EditHelper.deactivateEditMode();
+            EditHelper.enterEditMode();
         }
     }
 
@@ -107,10 +107,11 @@ export class ActionManager {
         button.textContent = `${amount}`;
         button.dataset.amount = amount.toString();
 
-        if (action === "buy")
-            EditHelper.editBuyPresets({presets, activePreset}, {button, amount});
-        else
-            EditHelper.editSellPresets({presets, activePreset}, {button, amount});
+        EditHelper.editPreset(
+            action,
+            {presets, activePreset},
+            {button, amount}
+        );
 
 
         PresetManager.setPresets(presets);

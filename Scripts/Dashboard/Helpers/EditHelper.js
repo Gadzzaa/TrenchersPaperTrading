@@ -1,12 +1,17 @@
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {StateManager} from "../Services/StateManager.js";
 
+const PRESET_GROUPS = Object.freeze({
+    buy: "buys",
+    sell: "sells",
+});
+
 export class EditHelper {
     /**
      * Exits edit mode after transition.
      * @param {StateManager} stateManager
      */
-    static activateEditMode(stateManager) {
+    static exitEditMode(stateManager) {
         const body = document.body;
         const sellsTab = document.getElementById("Sells");
 
@@ -22,7 +27,7 @@ export class EditHelper {
     /**
      * Enters edit mode and ensures sell tab is visible.
      */
-    static deactivateEditMode() {
+    static enterEditMode() {
         const body = document.body;
         const sellsTab = document.getElementById("Sells");
 
@@ -31,57 +36,46 @@ export class EditHelper {
     }
 
     /**
-     * Updates buy preset amount for selected button.
-     * @param {{presets: any, activePreset: null}} presetData
+     * @param {"buy"|"sell"} action
+     * @param {{presets: Object, activePreset: string}} presetData
      * @param {{button: HTMLButtonElement, amount: number|string}} buttonData
      */
-    static editBuyPresets(
-        presetData,
-        buttonData,
-    ) {
+    static editPreset(action, presetData, buttonData) {
+        const presetGroup = PRESET_GROUPS[action];
+
+        if (!presetGroup) {
+            throw new AppError(
+                `Unsupported preset action: ${action}`,
+                {
+                    code: "INVALID_DATA",
+                    meta: {action},
+                }
+            );
+        }
+
         const {presets, activePreset} = presetData;
         const {button, amount} = buttonData;
-        const buttonIndex = presets?.[activePreset]?.buys?.[button.dataset.index];
 
-        if (!buttonIndex)
+        const presetButton =
+            presets?.[activePreset]?.[presetGroup]?.[
+                button.dataset.index
+                ];
+
+        if (!presetButton) {
             throw new AppError(
-                `Buy button with id "${button.id}" not found in active preset.`,
+                `${action} button with id "${button.id}" ` +
+                "was not found in the active preset.",
                 {
                     code: "BUTTON_NOT_FOUND",
                     meta: {
+                        action,
                         presetData,
                         buttonData,
                     },
-                },
+                }
             );
+        }
 
-        buttonIndex.amount = amount;
-    }
-
-    /**
-     * Updates sell preset amount for selected button.
-     * @param {{presets: any, activePreset: null}} presetData
-     * @param {{button: HTMLButtonElement, amount: number|string}} buttonData
-     */
-    static editSellPresets(
-        presetData,
-        buttonData,
-    ) {
-        const {
-            presets,
-            activePreset
-        } = presetData;
-        const {
-            button,
-            amount
-        } = buttonData;
-        const buttonIndex = presets?.[activePreset]?.sells?.[button.dataset.index];
-
-        if (!buttonIndex)
-            throw new Error(
-                `Sell button with id ${button.id} not found in active preset.`,
-            );
-
-        buttonIndex.amount = amount;
+        presetButton.amount = amount;
     }
 }
