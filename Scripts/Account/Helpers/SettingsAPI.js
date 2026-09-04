@@ -1,6 +1,6 @@
 export class SettingsAPI {
     /**
-     * @param {API} api - API class to manage calls
+     * @param {import("./API.js").API} api
      * @param {Object} settings - Object containing user settings to be saved
      * @returns {Promise<Object>} - {success: boolean}
      */
@@ -14,7 +14,7 @@ export class SettingsAPI {
     }
 
     /**
-     * @param {API} api - API class to manage calls
+     * @param {import("./API.js").API} api
      * @returns {Promise<Object>} - Contains user settings { settings: Object }
      */
     async getSettings(api) {

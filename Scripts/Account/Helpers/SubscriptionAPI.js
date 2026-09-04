@@ -3,7 +3,7 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 export class SubscriptionAPI {
     /**
      * @param {string} type - "monthly" or "yearly".
-     * @param {API} api - API class to manage calls
+     * @param {import("./API.js").API} api
      * @returns {Promise<Object>} - Object containing URL of the checkout session: { url: string }
      */
     async upgradeSubscription(type, api) {
@@ -24,7 +24,7 @@ export class SubscriptionAPI {
     }
 
     /**
-     * @param {API} api - API class to manage calls
+     * @param {import("./API.js").API} api
      * @returns {Promise<Object>} - Object containing URL of the customer portal session: { url: string }
      */
     async manageSubscription(api) {

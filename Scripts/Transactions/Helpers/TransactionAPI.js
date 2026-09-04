@@ -3,7 +3,7 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 export class TransactionAPI {
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {API} api - API class to manage calls
+     * @param {import("./API.js").API} api
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *   success: boolean,
@@ -35,7 +35,7 @@ export class TransactionAPI {
 
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {API} api - API class to manage calls
+     * @param {import("./API.js").API} api
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *  success: boolean,
@@ -64,7 +64,7 @@ export class TransactionAPI {
     }
 
     /**
-     * @param {API} api - API class to manage calls
+     * @param {import("./API.js").API} api
      * @returns {Promise<Object>} - Object containing user's portfolio data.
      */
     async getPortfolio(api) {
