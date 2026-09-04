@@ -2,6 +2,7 @@ import {StateManager} from "../Services/StateManager.js";
 import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
 import {DialogManager} from "../Core/DialogManager.js"
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class UIConfig {
     static settings = [
@@ -112,8 +113,21 @@ export class UIConfig {
             }
 
             if (message.type === "NO_SESSION_UI") {
+                if (!ChromeHandler.isTrustedInternalSender(_sender)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
+                const workerRevision = message.payload?.workerRevision
+
+                if (!stateManager.api.acceptWorkerRevision(workerRevision)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
                 stateManager.api.invalidateSession()
                 stateManager.disconnect();
+
                 new DialogManager(stateManager)
                     .addMessage("Please log in to trade")
                     .addType("no-session")
@@ -124,6 +138,27 @@ export class UIConfig {
                     }).catch((error) => {
                     ErrorHandler.show(error);
                 });
+
+                sendResponse({ok: true});
+                return true;
+            }
+            if (message.type === "SESSION_VALID_UI") {
+                if (!ChromeHandler.isTrustedInternalSender(_sender)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
+                const workerRevision =
+                    message.payload?.workerRevision;
+
+                if (
+                    !stateManager.api.acceptWorkerRevision(
+                        workerRevision
+                    )
+                ) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
 
                 sendResponse({ok: true});
                 return true;

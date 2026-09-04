@@ -1,3 +1,5 @@
+import {ChromeHandler} from "../../ChromeHandler.js";
+
 export class DialogHelper {
 
     static handleNoInternet() {
@@ -15,12 +17,21 @@ export class DialogHelper {
         })
     }
 
-    static handleNoSession() {
+    static handleNoSession(stateManager) {
         return new Promise(resolve => {
-            const chromeListener = (message) => {
+            const chromeListener = (message, sender) => {
                 if (message.origin !== "TrenchersPaperTrading") return;
-                const shouldResolve = message.type === "SESSION_VALID_UI";
-                if (!shouldResolve) return;
+                if (message.type !== "SESSION_VALID_UI") return;
+                if (!ChromeHandler.isTrustedInternalSender(sender)) {
+                    return;
+                }
+
+                const workerRevision = message.payload?.workerRevision;
+
+                if (!stateManager.api.acceptWorkerRevision(workerRevision)) {
+                    return;
+                }
+
                 chrome.runtime.onMessage.removeListener(chromeListener);
                 resolve();
             }

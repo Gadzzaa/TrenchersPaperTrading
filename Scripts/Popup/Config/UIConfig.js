@@ -2,6 +2,7 @@ import {UILoader} from "../Core/UILoader.js"
 import {UIHelper} from "../Helpers/UIHelper.js";
 import {DialogManager} from "../Core/DialogManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class UIConfig {
 
@@ -64,6 +65,19 @@ export class UIConfig {
     static createRuntimeMessageListener(stateManager) {
         return (message, _sender, sendResponse) => {
             if (message.origin !== "TrenchersPaperTrading") return true;
+
+            const isSessionNotification =
+                message.type === "NO_SESSION_UI" ||
+                message.type === "SESSION_VALID_UI";
+
+            if (
+                isSessionNotification &&
+                !ChromeHandler.isTrustedInternalSender(_sender)
+            ) {
+                sendResponse({ok: true, ignored: true});
+                return true;
+            }
+
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
                     stateManager.initialize(true).catch((error) => {
@@ -117,15 +131,32 @@ export class UIConfig {
             }
 
             if (message.type === "NO_SESSION_UI") {
+                const workerRevision = message.payload?.workerRevision
+
+                if (!stateManager.api.acceptWorkerRevision(workerRevision)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
+                stateManager.api.invalidateSession();
+
                 const loginPanel = document.getElementById("loginPanel");
                 loginPanel.classList.remove("loginHidden")
-                sendResponse({ok: true});
 
+                sendResponse({ok: true});
                 return true;
             }
 
             if (message.type === "SESSION_VALID_UI") {
+                const workerRevision = message.payload?.workerRevision
+
+                if (!stateManager.api.acceptWorkerRevision(workerRevision)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
                 const loginPanel = document.getElementById("loginPanel");
+
                 !loginPanel.classList.contains("loginHidden") && loginPanel.classList.add("loginHidden")
                 sendResponse({ok: true});
 
