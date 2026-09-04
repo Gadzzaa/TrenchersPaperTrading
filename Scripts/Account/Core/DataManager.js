@@ -4,11 +4,11 @@ import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class DataManager {
     /**
-     * @param {Variables} variables - Contains session and user variables.
+     * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(variables) {
-        this.api = new DataAPI();
-        this.variables = variables;
+    constructor(stateManager) {
+        this.dataAPI = new DataAPI();
+        this.api = stateManager.api;
     }
 
     /**
@@ -16,7 +16,7 @@ export class DataManager {
      * */
     async fetchAccountData() {
         try {
-            return await this.api.getAccData(this.variables.getAuthToken());
+            return await this.dataAPI.getAccData(this.api);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -28,8 +28,8 @@ export class DataManager {
      */
     async resetAccount(balance) {
         try {
-            const resetsRemaining = await this.api.resetAccount(
-                this.variables.getAuthToken(),
+            const resetsRemaining = await this.dataAPI.resetAccount(
+                this.api,
                 balance,
             );
 
@@ -43,14 +43,14 @@ export class DataManager {
     }
 
     async checkSession() {
-        return await this.api.checkSession(
-            this.variables.getAuthToken()?.toString(),
+        return await this.dataAPI.checkSession(
+            this.api
         );
     }
 
     async getTradeLog() {
         try {
-            return await this.api.getTradeLog(this.variables.getAuthToken());
+            return await this.dataAPI.getTradeLog(this.api);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -58,7 +58,7 @@ export class DataManager {
 
     async getWebsocketLimits() {
         try {
-            return await this.api.getWebsocketLimits(this.variables.getAuthToken())
+            return await this.dataAPI.getWebsocketLimits(this.api)
         } catch (error) {
             throw ErrorHandler.log(error);
         }
