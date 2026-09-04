@@ -50,15 +50,12 @@ function user_listeners() {
     return (msg, _sender, sendResponse) => {
         if (msg.type === "NO_SESSION") {
             if (!canPerformAuth(_sender)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message:
-                            "This sender cannot change session state.",
-                    },
-                });
-
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "This sender cannot change session state."
+                );
                 return;
             }
 
@@ -72,32 +69,24 @@ function user_listeners() {
                     });
                 })
                 .catch(error => {
-                    sendResponse({
-                        ok: false,
-                        error: {
-                            code:
-                                error?.code ||
-                                "SESSION_INVALIDATION_FAILED",
-                            message:
-                                error?.message ||
-                                "Could not invalidate session.",
-                        },
-                    });
+                    sendErrorResponse(
+                        sendResponse,
+                        error,
+                        "SESSION_INVALIDATION_FAILED",
+                        "Could not invalidate session."
+                    );
                 });
 
             return true;
         }
         if (msg.type === "SESSION_VALID") {
             if (!canPerformAuth(_sender)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message:
-                            "This sender cannot change session state.",
-                    },
-                });
-
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "This sender cannot change session state."
+                );
                 return;
             }
 
@@ -105,15 +94,12 @@ function user_listeners() {
                 msg.payload?.workerRevision;
 
             if (!isValidWorkerRevision(reportedRevision)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "INVALID_WORKER_REVISION",
-                        message:
-                            "Worker revision is missing or invalid.",
-                    },
-                });
-
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "INVALID_WORKER_REVISION",
+                    "Worker revision is missing or invalid."
+                );
                 return;
             }
 
@@ -146,17 +132,12 @@ function user_listeners() {
                     });
                 })
                 .catch(error => {
-                    sendResponse({
-                        ok: false,
-                        error: {
-                            code:
-                                error?.code ||
-                                "SESSION_NOTIFICATION_FAILED",
-                            message:
-                                error?.message ||
-                                "Could not notify session state.",
-                        },
-                    });
+                    sendErrorResponse(
+                        sendResponse,
+                        error,
+                        "SESSION_NOTIFICATION_FAILED",
+                        "Could not notify session state."
+                    );
                 });
             return true;
         }
@@ -167,13 +148,13 @@ function auth_listeners() {
     return (msg, _sender, sendResponse) => {
         if (msg.type === "AUTH_REFRESH") {
             if (!canPerformAuth(_sender)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message: "This sender cannot perform auth operations.",
-                    },
-                });
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "This sender cannot perform auth operations."
+                );
+
                 return;
             }
 
@@ -193,40 +174,39 @@ function auth_listeners() {
                         );
                     }
 
-                    sendResponse({
-                        ok: false,
-                        ...(isValidWorkerRevision(workerRevision)
+                    sendErrorResponse(
+                        sendResponse,
+                        error,
+                        "AUTH_REFRESH_FAILED",
+                        "Could not refresh session.",
+                        isValidWorkerRevision(workerRevision)
                             ? {workerRevision}
-                            : {}),
-                        error: {
-                            code: error?.code || "AUTH_REFRESH_FAILED",
-                            message: error?.message || "Could not refresh session.",
-                        },
-                    });
+                            : {}
+                    );
                 })
 
             return true;
         }
         if (msg.type === "AUTH_LOGIN") {
             if (!canPerformAuth(_sender)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message: "This sender cannot perform auth operations.",
-                    },
-                });
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "This sender cannot perform auth operations."
+                );
+
                 return;
             }
 
             if (!isLoginPayloadValid(msg.payload)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message: "Payload sent is invalid.",
-                    }
-                })
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "Payload sent is invalid."
+                );
+
                 return;
             }
 
@@ -234,81 +214,78 @@ function auth_listeners() {
             authCoordinator.login(msg.payload.username, msg.payload.password)
                 .then(({response, workerRevision}) => {
                     sendResponse({ok: true, response, workerRevision});
-                }).catch((error) => {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: error?.code || "AUTH_LOGIN_FAILED",
-                        message: error?.message || "Could not log in.",
-                    },
-                });
-            })
+                }).catch(error => {
+                sendErrorResponse(
+                    sendResponse,
+                    error,
+                    "AUTH_LOGIN_FAILED",
+                    "Could not log in."
+                );
+            });
 
             return true;
         }
 
         if (msg.type === "AUTH_REGISTER") {
             if (!canPerformAuth(_sender)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message: "This sender cannot perform auth operations.",
-                    },
-                });
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "This sender cannot perform auth operations."
+                );
+
                 return;
             }
 
             if (!isRegisterPayloadValid(msg.payload)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message: "Payload sent is invalid.",
-                    }
-                })
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "Payload sent is invalid."
+                );
+
                 return;
             }
 
             authCoordinator.register(msg.payload.username, msg.payload.password, msg.payload.balance)
                 .then(({response, workerRevision}) => {
                     sendResponse({ok: true, response, workerRevision});
-                }).catch((error) => {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: error?.code || "AUTH_REGISTER_FAILED",
-                        message: error?.message || "Could not register.",
-                    },
-                });
-            })
+                }).catch(error => {
+                sendErrorResponse(
+                    sendResponse,
+                    error,
+                    "AUTH_REGISTER_FAILED",
+                    "Could not register."
+                );
+            });
 
             return true;
         }
         if (msg.type === "AUTH_LOGOUT") {
             if (!canPerformAuth(_sender)) {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: "FORBIDDEN",
-                        message: "This sender cannot perform auth operations.",
-                    },
-                });
+                sendErrorResponse(
+                    sendResponse,
+                    null,
+                    "FORBIDDEN",
+                    "This sender cannot perform auth operations."
+                );
+
                 return;
             }
 
             authCoordinator.logout()
                 .then(({workerRevision}) => {
                     sendResponse({ok: true, workerRevision});
-                }).catch((error) => {
-                sendResponse({
-                    ok: false,
-                    error: {
-                        code: error?.code || "AUTH_LOGOUT_FAILED",
-                        message: error?.message || "Could not log out.",
-                    },
-                });
-            })
+                }).catch(error => {
+                sendErrorResponse(
+                    sendResponse,
+                    error,
+                    "AUTH_LOGOUT_FAILED",
+                    "Could not log out."
+                );
+            });
 
             return true;
         }
@@ -330,4 +307,21 @@ function isLoginPayloadValid(payload) {
 
 function isRegisterPayloadValid(payload) {
     return isLoginPayloadValid(payload) && Number.isFinite(payload.balance)
+}
+
+function sendErrorResponse(
+    sendResponse,
+    error,
+    fallbackCode,
+    fallbackMessage,
+    extraFields = {}
+) {
+    sendResponse({
+        ...extraFields,
+        ok: false,
+        error: {
+            code: error?.code || fallbackCode,
+            message: error?.message || fallbackMessage,
+        },
+    });
 }
