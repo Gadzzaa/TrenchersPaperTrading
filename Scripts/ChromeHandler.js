@@ -8,21 +8,20 @@ export class ChromeHandler {
     }
 
     static sendMessageAsync(type, payload = null) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const response = await chrome.runtime.sendMessage({
-                    origin: "TrenchersPaperTrading",
-                    type,
-                    payload: payload
-                })
-                resolve(response);
-            } catch (e) {
-                reject(e);
-            }
+        return chrome.runtime.sendMessage({
+            origin: "TrenchersPaperTrading",
+            type,
+            payload,
         });
     }
 
     static sendMessage(type, payload = null) {
-        chrome.runtime.sendMessage({origin: "TrenchersPaperTrading", type, payload: payload});
+        void this.sendMessageAsync(type, payload)
+            .catch(error => {
+                console.error(
+                    `Failed to send Chrome message "${type}":`,
+                    error
+                );
+            });
     }
 }
