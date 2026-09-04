@@ -69,7 +69,7 @@ async function updateCurrentContract(stateManager) {
  * @returns {Promise<void>}
  */
 async function searchPosition(stateManager) {
-    await stateManager.pnlService.syncTradeLog(stateManager.variables);
+    await stateManager.pnlService.syncTradeLog();
 
     const storedPositions = localStorage.getItem("openPositions");
     if (!storedPositions) {
