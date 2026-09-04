@@ -3,11 +3,11 @@ import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SettingsManager {
     /**
-     * @param {Variables} variables - Contains session and user variables.
+     * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(variables) {
-        this.api = new SettingsAPI();
-        this.variables = variables;
+    constructor(stateManager) {
+        this.settingsAPI = new SettingsAPI();
+        this.api = stateManager.api;
     }
 
     /**
@@ -15,7 +15,7 @@ export class SettingsManager {
      */
     async saveSettings(settings) {
         try {
-            await this.api.saveSettings(this.variables.getAuthToken(), settings);
+            await this.settingsAPI.saveSettings(this.api, settings);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
@@ -26,9 +26,7 @@ export class SettingsManager {
      * */
     async getSettings() {
         try {
-            return await this.api.getSettings(
-                this.variables.getAuthToken(),
-            );
+            return await this.settingsAPI.getSettings(this.api);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
