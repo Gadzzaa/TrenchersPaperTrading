@@ -11,7 +11,7 @@ import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 export class PNLService {
     constructor(stateManager) {
         this.stateManager = stateManager;
-        this.wsManager = new WebsocketManager(stateManager.variables.getAuthToken());
+        this.wsManager = new WebsocketManager(stateManager);
 
         this.positionManager = new PositionManager();
         this.poolWatcher = new PoolWatcher(this.wsManager);
@@ -71,8 +71,8 @@ export class PNLService {
         });
     }
 
-    async syncTradeLog(variables) {
-        const dataManager = new DataManager(variables);
+    async syncTradeLog() {
+        const dataManager = new DataManager(this.stateManager);
         const tradeLog = await dataManager.getTradeLog();
         const tokens = tradeLog?.tokens;
         if (!Array.isArray(tokens)) {
