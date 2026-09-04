@@ -21,7 +21,7 @@ export class API {
     }
 
     createRequest() {
-        this.#throwIfLogginOut()
+        this.#throwIfLoggingOut()
 
         if (!this.#accessToken)
             throw new AppError("Authentication required.", {
@@ -55,11 +55,8 @@ export class API {
     }
 
     async logout() {
-        if (this.#loggingOut) {
-            throw new AppError("Session is logging out.", {
-                code: "SESSION_ENDING",
-            });
-        }
+        this.#throwIfLoggingOut()
+
 
         this.#loggingOut = true;
         this.invalidateSession()
@@ -84,7 +81,7 @@ export class API {
     }
 
     authenticateWebSocket(ws) {
-        this.#throwIfLogginOut()
+        this.#throwIfLoggingOut()
 
         ws.send(
             JSON.stringify({
@@ -138,7 +135,7 @@ export class API {
 
 
     async #refreshAccessToken() {
-        this.#throwIfLogginOut()
+        this.#throwIfLoggingOut()
 
         if (this.#refreshInFlight)
             return this.#refreshInFlight;
@@ -178,7 +175,7 @@ export class API {
     }
 
     async #runSessionOperation(messageType, body) {
-        this.#throwIfLogginOut();
+        this.#throwIfLoggingOut();
 
         if (this.#sessionInFlight || this.#refreshInFlight) {
             throw new AppError(
@@ -234,9 +231,9 @@ export class API {
         return public_response;
     }
 
-    #throwIfLogginOut() {
+    #throwIfLoggingOut() {
         if (this.#loggingOut)
-            throw new AppError("Session is logging out", {
+            throw new AppError("Session is logging out.", {
                 code: "SESSION_ENDING",
             });
     }
