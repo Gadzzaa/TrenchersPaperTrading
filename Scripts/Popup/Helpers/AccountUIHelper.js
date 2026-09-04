@@ -1,4 +1,4 @@
-export class AccountLoader {
+export class AccountUIHelper {
     static defaultImagePath = "../../../Images/solana-sol-logo.png";
 
     static capitalize(s) {
@@ -7,7 +7,7 @@ export class AccountLoader {
 
     static startCountdown(lastReset, resetsWhenText) {
         function update() {
-            const {hours, minutes} = AccountLoader.#getTimeUntilNextReset(lastReset);
+            const {hours, minutes} = AccountUIHelper.#getTimeUntilNextReset(lastReset);
             resetsWhenText.textContent = `(next refill in ${hours.toString().padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m)`;
         }
 
@@ -21,7 +21,7 @@ export class AccountLoader {
         name,
         symbol,
         amount,
-        imagePath = AccountLoader.defaultImagePath,
+        imagePath = AccountUIHelper.defaultImagePath,
     ) {
         const token = {
             poolAddress,
@@ -31,7 +31,7 @@ export class AccountLoader {
             imagePath,
         };
         stateManager.tokens.push(token);
-        AccountLoader.#renderToken(token);
+        AccountUIHelper.#renderToken(token);
     }
 
     static applyPremiumUI(isPremium) {
@@ -94,8 +94,8 @@ export class AccountLoader {
 
         const safeName = token.name;
         const safeSymbol = token.symbol;
-        const safeAmount = AccountLoader.#convertToKMB(token.amount);
-        const safeImagePath = (typeof token.imagePath === "string" && token.imagePath.trim()) ? token.imagePath : AccountLoader.defaultImagePath;
+        const safeAmount = AccountUIHelper.#convertToKMB(token.amount);
+        const safeImagePath = (typeof token.imagePath === "string" && token.imagePath.trim()) ? token.imagePath : AccountUIHelper.defaultImagePath;
 
         const tknImage = document.createElement("div");
         tknImage.className = "tknImage";
@@ -105,7 +105,7 @@ export class AccountLoader {
         img.src = safeImagePath;
         img.onerror = () => {
             img.onerror = null;
-            img.src = AccountLoader.defaultImagePath;
+            img.src = AccountUIHelper.defaultImagePath;
         };
         tknImage.appendChild(img);
 
