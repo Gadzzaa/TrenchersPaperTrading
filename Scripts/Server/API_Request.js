@@ -11,6 +11,8 @@ const DEFAULT_TIMEOUT = APIHelper.DEFAULT_TIMEOUT
 
 export class API_Request {
     #tokenRefresher
+    #assertCurrentSession
+    #version
 
     #endpoint = "";
     #method = "";
@@ -20,8 +22,10 @@ export class API_Request {
     retry = false;
     credentials = false;
 
-    constructor({tokenRefresher = null} = {}) {
+    constructor({tokenRefresher = null, assertCurrentSession = null, version = null} = {}) {
         this.#tokenRefresher = tokenRefresher;
+        this.#assertCurrentSession = assertCurrentSession;
+        this.#version = version;
     }
 
     addJWT(token) {
@@ -82,6 +86,7 @@ export class API_Request {
             );
 
             try {
+                this.#assertCurrentSession?.(this.#version);
                 response = await fetch(
                     this.#getRequestUrl(),
                     this.#getFetchParams(controller.signal)
@@ -89,7 +94,9 @@ export class API_Request {
 
                 json = await APIHelper.parseResponse(response);
 
-                if (response.ok || json?.ok === true)
+                this.#assertCurrentSession?.(this.#version);
+
+                if (response.ok)
                     return json;
 
                 APIHelper.throwForErrorResponse(response, json);
@@ -98,6 +105,8 @@ export class API_Request {
                     !authRefreshAttempted &&
                     shouldAttempt(this.#endpoint, this.#headers, error)
                 ) {
+
+                    this.#assertCurrentSession?.(this.#version)
                     authRefreshAttempted = true;
 
                     if (typeof this.#tokenRefresher === "function") {
@@ -112,10 +121,10 @@ export class API_Request {
 
                 if (
                     (APIHelper.isTimeoutError(error) || APIHelper.isNetworkError(error)) &&
-                    retry < maxAttempts
-                ) {
+                    (retry < maxAttempts)
+                )
                     continue;
-                }
+
 
                 APIHelper.throwMappedError(error, {
                     response,

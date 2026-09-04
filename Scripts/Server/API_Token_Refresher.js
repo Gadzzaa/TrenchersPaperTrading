@@ -1,7 +1,6 @@
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
-import {ChromeHandler} from "../ChromeHandler.js";
 
-const AUTH_ERROR_CODES = new Set([
+export const AUTH_ERROR_CODES = new Set([
     "UNAUTHORIZED",
     "INVALID_SESSION",
     "AUTHORIZATION_TOKEN_REQUIRED",
@@ -23,15 +22,14 @@ export function shouldAttempt(endpoint, headers, error) {
     return typeof authHeader === "string" && authHeader.startsWith("Bearer ");
 }
 
-export async function requestFreshToken(createRequest) {
-    const response = await createRequest()
+export async function requestFreshToken(API_Request) {
+    const response = await API_Request()
         .includeCredentials()
         .addEndpoint("/refresh-session")
         .addMethod("POST")
         .build();
 
     if (typeof response?.token !== "string" || !response.token) {
-        await ChromeHandler.sendMessageAsync("NO_SESSION");
         throw new AppError("Access token missing", {
             code: "INVALID_SESSION",
         });
