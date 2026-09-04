@@ -4,8 +4,8 @@ export class SettingsAPI {
      * @param {Object} settings - Object containing user settings to be saved
      * @returns {Promise<Object>} - {success: boolean}
      */
-    async saveSettings(api, settings) {
-        return await api.createRequest()
+    saveSettings(api, settings) {
+        return api.createRequest()
             .addEndpoint("/save-settings")
             .addMethod("POST")
             .addBody(settings)
@@ -17,8 +17,8 @@ export class SettingsAPI {
      * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Contains user settings { settings: Object }
      */
-    async getSettings(api) {
-        return await api.createRequest()
+    getSettings(api) {
+        return api.createRequest()
             .addEndpoint("/get-settings")
             .addMethod("GET")
             .addRetries()
