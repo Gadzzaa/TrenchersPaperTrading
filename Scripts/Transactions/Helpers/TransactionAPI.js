@@ -1,10 +1,9 @@
-import {BackendRequest} from "../../Server/BackendRequest.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
 export class TransactionAPI {
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {string} authToken - User session token for authentication.
+     * @param {API} api - API class to manage calls
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *   success: boolean,
@@ -15,13 +14,11 @@ export class TransactionAPI {
      *   tokenData: Object
      * }
      */
-    async buy(payload, authToken) {
-        const response = await new BackendRequest()
+    async buy(payload, api) {
+        const response = await api.createRequest()
             .addEndpoint("/buy")
             .addMethod("POST")
-            .addAuthParams(authToken)
-            .addBody(JSON.stringify(payload))
-            .addRetries(2)
+            .addBody(payload)
             .build();
 
         if (!response?.success)
@@ -38,7 +35,7 @@ export class TransactionAPI {
 
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {string} authToken - User session token for authentication.
+     * @param {API} api - API class to manage calls
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *  success: boolean,
@@ -47,13 +44,11 @@ export class TransactionAPI {
      *  effectivePrice: number
      * }
      */
-    async sell(payload, authToken) {
-        const response = await new BackendRequest()
+    async sell(payload, api) {
+        const response = await api.createRequest()
             .addEndpoint("/sell")
             .addMethod("POST")
-            .addAuthParams(authToken)
-            .addBody(JSON.stringify(payload))
-            .addRetries(2)
+            .addBody(payload)
             .build();
 
         if (!response?.success)
@@ -69,14 +64,14 @@ export class TransactionAPI {
     }
 
     /**
-     * @param {string} authToken - User session token for authentication.
+     * @param {API} api - API class to manage calls
      * @returns {Promise<Object>} - Object containing user's portfolio data.
      */
-    async getPortfolio(authToken) {
-        const response = await new BackendRequest()
+    async getPortfolio(api) {
+        const response = await api.createRequest()
             .addEndpoint("/portfolio")
             .addMethod("GET")
-            .addAuthParams(authToken)
+            .addRetries()
             .build();
 
         if (!response)

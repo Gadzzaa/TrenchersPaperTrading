@@ -7,7 +7,6 @@ export class TransactionManager {
     #amount = 0;
     #slippagePercentage = 0;
     #feeAmount = 0;
-    #authToken;
 
     /**
      * @param {Object} tokenData - Contains token transaction details.
@@ -17,23 +16,17 @@ export class TransactionManager {
      *    slippagePercentage: number,
      *    feeAmount: number
      * }
-     * @param {Variables} variables - Contains session and user variables.
+     * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(tokenData = {}, variables) {
+    constructor(tokenData = {}, stateManager) {
         tokenData.poolAddress && (this.#poolAddress = tokenData.poolAddress);
         tokenData.amount && (this.#amount = tokenData.amount);
         tokenData.slippagePercentage &&
         (this.#slippagePercentage = tokenData.slippagePercentage);
         tokenData.feeAmount && (this.#feeAmount = tokenData.feeAmount);
 
-        this.api = new TransactionAPI();
-        this.variables = variables;
-
-        this.#authToken = this.variables.getAuthToken();
-        if (this.#authToken == null)
-            throw ErrorHandler.log(new AppError("User is not authenticated."), {
-                code: "INVALID_TOKEN",
-            });
+        this.transactionAPI = new TransactionAPI();
+        this.api = stateManager.api;
     }
 
     /**
@@ -54,13 +47,7 @@ export class TransactionManager {
                 slippage: this.#slippagePercentage,
                 fee: this.#feeAmount,
             };
-            let authToken = this.#authToken;
-
-            if (!authToken)
-                throw new AppError("Authorization token is required for transactions.", {
-                    code: "INVALID_TOKEN",
-                });
-            const response = await this.api.buy(payload, authToken);
+            const response = await this.transactionAPI.buy(payload, this.api);
             const activePoolAddress = response.poolAddress || this.#poolAddress;
 
             if (activePoolAddress !== this.#poolAddress) {
@@ -79,7 +66,7 @@ export class TransactionManager {
                 stateManager.pnlService.pnlDataManager.add(activePoolAddress, response.pnlData);
             }
 
-            await stateManager.pnlService.syncTradeLog(stateManager.variables)
+            await stateManager.pnlService.syncTradeLog()
 
             stateManager.pnlService.setActiveToken(activePoolAddress);
             stateManager.pnlService.update(true)
@@ -114,10 +101,10 @@ export class TransactionManager {
                 fee: this.#feeAmount,
             };
 
-            const response = await this.api.sell(payload, this.#authToken);
+            const response = await this.transactionAPI.sell(payload, this.api);
             const activePoolAddress = response.poolAddress || this.#poolAddress;
 
-            await stateManager.pnlService.syncTradeLog(stateManager.variables)
+            await stateManager.pnlService.syncTradeLog()
 
             if (this.#amount === 100)
                 stateManager.pnlService.poolWatcher.unwatch(activePoolAddress);
@@ -150,7 +137,7 @@ export class TransactionManager {
      * */
     async getPortfolio() {
         try {
-            return await this.api.getPortfolio(this.#authToken);
+            return await this.transactionAPI.getPortfolio(this.api);
         } catch (error) {
             throw ErrorHandler.log(error);
         }
