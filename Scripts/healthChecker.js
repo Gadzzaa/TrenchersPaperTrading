@@ -1,6 +1,6 @@
 import {ServerStatus} from "./Server/ServerStatus.js";
 import {ChromeHandler} from "./ChromeHandler.js";
-import {AuthCoordinator} from "./AuthCoordinator.js";
+import {AuthCoordinator} from "./Server/AuthCoordinator.js";
 
 const allowedAuthPages = new Set([
     chrome.runtime.getURL("dashboard.html"),
@@ -84,7 +84,7 @@ function user_listeners() {
                         },
                     });
                 });
-           
+
             return true;
         }
         if (msg.type === "SESSION_VALID") {

@@ -1,7 +1,7 @@
-import {requestFreshToken} from "./Server/API_Token_Refresher.js";
-import {API_Request} from "./Server/API_Request.js";
-import {AppError} from "./ErrorHandling/Helpers/AppError.js";
-import {ChromeHandler} from "./ChromeHandler.js";
+import {requestFreshToken} from "./API_Token_Refresher.js";
+import {API_Request} from "./API_Request.js";
+import {AppError} from "../ErrorHandling/Helpers/AppError.js";
+import {ChromeHandler} from "../ChromeHandler.js";
 
 const WORKER_REVISION_KEY = "authWorkerRevision";
 
