@@ -1,9 +1,7 @@
 import {ServerValidation} from "../../Server/ServerValidation.js";
 import {DataManager} from "../../Account/Core/DataManager.js";
-import {Variables} from "../../Account/Core/Variables.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {ChromeHandler} from "../../ChromeHandler.js";
-import {AuthRefreshManager} from "../../Server/AuthRefreshManager.js";
 import {DialogManager} from "../../Dashboard/Core/DialogManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
@@ -26,7 +24,6 @@ export class InitHelper {
     static async validateHealth(stateManager) {
         let healthy = await ChromeHandler.sendMessageAsync("HEALTH_PING")
         if (!healthy) {
-            stateManager.initializing = false;
             throw new AppError("Health check failed.", {
                 code: "HEALTH_CHECK_FAILED",
             })
@@ -40,7 +37,6 @@ export class InitHelper {
         const validVersion = await ServerValidation.isLatestVersion();
         if (!validVersion) {
             ChromeHandler.sendMessageAsync("OUTDATED")
-            stateManager.initializing = false;
             throw new AppError("Extension is outdated.", {
                 code: "OUTDATED_VERSION",
             });
@@ -51,43 +47,33 @@ export class InitHelper {
     }
 
     static async searchToken(stateManager) {
-        let authToken;
+        let isNoSession
         try {
-            authToken = await AuthRefreshManager.resolveAccessToken(null, {
-                swallowErrors: false,
-            });
+            await stateManager.api.restoreSession()
         } catch (error) {
             const code =
                 error?.code ||
                 error?.meta?.json?.code ||
                 error?.meta?.json?.error ||
                 error?.meta?.json?.message;
-            const isNoSession =
+            isNoSession =
                 code === "REFRESH_TOKEN_REQUIRED" ||
                 code === "INVALID_SESSION" ||
                 code === "UNAUTHORIZED";
             if (!isNoSession) throw error;
         }
-        if (!authToken) {
-            try {
-                await ChromeHandler.sendMessageAsync("NO_SESSION");
-            } catch (error) {
-                console.error("Failed to notify NO_SESSION state:", error);
-            }
+        if (isNoSession) {
             InitHelper.#showLoginPanelIfPresent();
-            stateManager.initializing = false;
             throw new AppError("No session token found.", {
                 code: "INVALID_TOKEN",
             });
         }
-        return authToken;
     }
 
     static async validateSession(stateManager) {
-        let authToken = await InitHelper.searchToken(stateManager);
+        await InitHelper.searchToken(stateManager);
 
-        stateManager.variables = new Variables({authToken});
-        let dataManager = new DataManager(stateManager.variables);
+        let dataManager = new DataManager(stateManager);
 
         const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
@@ -102,7 +88,6 @@ export class InitHelper {
                 console.error("Failed to notify NO_SESSION state:", error);
             }
             InitHelper.#showLoginPanelIfPresent();
-            stateManager.initializing = false;
             throw new AppError("Session invalid.", {
                 code: "INVALID_TOKEN",
             });
@@ -113,7 +98,7 @@ export class InitHelper {
     }
 
     static async validateWebsocketLimits(stateManager) {
-        const dataManager = new DataManager(stateManager.variables);
+        const dataManager = new DataManager(stateManager);
 
         const limits = await dataManager.getWebsocketLimits();
 
@@ -125,7 +110,6 @@ export class InitHelper {
                 .catch((error) => {
                     ErrorHandler.show(error);
                 });
-            stateManager.initializing = false;
             throw new AppError("Websocket Limit not allowed.", {
                 code: "TOO_MANY_SESSIONS",
                 meta: {
