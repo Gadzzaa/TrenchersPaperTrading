@@ -3,7 +3,7 @@ import {isAuthError} from "../../Server/AuthErrorHelper.js";
 
 export class DataAPI {
     /**
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Array of account data:
      * {
      *  userId: number,
@@ -34,7 +34,7 @@ export class DataAPI {
     }
 
     /**
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @param {number} balance - Balance to reset the account to.
      * @returns {Promise<number>} - Resets left after the reset.
      */
@@ -55,7 +55,7 @@ export class DataAPI {
     }
 
     /**
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<boolean>} - Status of the session validity.
      */
     async checkSession(api) {
@@ -75,7 +75,7 @@ export class DataAPI {
     }
 
     /**
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Object of trade log entries.
      */
     async getTradeLog(api) {
@@ -95,7 +95,7 @@ export class DataAPI {
     }
 
     /**
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>}
      */
     async getWebsocketLimits(api) {
