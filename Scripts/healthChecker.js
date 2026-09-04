@@ -15,6 +15,20 @@ function canPerformAuth(sender) {
     );
 }
 
+function acceptAuthSender(sender, sendResponse, forbiddenMessage) {
+    if (canPerformAuth(sender))
+        return true;
+
+    sendErrorResponse(
+        sendResponse,
+        null,
+        "FORBIDDEN",
+        forbiddenMessage
+    );
+
+    return false;
+}
+
 const Server = new ServerStatus();
 const authCoordinator = new AuthCoordinator();
 
@@ -49,15 +63,8 @@ function server_listeners() {
 function user_listeners() {
     return (msg, _sender, sendResponse) => {
         if (msg.type === "NO_SESSION") {
-            if (!canPerformAuth(_sender)) {
-                sendErrorResponse(
-                    sendResponse,
-                    null,
-                    "FORBIDDEN",
-                    "This sender cannot change session state."
-                );
+            if (!acceptAuthSender(_sender, sendResponse, "This sender cannot change session state."))
                 return;
-            }
 
             authCoordinator
                 .invalidate(msg.payload?.workerRevision)
@@ -80,15 +87,8 @@ function user_listeners() {
             return true;
         }
         if (msg.type === "SESSION_VALID") {
-            if (!canPerformAuth(_sender)) {
-                sendErrorResponse(
-                    sendResponse,
-                    null,
-                    "FORBIDDEN",
-                    "This sender cannot change session state."
-                );
+            if (!acceptAuthSender(_sender, sendResponse, "This sender cannot change session state."))
                 return;
-            }
 
             const reportedRevision =
                 msg.payload?.workerRevision;
@@ -147,16 +147,8 @@ function user_listeners() {
 function auth_listeners() {
     return (msg, _sender, sendResponse) => {
         if (msg.type === "AUTH_REFRESH") {
-            if (!canPerformAuth(_sender)) {
-                sendErrorResponse(
-                    sendResponse,
-                    null,
-                    "FORBIDDEN",
-                    "This sender cannot perform auth operations."
-                );
-
+            if (!acceptAuthSender(_sender, sendResponse, "This sender cannot perform auth operations."))
                 return;
-            }
 
             authCoordinator.refresh()
                 .then(({token, workerRevision}) => {
@@ -188,16 +180,8 @@ function auth_listeners() {
             return true;
         }
         if (msg.type === "AUTH_LOGIN") {
-            if (!canPerformAuth(_sender)) {
-                sendErrorResponse(
-                    sendResponse,
-                    null,
-                    "FORBIDDEN",
-                    "This sender cannot perform auth operations."
-                );
-
+            if (!acceptAuthSender(_sender, sendResponse, "This sender cannot perform auth operations."))
                 return;
-            }
 
             if (!isLoginPayloadValid(msg.payload)) {
                 sendErrorResponse(
@@ -227,16 +211,8 @@ function auth_listeners() {
         }
 
         if (msg.type === "AUTH_REGISTER") {
-            if (!canPerformAuth(_sender)) {
-                sendErrorResponse(
-                    sendResponse,
-                    null,
-                    "FORBIDDEN",
-                    "This sender cannot perform auth operations."
-                );
-
+            if (!acceptAuthSender(_sender, sendResponse, "This sender cannot perform auth operations."))
                 return;
-            }
 
             if (!isRegisterPayloadValid(msg.payload)) {
                 sendErrorResponse(
@@ -264,16 +240,8 @@ function auth_listeners() {
             return true;
         }
         if (msg.type === "AUTH_LOGOUT") {
-            if (!canPerformAuth(_sender)) {
-                sendErrorResponse(
-                    sendResponse,
-                    null,
-                    "FORBIDDEN",
-                    "This sender cannot perform auth operations."
-                );
-
+            if (!acceptAuthSender(_sender, sendResponse, "This sender cannot perform auth operations."))
                 return;
-            }
 
             authCoordinator.logout()
                 .then(({workerRevision}) => {
