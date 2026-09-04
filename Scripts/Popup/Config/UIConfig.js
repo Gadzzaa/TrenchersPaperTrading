@@ -3,6 +3,7 @@ import {UIHelper} from "../Helpers/UIHelper.js";
 import {DialogManager} from "../Core/DialogManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {ChromeHandler} from "../../ChromeHandler.js";
+import {isNoSessionError} from "../../Server/AuthErrorHelper.js";
 
 export class UIConfig {
 
@@ -81,13 +82,7 @@ export class UIConfig {
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
                     stateManager.initialize(true).catch((error) => {
-                        const code = error?.code || error?.cause?.code;
-                        const isExpectedNoSession =
-                            code === "INVALID_TOKEN" ||
-                            code === "INVALID_SESSION" ||
-                            code === "REFRESH_TOKEN_REQUIRED" ||
-                            code === "UNAUTHORIZED";
-                        if (isExpectedNoSession) {
+                        if (isNoSessionError(error)) {
                             const loginPanel = document.getElementById("loginPanel");
                             if (loginPanel) loginPanel.classList.remove("loginHidden");
                             return;

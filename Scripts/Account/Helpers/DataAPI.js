@@ -1,4 +1,5 @@
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
+import {isAuthError} from "../../Server/AuthErrorHelper.js";
 
 export class DataAPI {
     /**
@@ -67,13 +68,8 @@ export class DataAPI {
 
             return Boolean(response.success);
         } catch (error) {
-            const code = error?.code || error?.cause?.code || error?.meta?.json?.code;
-            const authFailureCodes = new Set([
-                "UNAUTHORIZED",
-                "INVALID_SESSION",
-                "AUTHORIZATION_TOKEN_REQUIRED",
-            ]);
-            if (authFailureCodes.has(code)) return false;
+            if (isAuthError(error))
+                return false;
             throw error;
         }
     }

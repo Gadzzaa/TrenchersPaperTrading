@@ -4,6 +4,7 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {ChromeHandler} from "../../ChromeHandler.js";
 import {DialogManager} from "../../Dashboard/Core/DialogManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {isAuthError} from "../../Server/AuthErrorHelper.js";
 
 export class InitHelper {
     static #showLoginPanelIfPresent() {
@@ -47,25 +48,16 @@ export class InitHelper {
     }
 
     static async searchToken(stateManager) {
-        let isNoSession
         try {
             await stateManager.api.restoreSession()
         } catch (error) {
-            const code =
-                error?.code ||
-                error?.meta?.json?.code ||
-                error?.meta?.json?.error ||
-                error?.meta?.json?.message;
-            isNoSession =
-                code === "REFRESH_TOKEN_REQUIRED" ||
-                code === "INVALID_SESSION" ||
-                code === "UNAUTHORIZED";
-            if (!isNoSession) throw error;
-        }
-        if (isNoSession) {
+            if (!isAuthError(error))
+                throw error;
+
             InitHelper.#showLoginPanelIfPresent();
             throw new AppError("No session token found.", {
                 code: "INVALID_TOKEN",
+                cause: error,
             });
         }
     }

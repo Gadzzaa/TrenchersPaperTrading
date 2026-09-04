@@ -1,6 +1,6 @@
 import {API_Request} from "./API_Request.js";
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
-import {AUTH_ERROR_CODES} from "./API_Token_Refresher.js";
+import {isAuthError} from "./AuthErrorHelper.js";
 import {ChromeHandler} from "../ChromeHandler.js";
 
 export class API {
@@ -184,7 +184,7 @@ export class API {
                 return token;
             }).catch(error => {
                 this.#assertSessionCurrent(version);
-                if (AUTH_ERROR_CODES.has(error?.code)) {
+                if (isAuthError(error)) {
                     this.invalidateSession()
 
                     void ChromeHandler.sendMessageAsync("NO_SESSION", {
