@@ -1,5 +1,10 @@
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
+const SUBSCRIPTION_LOOKUP_KEYS = Object.freeze({
+    monthly: "pro_monthly",
+    yearly: "pro_yearly",
+});
+
 export class SubscriptionAPI {
     /**
      * @param {string} type - "monthly" or "yearly".
@@ -7,14 +12,19 @@ export class SubscriptionAPI {
      * @returns {Promise<Object>} - Object containing URL of the checkout session: { url: string }
      */
     async upgradeSubscription(type, api) {
-        let lookup_key;
-        if (type === "monthly") lookup_key = "pro_monthly";
-        else lookup_key = "pro_yearly";
+        const lookupKey = SUBSCRIPTION_LOOKUP_KEYS[type];
+
+        if (!lookupKey) {
+            throw new AppError("Unsupported subscription type.", {
+                code: "INVALID_DATA",
+                meta: {type},
+            });
+        }
 
         const response = await api.createRequest()
             .addEndpoint("/create-checkout-session")
             .addMethod("POST")
-            .addBody({lookup_key})
+            .addBody({lookup_key: lookupKey})
             .build();
 
         if (!response)
