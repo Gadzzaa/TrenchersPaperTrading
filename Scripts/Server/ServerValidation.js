@@ -1,5 +1,5 @@
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
-import {BackendRequest} from "./BackendRequest.js";
+import {API} from "./API.js";
 
 export class ServerValidation {
     static #version = chrome.runtime.getManifest().version;
@@ -8,12 +8,10 @@ export class ServerValidation {
      *  @returns {Promise<boolean>} - true if the current version is the latest, false otherwise
      * */
     static async isLatestVersion() {
-        const response = await new BackendRequest()
+        const response = await new API().createPublicRequest()
             .addEndpoint("/latest?version=" + this.#version)
             .addMethod("GET")
-            .bypassStatusCheck()
-            .bypassCredentials()
-            .addRetries(2)
+            .addRetries()
             .build();
 
         if (!response)
