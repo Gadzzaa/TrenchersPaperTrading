@@ -2,6 +2,7 @@ import {API_Request} from "./API_Request.js";
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
 import {isAuthError} from "./AuthErrorHelper.js";
 import {ChromeHandler} from "../ChromeHandler.js";
+import {isValidWorkerRevision} from "./AuthRevision.js";
 
 export class API {
     #accessToken = "";
@@ -143,7 +144,7 @@ export class API {
         const response = await ChromeHandler.sendMessageAsync("AUTH_REFRESH");
 
         if (response?.ok !== true) {
-            if (Number.isSafeInteger(response?.workerRevision)) {
+            if (response?.workerRevision !== undefined) {
                 this.#requireWorkerRevision(
                     response.workerRevision
                 );
@@ -249,7 +250,7 @@ export class API {
     }
 
     acceptWorkerRevision(incomingRevision) {
-        if (!Number.isSafeInteger(incomingRevision) || incomingRevision < 0)
+        if (!isValidWorkerRevision(incomingRevision))
             return false;
 
         if (incomingRevision < this.#lastWorkerRevision)
@@ -264,7 +265,7 @@ export class API {
     }
 
     #requireWorkerRevision(workerRevision) {
-        if (!Number.isSafeInteger(workerRevision) || workerRevision < 0) {
+        if (!isValidWorkerRevision(workerRevision)) {
             throw new AppError("Worker revision is missing or invalid.", {
                 code: "INVALID_WORKER_REVISION",
             });

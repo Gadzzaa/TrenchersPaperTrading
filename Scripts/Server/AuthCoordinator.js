@@ -2,6 +2,7 @@ import {requestFreshToken} from "./API_Token_Refresher.js";
 import {API_Request} from "./API_Request.js";
 import {AppError} from "../ErrorHandling/Helpers/AppError.js";
 import {ChromeHandler} from "../ChromeHandler.js";
+import {isValidWorkerRevision} from "./AuthRevision.js";
 
 const WORKER_REVISION_KEY = "authWorkerRevision";
 
@@ -193,7 +194,7 @@ export class AuthCoordinator {
 
                     if (revision === undefined) return;
 
-                    if (!Number.isSafeInteger(revision) || revision < 0) {
+                    if (!isValidWorkerRevision(revision)) {
                         throw new AppError("Stored worker revision is invalid.", {
                             code: "INVALID_WORKER_REVISION",
                         });
@@ -233,10 +234,7 @@ export class AuthCoordinator {
     async invalidate(expectedWorkerRevision) {
         await this.#ensureWorkerRevisionReady();
 
-        if (
-            !Number.isSafeInteger(expectedWorkerRevision) ||
-            expectedWorkerRevision < 0
-        ) {
+        if (!isValidWorkerRevision(expectedWorkerRevision)) {
             throw new AppError(
                 "Worker revision is missing or invalid.",
                 {

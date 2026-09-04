@@ -1,16 +1,16 @@
 import {ServerStatus} from "./Server/ServerStatus.js";
 import {ChromeHandler} from "./ChromeHandler.js";
 import {AuthCoordinator} from "./Server/AuthCoordinator.js";
+import {isValidWorkerRevision} from "./Server/AuthRevision.js";
 
 const allowedAuthPages = new Set([
     chrome.runtime.getURL("dashboard.html"),
     chrome.runtime.getURL("popup.html")
 ])
 
-function isTrustedAuthSender(sender) {
+function canPerformAuth(sender) {
     return (
-        sender.id === chrome.runtime.id &&
-        sender.origin === `chrome-extension://${chrome.runtime.id}` &&
+        ChromeHandler.isTrustedInternalSender(sender) &&
         allowedAuthPages.has(sender.url)
     );
 }
@@ -49,7 +49,7 @@ function server_listeners() {
 function user_listeners() {
     return (msg, _sender, sendResponse) => {
         if (msg.type === "NO_SESSION") {
-            if (!isTrustedAuthSender(_sender)) {
+            if (!canPerformAuth(_sender)) {
                 sendResponse({
                     ok: false,
                     error: {
@@ -88,7 +88,7 @@ function user_listeners() {
             return true;
         }
         if (msg.type === "SESSION_VALID") {
-            if (!isTrustedAuthSender(_sender)) {
+            if (!canPerformAuth(_sender)) {
                 sendResponse({
                     ok: false,
                     error: {
@@ -104,10 +104,7 @@ function user_listeners() {
             const reportedRevision =
                 msg.payload?.workerRevision;
 
-            if (
-                !Number.isSafeInteger(reportedRevision) ||
-                reportedRevision < 0
-            ) {
+            if (!isValidWorkerRevision(reportedRevision)) {
                 sendResponse({
                     ok: false,
                     error: {
@@ -169,7 +166,7 @@ function user_listeners() {
 function auth_listeners() {
     return (msg, _sender, sendResponse) => {
         if (msg.type === "AUTH_REFRESH") {
-            if (!isTrustedAuthSender(_sender)) {
+            if (!canPerformAuth(_sender)) {
                 sendResponse({
                     ok: false,
                     error: {
@@ -198,7 +195,7 @@ function auth_listeners() {
 
                     sendResponse({
                         ok: false,
-                        ...(Number.isSafeInteger(workerRevision)
+                        ...(isValidWorkerRevision(workerRevision)
                             ? {workerRevision}
                             : {}),
                         error: {
@@ -211,7 +208,7 @@ function auth_listeners() {
             return true;
         }
         if (msg.type === "AUTH_LOGIN") {
-            if (!isTrustedAuthSender(_sender)) {
+            if (!canPerformAuth(_sender)) {
                 sendResponse({
                     ok: false,
                     error: {
@@ -251,7 +248,7 @@ function auth_listeners() {
         }
 
         if (msg.type === "AUTH_REGISTER") {
-            if (!isTrustedAuthSender(_sender)) {
+            if (!canPerformAuth(_sender)) {
                 sendResponse({
                     ok: false,
                     error: {
@@ -289,7 +286,7 @@ function auth_listeners() {
             return true;
         }
         if (msg.type === "AUTH_LOGOUT") {
-            if (!isTrustedAuthSender(_sender)) {
+            if (!canPerformAuth(_sender)) {
                 sendResponse({
                     ok: false,
                     error: {
