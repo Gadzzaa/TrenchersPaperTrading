@@ -195,17 +195,12 @@ function auth_listeners() {
             }
 
 
-            authCoordinator.login(msg.payload.username, msg.payload.password)
-                .then(({response, workerRevision}) => {
-                    sendResponse({ok: true, response, workerRevision});
-                }).catch(error => {
-                sendErrorResponse(
-                    sendResponse,
-                    error,
-                    "AUTH_LOGIN_FAILED",
-                    "Could not log in."
-                );
-            });
+            respondToSessionOperation(
+                authCoordinator.login(msg.payload.username, msg.payload.password),
+                sendResponse,
+                "AUTH_LOGIN_FAILED",
+                "Could not log in."
+            );
 
             return true;
         }
@@ -225,17 +220,12 @@ function auth_listeners() {
                 return;
             }
 
-            authCoordinator.register(msg.payload.username, msg.payload.password, msg.payload.balance)
-                .then(({response, workerRevision}) => {
-                    sendResponse({ok: true, response, workerRevision});
-                }).catch(error => {
-                sendErrorResponse(
-                    sendResponse,
-                    error,
-                    "AUTH_REGISTER_FAILED",
-                    "Could not register."
-                );
-            });
+            respondToSessionOperation(
+                authCoordinator.register(msg.payload.username, msg.payload.password, msg.payload.balance),
+                sendResponse,
+                "AUTH_REGISTER_FAILED",
+                "Could not register."
+            );
 
             return true;
         }
@@ -292,4 +282,28 @@ function sendErrorResponse(
             message: error?.message || fallbackMessage,
         },
     });
+}
+
+function respondToSessionOperation(
+    operation,
+    sendResponse,
+    fallbackCode,
+    fallbackMessage
+) {
+    operation
+        .then(({response, workerRevision}) => {
+            sendResponse({
+                ok: true,
+                response,
+                workerRevision,
+            });
+        })
+        .catch(error => {
+            sendErrorResponse(
+                sendResponse,
+                error,
+                fallbackCode,
+                fallbackMessage
+            );
+        });
 }
