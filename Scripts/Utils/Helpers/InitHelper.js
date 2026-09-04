@@ -83,7 +83,10 @@ export class InitHelper {
                 console.error("Failed to clear invalid session token:", error);
             }
             try {
-                await ChromeHandler.sendMessageAsync("NO_SESSION");
+                await ChromeHandler.sendMessageAsync("NO_SESSION", {
+                    workerRevision:
+                        stateManager.api.getWorkerRevision(),
+                });
             } catch (error) {
                 console.error("Failed to notify NO_SESSION state:", error);
             }

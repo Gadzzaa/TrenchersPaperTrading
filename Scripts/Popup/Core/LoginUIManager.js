@@ -18,7 +18,9 @@ export class LoginUIManager {
                 await LoginUILogic.login(stateManager);
                 await AccountLoader.loadData(stateManager)
                 FooterHelper.focusDefaultButton();
-                await ChromeHandler.sendMessageAsync("SESSION_VALID");
+                await ChromeHandler.sendMessageAsync("SESSION_VALID", {
+                    workerRevision: stateManager.api.getWorkerRevision(),
+                });
             } catch (err) {
                 ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
@@ -29,10 +31,15 @@ export class LoginUIManager {
         registerButton.addEventListener("click", async () => {
             const registerInterval = GlobalUIHelper.startLoadingDots(registerButton);
             try {
-                await LoginUILogic.register(stateManager);
+                const registered = await LoginUILogic.register(stateManager);
+                if (!registered)
+                    return;
+
                 await AccountLoader.loadData(stateManager);
                 FooterHelper.focusDefaultButton();
-                await ChromeHandler.sendMessageAsync("SESSION_VALID");
+                await ChromeHandler.sendMessageAsync("SESSION_VALID", {
+                    workerRevision: stateManager.api.getWorkerRevision(),
+                });
             } catch (err) {
                 ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
@@ -46,7 +53,6 @@ export class LoginUIManager {
                 await stateManager.api.logout();
                 stateManager.clearUI();
                 FooterHelper.focusDefaultButton();
-                await ChromeHandler.sendMessageAsync("NO_SESSION");
             } catch (err) {
                 ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
