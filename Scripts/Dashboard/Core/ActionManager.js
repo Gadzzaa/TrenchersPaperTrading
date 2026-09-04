@@ -66,11 +66,7 @@ export class ActionManager {
         ActionHelper.loadAndValidateBasicConstants(Constants, stateManager);
 
         if (Constants.action === "buy")
-            await ActionHelper.handleBuy(
-                Constants.transactionManager,
-                Constants.poolAddress,
-                stateManager,
-            );
+            await ActionHelper.handleBuy(Constants.transactionManager, stateManager);
         if (Constants.action === "sell")
             await ActionHelper.handleSell(Constants.transactionManager, stateManager);
 

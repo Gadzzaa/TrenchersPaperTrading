@@ -7,22 +7,11 @@ export class ActionHelper {
     /**
      * Executes buy transaction flow.
      * @param {TransactionManager} transactionManager
-     * @param {string} poolAddress
      * @param {StateManager} stateManager
      * @returns {Promise<void>}
      */
-    static async handleBuy(transactionManager, poolAddress, stateManager) {
+    static async handleBuy(transactionManager, stateManager) {
         const result = await transactionManager.buyToken(stateManager);
-        if (!result?.success)
-            throw new AppError(result.error || "Unknown error occurred.", {
-                code: "BUY_FAILED",
-                meta: {
-                    transactionResult: result,
-                    transactionManager,
-                    poolAddress,
-                    stateManager,
-                },
-            });
 
         ActionHelper.confirmAction("buy", result.solSpent, result.tokenData.symbol);
     }
@@ -35,15 +24,6 @@ export class ActionHelper {
      */
     static async handleSell(transactionManager, stateManager) {
         const result = await transactionManager.sellToken(stateManager);
-        if (!result?.success)
-            throw new AppError(result.error || "Unknown error occurred.", {
-                code: "SELL_FAILED",
-                meta: {
-                    transactionResult: result,
-                    transactionManager,
-                    stateManager,
-                },
-            });
 
         ActionHelper.confirmAction("sell", result.solReceived);
     }
