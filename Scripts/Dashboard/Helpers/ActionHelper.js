@@ -102,7 +102,7 @@ export class ActionHelper {
 
         Constants.transactionManager = new TransactionManager(
             {poolAddress: Constants.poolAddress, amount: Constants.dataAmount},
-            stateManager.variables,
+            stateManager,
         );
     }
 }

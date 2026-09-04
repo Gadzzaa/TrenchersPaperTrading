@@ -44,7 +44,7 @@ export async function updateBalanceUI(force = false, stateManager) {
 function loadConstants(Constants, stateManager) {
     Constants.transactionManager = new TransactionManager(
         {},
-        stateManager.variables,
+        stateManager,
     );
     Constants.solBalance = document.getElementById("balanceValue");
     Constants.cache = localStorage.getItem("cachedBalance");
