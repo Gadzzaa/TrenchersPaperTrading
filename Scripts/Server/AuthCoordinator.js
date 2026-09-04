@@ -18,10 +18,7 @@ export class AuthCoordinator {
     async refresh() {
         await this.#ensureWorkerRevisionReady();
 
-        if (this.#loggingOut)
-            throw new AppError("Session is logging out", {
-                code: "SESSION_ENDING",
-            });
+        this.#throwIfLoggingOut();
 
         if (this.#sessionInFlight) {
             throw new AppError("Another authentication operation is running.", {
@@ -75,11 +72,7 @@ export class AuthCoordinator {
     async logout() {
         await this.#ensureWorkerRevisionReady();
 
-        if (this.#loggingOut) {
-            throw new AppError("Session is logging out.", {
-                code: "SESSION_ENDING",
-            });
-        }
+        this.#throwIfLoggingOut()
 
         this.#loggingOut = true;
         this.#sessionVersion++;
@@ -113,20 +106,10 @@ export class AuthCoordinator {
     async #runSessionOperation(endpoint, body) {
         await this.#ensureWorkerRevisionReady();
 
-        if (this.#loggingOut) {
-            throw new AppError("Session is logging out", {
-                code: "SESSION_ENDING",
-            });
-        }
+        this.#throwIfLoggingOut()
 
-        if (this.#sessionInFlight || this.#refreshInFlight) {
-            throw new AppError(
-                "Another authentication operation is running.",
-                {
-                    code: "AUTH_BUSY",
-                }
-            );
-        }
+        this.#throwIfAuthBusy()
+
 
         const operation =
             this.#establishSession(endpoint, body);
@@ -253,14 +236,7 @@ export class AuthCoordinator {
             };
         }
 
-        if (this.#sessionInFlight || this.#refreshInFlight) {
-            throw new AppError(
-                "Another authentication operation is running.",
-                {
-                    code: "AUTH_BUSY",
-                }
-            );
-        }
+        this.#throwIfAuthBusy()
 
         const version = this.#sessionVersion;
 
@@ -294,5 +270,24 @@ export class AuthCoordinator {
 
         this.#sessionInFlight = operation;
         return operation;
+    }
+
+    #throwIfLoggingOut() {
+        if (this.#loggingOut) {
+            throw new AppError("Session is logging out.", {
+                code: "SESSION_ENDING",
+            });
+        }
+    }
+
+    #throwIfAuthBusy() {
+        if (this.#sessionInFlight || this.#refreshInFlight) {
+            throw new AppError(
+                "Another authentication operation is running.",
+                {
+                    code: "AUTH_BUSY",
+                }
+            );
+        }
     }
 }
