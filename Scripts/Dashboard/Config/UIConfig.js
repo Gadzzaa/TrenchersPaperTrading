@@ -57,7 +57,7 @@ export class UIConfig {
 
             if (message.type === "initDashboard") {
                 console.log("User registered, initializing dashboard...");
-                stateManager.initialize();
+                stateManager.initialize().catch(handleInitializationError);
                 sendResponse({ok: true})
                 return true;
             }
@@ -83,10 +83,7 @@ export class UIConfig {
 
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
-                    stateManager.initialize(true).catch((error) => {
-                        ErrorHandler.show(error);
-                    });
-                    sendResponse({ok: true});
+                    stateManager.initialize(true).catch(handleInitializationError)
                 } else {
                     stateManager.disconnect();
                     new DialogManager(stateManager)
@@ -96,11 +93,9 @@ export class UIConfig {
                         .catch((error) => {
                             ErrorHandler.show(error);
                         })
-                        .finally(() => {
-                            sendResponse({ok: true});
-                        });
                 }
 
+                sendResponse({ok: true});
                 return true;
             }
 
@@ -112,28 +107,39 @@ export class UIConfig {
                     .catch((error) => {
                         ErrorHandler.show(error);
                     })
-                    .finally(() => {
-                        sendResponse({ok: true});
-                    });
+                sendResponse({ok: true});
                 return true;
             }
 
             if (message.type === "NO_SESSION_UI") {
+                stateManager.api.invalidateSession()
+                stateManager.disconnect();
                 new DialogManager(stateManager)
                     .addMessage("Please log in to trade")
                     .addType("no-session")
                     .show()
                     .then((value) => {
                         if (value?.dontRestart) return;
-                        stateManager.disconnect()
-                        stateManager.initialize(true)
+                        return stateManager.initialize(true).catch(handleInitializationError)
                     }).catch((error) => {
                     ErrorHandler.show(error);
-                }).finally(() => {
-                    sendResponse({ok: true});
                 });
+
+                sendResponse({ok: true});
                 return true;
             }
         };
     }
+}
+
+function handleInitializationError(error) {
+    if (
+        error?.code === "INIT_CANCELLED" ||
+        error?.code === "CONNECTION_CANCELLED" ||
+        error?.code === "SESSION_CHANGED"
+    ) {
+        return;
+    }
+
+    ErrorHandler.show(error);
 }
