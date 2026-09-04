@@ -3,7 +3,7 @@ import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 export class TransactionAPI {
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *   success: boolean,
@@ -14,28 +14,13 @@ export class TransactionAPI {
      *   tokenData: Object
      * }
      */
-    async buy(payload, api) {
-        const response = await api.createRequest()
-            .addEndpoint("/buy")
-            .addMethod("POST")
-            .addBody(payload)
-            .build();
-
-        if (!response?.success)
-            throw new AppError(response.error || "Unknown error occured.", {
-                code: "BUY_FAILED",
-                meta: {
-                    payload,
-                    response,
-                },
-            });
-
-        return response;
+    buy(payload, api) {
+        return this.#executeTrade("buy", payload, api);
     }
 
     /**
      * @param {Object} payload - Contains transaction details.
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Response object with the following structure:
      * {
      *  success: boolean,
@@ -44,27 +29,12 @@ export class TransactionAPI {
      *  effectivePrice: number
      * }
      */
-    async sell(payload, api) {
-        const response = await api.createRequest()
-            .addEndpoint("/sell")
-            .addMethod("POST")
-            .addBody(payload)
-            .build();
-
-        if (!response?.success)
-            throw new AppError(response.error || "Unknown error occured.", {
-                code: "SELL_FAILED",
-                meta: {
-                    payload,
-                    response,
-                },
-            });
-
-        return response;
+    sell(payload, api) {
+        return this.#executeTrade("sell", payload, api);
     }
 
     /**
-     * @param {import("./API.js").API} api
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Object containing user's portfolio data.
      */
     async getPortfolio(api) {
@@ -79,6 +49,26 @@ export class TransactionAPI {
                 code: "NO_DATA",
                 meta: {response},
             });
+
+        return response;
+    }
+
+    async #executeTrade(action, payload, api) {
+        const response = await api.createRequest()
+            .addEndpoint(`/${action}`)
+            .addMethod("POST")
+            .addBody(payload)
+            .build();
+
+        if (!response?.success) {
+            throw new AppError(
+                response?.error || "Unknown error occurred.",
+                {
+                    code: `${action.toUpperCase()}_FAILED`,
+                    meta: {action, payload, response},
+                }
+            );
+        }
 
         return response;
     }
