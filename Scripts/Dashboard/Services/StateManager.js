@@ -4,7 +4,6 @@ import {startInterval} from "../Helpers/IntervalHelper.js";
 import {PNLService} from "./PNLService.js";
 import {UIConfig} from "../Config/UIConfig.js"
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
-import {ChromeHandler} from "../../ChromeHandler.js"
 import {API} from "../../Server/API.js"
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
@@ -106,6 +105,5 @@ export class StateManager {
     async logout() {
         this.disconnect();
         await this.api.logout()
-        await ChromeHandler.sendMessageAsync("NO_SESSION");
     }
 }
