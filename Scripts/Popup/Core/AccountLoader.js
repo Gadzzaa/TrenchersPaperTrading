@@ -5,7 +5,7 @@ import {DataManager} from "../../Account/Core/DataManager.js";
 
 export class AccountLoader {
     static async loadData(stateManager) {
-        let dataManager = new DataManager(stateManager.variables);
+        let dataManager = new DataManager(stateManager);
         let data = await dataManager.fetchAccountData();
         stateManager.clearUI();
         AccountLoader.#validateData(data);
@@ -99,7 +99,7 @@ export class AccountLoader {
     }
 
     static async #loadSettings(stateManager) {
-        let settingsManager = new SettingsManager(stateManager.variables);
+        let settingsManager = new SettingsManager(stateManager);
         try {
             const settings = await settingsManager.getSettings();
             AccountHelper.applyPremiumSetting("saveWindowPos", settings.saveWindowPos, false);
