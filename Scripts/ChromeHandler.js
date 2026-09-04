@@ -1,4 +1,12 @@
 export class ChromeHandler {
+    static isTrustedInternalSender(sender) {
+        return (
+            sender?.id === chrome.runtime.id &&
+            sender?.origin ===
+            `chrome-extension://${chrome.runtime.id}`
+        );
+    }
+
     static sendMessageAsync(type, payload = null) {
         return new Promise(async (resolve, reject) => {
             try {
