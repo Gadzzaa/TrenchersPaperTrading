@@ -1,4 +1,4 @@
-import {ChromeHandler} from "../../ChromeHandler.js";
+import {acceptAuthNotification} from "../../Server/AuthNotification.js";
 
 export class DialogHelper {
 
@@ -20,15 +20,10 @@ export class DialogHelper {
     static handleNoSession(stateManager) {
         return new Promise(resolve => {
             const chromeListener = (message, sender) => {
-                if (message.origin !== "TrenchersPaperTrading") return;
-                if (message.type !== "SESSION_VALID_UI") return;
-                if (!ChromeHandler.isTrustedInternalSender(sender)) {
+                if (message.type !== "SESSION_VALID_UI")
                     return;
-                }
 
-                const workerRevision = message.payload?.workerRevision;
-
-                if (!stateManager.api.acceptWorkerRevision(workerRevision)) {
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
                     return;
                 }
 

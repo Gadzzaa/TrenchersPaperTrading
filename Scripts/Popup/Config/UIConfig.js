@@ -2,8 +2,8 @@ import {UILoader} from "../Core/UILoader.js"
 import {UIHelper} from "../Helpers/UIHelper.js";
 import {DialogManager} from "../Core/DialogManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
-import {ChromeHandler} from "../../ChromeHandler.js";
 import {isNoSessionError} from "../../Server/AuthErrorHelper.js";
+import {acceptAuthNotification} from "../../Server/AuthNotification.js";
 
 export class UIConfig {
 
@@ -64,20 +64,8 @@ export class UIConfig {
     }
 
     static createRuntimeMessageListener(stateManager) {
-        return (message, _sender, sendResponse) => {
+        return (message, sender, sendResponse) => {
             if (message.origin !== "TrenchersPaperTrading") return true;
-
-            const isSessionNotification =
-                message.type === "NO_SESSION_UI" ||
-                message.type === "SESSION_VALID_UI";
-
-            if (
-                isSessionNotification &&
-                !ChromeHandler.isTrustedInternalSender(_sender)
-            ) {
-                sendResponse({ok: true, ignored: true});
-                return true;
-            }
 
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
@@ -126,9 +114,7 @@ export class UIConfig {
             }
 
             if (message.type === "NO_SESSION_UI") {
-                const workerRevision = message.payload?.workerRevision
-
-                if (!stateManager.api.acceptWorkerRevision(workerRevision)) {
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
                     sendResponse({ok: true, ignored: true});
                     return true;
                 }
@@ -143,9 +129,7 @@ export class UIConfig {
             }
 
             if (message.type === "SESSION_VALID_UI") {
-                const workerRevision = message.payload?.workerRevision
-
-                if (!stateManager.api.acceptWorkerRevision(workerRevision)) {
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
                     sendResponse({ok: true, ignored: true});
                     return true;
                 }
