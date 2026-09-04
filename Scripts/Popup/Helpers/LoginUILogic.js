@@ -6,6 +6,7 @@ export class LoginUILogic {
         let passwordInput = document.getElementById("formPassword");
 
         await stateManager.api.login(usernameInput.value, passwordInput.value);
+        return true
     }
 
     static async register(stateManager) {
@@ -13,12 +14,13 @@ export class LoginUILogic {
         let passwordInput = document.getElementById("formPassword");
 
         let amount = await DialogsValidators.askStartupBalance(stateManager);
-        if (!amount) return;
+        if (!amount) return false;
 
         let agreedToTOS = await DialogsValidators.askTOSAgreement(stateManager);
-        if (!agreedToTOS) return;
+        if (!agreedToTOS) return false;
 
         await stateManager.api.register(usernameInput.value, passwordInput.value, amount);
+        return true
     }
 
     static togglePasswordVisibility(button) {
