@@ -44,7 +44,7 @@ export class SettingsUILogic {
             pnlRefreshInterval: slider ? slider.value * 100 : 500,
         };
 
-        let settingsManager = new SettingsManager(stateManager.variables);
+        let settingsManager = new SettingsManager(stateManager);
         settingsManager
             .saveSettings(settings)
             .then(() => {

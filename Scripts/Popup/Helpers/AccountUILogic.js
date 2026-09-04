@@ -13,7 +13,7 @@ export class AccountUILogic {
         let confirmed = await DialogsValidators.askResetConfirmation(stateManager);
         if (!confirmed) return;
 
-        let dataManager = new DataManager(stateManager.variables);
+        let dataManager = new DataManager(stateManager);
 
         await dataManager
             .resetAccount(amount)
@@ -28,7 +28,7 @@ export class AccountUILogic {
 
 
     static async upgradeSubscription(plan, stateManager) {
-        let subscriptionManager = new SubscriptionManager(stateManager.variables);
+        let subscriptionManager = new SubscriptionManager(stateManager);
         await subscriptionManager
             .upgradeSubscription(plan)
             .catch((err) => {
@@ -40,7 +40,7 @@ export class AccountUILogic {
     }
 
     static async manageSubscription(stateManager) {
-        let subscriptionManager = new SubscriptionManager(stateManager.variables);
+        let subscriptionManager = new SubscriptionManager(stateManager);
         await subscriptionManager.manageSubscription().catch((err) => {
             throw ErrorHandler.log(err);
         }).finally
