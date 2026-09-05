@@ -9,11 +9,11 @@ export class PresetManager {
      * @param {StateManager} stateManager
      */
     static initUI(stateManager) {
-        let currentPreset = PresetManager.getUsingPreset();
+        const currentPreset = PresetManager.getUsingPreset();
         PresetManager.applyPreset(currentPreset, stateManager);
 
         const presetButtons = document.querySelectorAll("#Presets .preset");
-        if (!presetButtons)
+        if (presetButtons.length === 0)
             throw new AppError("Preset buttons not found", {
                 code: "PRESET_NOT_FOUND",
                 meta: {
@@ -34,10 +34,10 @@ export class PresetManager {
      * @param {StateManager} stateManager
      */
     static applyPreset(presetName, stateManager) {
-        let prevPresetName = PresetManager.getUsingPreset();
-        let prevPresetData = PresetManager.getPresetData(prevPresetName);
+        const prevPresetName = PresetManager.getUsingPreset();
+        const prevPresetData = PresetManager.getPresetData(prevPresetName);
         try {
-            let presetData = PresetManager.getPresetData(presetName);
+            const presetData = PresetManager.getPresetData(presetName);
             PresetHelper.applyPreset(presetName, presetData, stateManager);
         } catch (error) {
             PresetHelper.applyPreset(prevPresetName, prevPresetData, stateManager);
