@@ -1,6 +1,4 @@
 import {TransactionAPI} from "../Helpers/TransactionAPI.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
-import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
 export class TransactionManager {
     #poolAddress;
@@ -40,47 +38,43 @@ export class TransactionManager {
      *  }
      * */
     async buyToken(stateManager) {
-        try {
-            const payload = {
-                poolAddress: this.#poolAddress,
-                solAmount: this.#amount,
-                slippage: this.#slippagePercentage,
-                fee: this.#feeAmount,
-            };
-            const response = await this.transactionAPI.buy(payload, this.api);
-            const activePoolAddress = response.poolAddress || this.#poolAddress;
+        const payload = {
+            poolAddress: this.#poolAddress,
+            solAmount: this.#amount,
+            slippage: this.#slippagePercentage,
+            fee: this.#feeAmount,
+        };
+        const response = await this.transactionAPI.buy(payload, this.api);
+        const activePoolAddress = response.poolAddress || this.#poolAddress;
 
-            if (activePoolAddress !== this.#poolAddress) {
-                stateManager.pnlService.pnlDataManager.replacePoolAddress(
-                    this.#poolAddress,
-                    activePoolAddress,
-                    response.pnlData,
-                );
-                // Subscribe first. WebSocket messages are ordered, so the
-                // subsequent unwatch removes only the old alias without ever
-                // leaving the live pool unsubscribed during the handoff.
-                stateManager.pnlService.poolWatcher.watch(activePoolAddress, response.pnlData);
-                stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
-                this.#poolAddress = activePoolAddress;
-            } else {
-                stateManager.pnlService.pnlDataManager.add(activePoolAddress, response.pnlData);
-            }
-
-            await stateManager.pnlService.syncTradeLog()
-
-            stateManager.pnlService.setActiveToken(activePoolAddress);
-            stateManager.pnlService.update(true)
-
-            return {
-                success: response.success,
-                tokensReceived: response.tokensReceived,
-                solSpent: response.solSpent,
-                effectivePrice: response.effectivePrice,
-                tokenData: response.tokenData,
-            };
-        } catch (error) {
-            throw ErrorHandler.log(error);
+        if (activePoolAddress !== this.#poolAddress) {
+            stateManager.pnlService.pnlDataManager.replacePoolAddress(
+                this.#poolAddress,
+                activePoolAddress,
+                response.pnlData,
+            );
+            // Subscribe first. WebSocket messages are ordered, so the
+            // subsequent unwatch removes only the old alias without ever
+            // leaving the live pool unsubscribed during the handoff.
+            stateManager.pnlService.poolWatcher.watch(activePoolAddress, response.pnlData);
+            stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
+            this.#poolAddress = activePoolAddress;
+        } else {
+            stateManager.pnlService.pnlDataManager.add(activePoolAddress, response.pnlData);
         }
+
+        await stateManager.pnlService.syncTradeLog()
+
+        stateManager.pnlService.setActiveToken(activePoolAddress);
+        stateManager.pnlService.update(true)
+
+        return {
+            success: response.success,
+            tokensReceived: response.tokensReceived,
+            solSpent: response.solSpent,
+            effectivePrice: response.effectivePrice,
+            tokenData: response.tokenData,
+        };
     }
 
     /**
@@ -93,53 +87,45 @@ export class TransactionManager {
      *  }
      * */
     async sellToken(stateManager) {
-        try {
-            const payload = {
-                poolAddress: this.#poolAddress,
-                sellPercentage: this.#amount,
-                slippage: this.#slippagePercentage,
-                fee: this.#feeAmount,
-            };
+        const payload = {
+            poolAddress: this.#poolAddress,
+            sellPercentage: this.#amount,
+            slippage: this.#slippagePercentage,
+            fee: this.#feeAmount,
+        };
 
-            const response = await this.transactionAPI.sell(payload, this.api);
-            const activePoolAddress = response.poolAddress || this.#poolAddress;
+        const response = await this.transactionAPI.sell(payload, this.api);
+        const activePoolAddress = response.poolAddress || this.#poolAddress;
 
-            await stateManager.pnlService.syncTradeLog()
+        await stateManager.pnlService.syncTradeLog()
 
-            if (this.#amount === 100)
-                stateManager.pnlService.poolWatcher.unwatch(activePoolAddress);
-            else {
-                if (activePoolAddress !== this.#poolAddress) {
-                    stateManager.pnlService.poolWatcher.watch(
-                        activePoolAddress,
-                        stateManager.pnlService.pnlDataManager.get(activePoolAddress),
-                    );
-                    stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
-                    this.#poolAddress = activePoolAddress;
-                    stateManager.pnlService.setActiveToken(activePoolAddress);
-                }
+        if (this.#amount === 100)
+            stateManager.pnlService.poolWatcher.unwatch(activePoolAddress);
+        else {
+            if (activePoolAddress !== this.#poolAddress) {
+                stateManager.pnlService.poolWatcher.watch(
+                    activePoolAddress,
+                    stateManager.pnlService.pnlDataManager.get(activePoolAddress),
+                );
+                stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
+                this.#poolAddress = activePoolAddress;
+                stateManager.pnlService.setActiveToken(activePoolAddress);
             }
-            stateManager.pnlService.update(true)
-
-            return {
-                success: response.success,
-                solReceived: response.solReceived,
-                tokensSold: response.tokensSold,
-                effectivePrice: response.effectivePrice,
-            };
-        } catch (error) {
-            throw ErrorHandler.log(error);
         }
+        stateManager.pnlService.update(true)
+
+        return {
+            success: response.success,
+            solReceived: response.solReceived,
+            tokensSold: response.tokensSold,
+            effectivePrice: response.effectivePrice,
+        };
     }
 
     /**
      * @returns {Promise<Object>} - Object containing user's portfolio data.
      * */
-    async getPortfolio() {
-        try {
-            return await this.transactionAPI.getPortfolio(this.api);
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    getPortfolio() {
+        return this.transactionAPI.getPortfolio(this.api);
     }
 }
