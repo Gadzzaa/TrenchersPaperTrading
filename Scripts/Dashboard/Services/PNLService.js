@@ -6,7 +6,6 @@ import {WebsocketManager} from "../Core/WebsocketManager.js";
 
 import {DataManager} from "../../Account/Core/DataManager.js";
 import {StorageManager} from "../../Utils/Core/StorageManager.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class PNLService {
     constructor(stateManager) {
@@ -23,17 +22,13 @@ export class PNLService {
     }
 
     async start() {
-        try {
-            await this.wsManager.connect((data) => {
-                this.poolWatcher.updatePool(data);
-                this.update();
-            })
-            console.log(
-                "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
-            );
-        } catch (err) {
-            throw ErrorHandler.log(err);
-        }
+        await this.wsManager.connect((data) => {
+            this.poolWatcher.updatePool(data);
+            this.update();
+        })
+        console.log(
+            "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
+        );
     }
 
     stop() {
