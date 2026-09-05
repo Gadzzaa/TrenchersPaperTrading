@@ -3,6 +3,7 @@ import {PnlUIController} from "../Core/PnlUIController.js";
 import {PoolWatcher} from "../Core/PoolWatcher.js";
 import {PositionManager} from "../Core/PositionManager.js";
 import {WebsocketManager} from "../Core/WebsocketManager.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 import {DataManager} from "../../Account/Core/DataManager.js";
 import {StorageManager} from "../../Utils/Core/StorageManager.js";
@@ -63,12 +64,11 @@ export class PNLService {
 
     setActiveToken(poolAddress) {
         this.positionManager.setActive(poolAddress);
-        let pnlData = this.pnlDataManager.get(poolAddress);
 
-        StorageManager.getFromStorage("pnlRefreshInterval").then((sliderValue) => {
-            if (!sliderValue) sliderValue = 500;
-            this.poolWatcher.watch(poolAddress, pnlData);
-            this.refreshTime = sliderValue;
+        const pnlData = this.pnlDataManager.get(poolAddress);
+
+        void this.#configureActivePool(poolAddress, pnlData).catch((error) => {
+            ErrorHandler.log(error, {poolAddress});
         });
     }
 
@@ -92,5 +92,27 @@ export class PNLService {
         this.positionManager.clear();
         this.ui.clear();
         if (global) localStorage.removeItem("openPositions");
+    }
+
+    async #configureActivePool(poolAddress, pnlData) {
+        let refreshTime = 500;
+
+        try {
+            const storedRefreshTime =
+                await StorageManager.getFromStorage("pnlRefreshInterval");
+
+            const parsedRefreshTime = Number(storedRefreshTime);
+
+            if (Number.isFinite(parsedRefreshTime) && parsedRefreshTime > 0)
+                refreshTime = parsedRefreshTime;
+        } catch (error) {
+            ErrorHandler.log(error, {poolAddress});
+        }
+
+        if (this.positionManager.currentPool !== poolAddress)
+            return;
+
+        this.refreshTime = refreshTime;
+        this.poolWatcher.watch(poolAddress, pnlData);
     }
 }
