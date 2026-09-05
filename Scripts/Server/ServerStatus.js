@@ -67,8 +67,7 @@ export class ServerStatus {
      * @returns {Promise<Boolean> | boolean} - Returns the current server status
      */
     async getStatus() {
-        if (typeof this.status !== "boolean")
-            await this.startAndPing();
+        await this.ping();
         return this.status;
     }
 }
