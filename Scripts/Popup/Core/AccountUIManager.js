@@ -1,6 +1,7 @@
 import {AccountUILogic} from "../Helpers/AccountUILogic.js";
 import {LoadingUIHelper} from "../../Utils/Helpers/LoadingUIHelper.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {isNoSessionError} from "../../Server/AuthErrorHelper.js";
 
 export class AccountUIManager {
     static createButtons(stateManager) {
@@ -14,6 +15,7 @@ export class AccountUIManager {
         resetButton.addEventListener("click", () => {
             void AccountUIManager.#runButtonAction(
                 resetButton,
+                stateManager,
                 () => AccountUILogic.resetAccount(stateManager),
             );
         });
@@ -25,6 +27,7 @@ export class AccountUIManager {
         monthlyButton.addEventListener("click", () => {
             void AccountUIManager.#runButtonAction(
                 monthlyButton,
+                stateManager,
                 () => AccountUILogic.upgradeSubscription("monthly", stateManager),
             )
         });
@@ -32,6 +35,7 @@ export class AccountUIManager {
         yearlyButton.addEventListener("click", () => {
             void AccountUIManager.#runButtonAction(
                 yearlyButton,
+                stateManager,
                 () => AccountUILogic.upgradeSubscription("yearly", stateManager),
             )
         });
@@ -39,6 +43,7 @@ export class AccountUIManager {
         manageButton.addEventListener("click", () => {
             void AccountUIManager.#runButtonAction(
                 manageButton,
+                stateManager,
                 () => AccountUILogic.manageSubscription(stateManager),
             )
         });
@@ -50,15 +55,22 @@ export class AccountUIManager {
 
     /**
      * @param {HTMLButtonElement} button
+     * @param {StateManager} stateManager
      * @param {() => Promise<void>} action
      */
-    static async #runButtonAction(button, action) {
+    static async #runButtonAction(button, stateManager, action) {
         const loadingInterval = LoadingUIHelper.startLoadingDots(button);
 
         try {
             await action();
         } catch (error) {
-            ErrorHandler.show(error);
+            if (isNoSessionError(error)) return;
+
+            ErrorHandler.show(
+                error,
+                {show: false},
+                {show: true, stateManager},
+            );
         } finally {
             LoadingUIHelper.stopLoadingDots(button, loadingInterval);
         }
