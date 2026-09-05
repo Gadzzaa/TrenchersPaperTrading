@@ -119,7 +119,7 @@ export class UIConfig {
                 }
 
                 stateManager.api.invalidateSession()
-                stateManager.disconnect();
+                stateManager.disconnect({clearSessionData: true});
 
                 new DialogManager(stateManager)
                     .addMessage("Please log in to trade")

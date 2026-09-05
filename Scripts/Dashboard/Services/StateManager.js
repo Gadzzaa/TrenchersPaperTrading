@@ -83,7 +83,7 @@ export class StateManager {
         }
     }
 
-    disconnect() {
+    disconnect({clearSessionData = false} = {}) {
         ++this.#initAttemptId;
 
         this.initializing = false;
@@ -99,10 +99,15 @@ export class StateManager {
         document.body.style.pointerEvents = "none";
         localStorage.removeItem("cachedBalance");
         localStorage.removeItem("cachedBalanceTime");
+
+        if (clearSessionData) {
+            localStorage.removeItem("openPositions");
+            localStorage.removeItem("pnlDataArray");
+        }
     }
 
     async logout() {
-        this.disconnect();
+        this.disconnect({clearSessionData: true});
         await this.api.logout()
     }
 }
