@@ -45,10 +45,10 @@ export class StateManager {
         try {
             InitHelper.loadSettings(UIConfig);
 
-            await InitHelper.validateHealth(this);
+            await InitHelper.validateHealth();
             assertCurrent();
 
-            await InitHelper.validateVersion(this);
+            await InitHelper.validateVersion();
             assertCurrent();
 
             await InitHelper.validateSession(this);

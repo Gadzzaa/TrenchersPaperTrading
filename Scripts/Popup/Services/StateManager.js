@@ -30,8 +30,8 @@ export class StateManager {
 
             InitHelper.loadSettings(UIConfig);
 
-            await InitHelper.validateHealth(this);
-            await InitHelper.validateVersion(this)
+            await InitHelper.validateHealth();
+            await InitHelper.validateVersion()
 
             document.body.style.removeProperty("pointer-events");
 

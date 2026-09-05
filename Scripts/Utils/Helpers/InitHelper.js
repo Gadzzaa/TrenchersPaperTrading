@@ -22,8 +22,8 @@ export class InitHelper {
         });
     }
 
-    static async validateHealth(stateManager) {
-        let healthy = await ChromeHandler.sendMessageAsync("HEALTH_PING")
+    static async validateHealth() {
+        const healthy = await ChromeHandler.sendMessageAsync("HEALTH_PING")
         if (!healthy) {
             throw new AppError("Health check failed.", {
                 code: "HEALTH_CHECK_FAILED",
@@ -34,17 +34,19 @@ export class InitHelper {
         )
     }
 
-    static async validateVersion(stateManager) {
+    static async validateVersion() {
         const validVersion = await ServerValidation.isLatestVersion();
         if (!validVersion) {
-            ChromeHandler.sendMessageAsync("OUTDATED")
+            ChromeHandler.sendMessage("OUTDATED")
+
             throw new AppError("Extension is outdated.", {
                 code: "OUTDATED_VERSION",
             });
-        } else
-            console.log(
-                "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
-            );
+        }
+
+        console.log(
+            "[TrenchersPT] 🟢 Version check passed. Extension is up to date.",
+        );
     }
 
     static async searchToken(stateManager) {
