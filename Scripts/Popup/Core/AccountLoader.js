@@ -39,8 +39,8 @@ export class AccountLoader {
         if (usernameText.textContent !== data.username) usernameText.textContent = data.username;
 
         solBalance.textContent = `${data.portfolio.solBalance.toFixed(2)} SOL`;
-        localStorage.setItem("cachedSolBalance", data.portfolio.solBalance.toFixed(2));
-        localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
+        localStorage.setItem("cachedBalance", data.portfolio.solBalance.toFixed(2));
+        localStorage.setItem("cachedBalanceTime", Date.now().toString());
 
         pnlData.textContent = `${data.realizedPNL >= 0 ? "+" : ""}${data.realizedPNL.toFixed(2)} SOL / 24h`;
 
