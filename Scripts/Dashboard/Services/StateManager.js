@@ -27,7 +27,7 @@ export class StateManager {
 
     async initialize(force) {
         if (force) {
-            this.disconnect()
+            this.stopDashboard();
         } else if ((this.initializing || this.running)) return;
 
         const attemptId = ++this.#initAttemptId
@@ -83,7 +83,21 @@ export class StateManager {
         }
     }
 
-    disconnect({clearSessionData = false} = {}) {
+    stopDashboard() {
+        this.#teardownRoutine();
+    }
+
+    endDashboardSession() {
+        this.#teardownRoutine();
+        this.#clearPersistentSessionData();
+    }
+
+    async logout() {
+        this.endDashboardSession();
+        await this.api.logout();
+    }
+
+    #teardownRoutine() {
         ++this.#initAttemptId;
 
         this.initializing = false;
@@ -99,15 +113,10 @@ export class StateManager {
         document.body.style.pointerEvents = "none";
         localStorage.removeItem("cachedBalance");
         localStorage.removeItem("cachedBalanceTime");
-
-        if (clearSessionData) {
-            localStorage.removeItem("openPositions");
-            localStorage.removeItem("pnlDataArray");
-        }
     }
 
-    async logout() {
-        this.disconnect({clearSessionData: true});
-        await this.api.logout()
+    #clearPersistentSessionData() {
+        localStorage.removeItem("openPositions");
+        localStorage.removeItem("pnlDataArray");
     }
 }

@@ -86,7 +86,7 @@ export class UIConfig {
                 if (message.payload.status) {
                     stateManager.initialize(true).catch(handleInitializationError)
                 } else {
-                    stateManager.disconnect();
+                    stateManager.stopDashboard();
                     new DialogManager(stateManager)
                         .addMessage("Server unavailable. Reconnecting...")
                         .addType("no-internet")
@@ -118,8 +118,8 @@ export class UIConfig {
                     return true;
                 }
 
-                stateManager.api.invalidateSession()
-                stateManager.disconnect({clearSessionData: true});
+                stateManager.api.invalidateSession();
+                stateManager.endDashboardSession();
 
                 new DialogManager(stateManager)
                     .addMessage("Please log in to trade")
