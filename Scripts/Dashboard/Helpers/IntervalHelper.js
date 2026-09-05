@@ -14,19 +14,26 @@ export function startInterval(stateManager) {
     stateManager.currentPreset = document.querySelector(".activePreset")?.id;
 
     return setInterval(async () => {
+
         if (stateManager.fetchingBalance) return;
         stateManager.fetchingBalance = true;
+
         try {
-            checkPendingPresets(stateManager);
-            updateCurrentPreset(stateManager);
-            await updateCurrentContract(stateManager);
-            await updateBalanceUI(false, stateManager);
+            await syncDashboardData(stateManager);
         } catch (err) {
             ErrorHandler.log(err);
         } finally {
             stateManager.fetchingBalance = false;
         }
+       
     }, 1000);
+}
+
+export async function syncDashboardData(stateManager) {
+    checkPendingPresets(stateManager);
+    updateCurrentPreset(stateManager);
+    await updateCurrentContract(stateManager);
+    await updateBalanceUI(false, stateManager);
 }
 
 /**

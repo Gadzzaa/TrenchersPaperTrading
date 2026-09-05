@@ -1,6 +1,6 @@
 import {InitHelper} from "../../Utils/Helpers/InitHelper.js";
 import {UIHelper} from "../Helpers/UIHelper.js";
-import {startInterval} from "../Helpers/IntervalHelper.js";
+import {startInterval, syncDashboardData} from "../Helpers/IntervalHelper.js";
 import {PNLService} from "./PNLService.js";
 import {UIConfig} from "../Config/UIConfig.js"
 import {API} from "../../Server/API.js"
@@ -30,6 +30,7 @@ export class StateManager {
             this.stopDashboard();
         } else if ((this.initializing || this.running)) return;
 
+        document.body.style.pointerEvents = "none";
         const attemptId = ++this.#initAttemptId
         console.log("[TrenchersPT] 🟢 Initializing dashboard...");
         this.initializing = true;
@@ -64,10 +65,14 @@ export class StateManager {
             assertCurrent();
 
             UIHelper.clearUI();
-            document.body.style.removeProperty("pointer-events");
-            this.updateInterval = startInterval(this);
 
+            await syncDashboardData(this);
+            assertCurrent();
+
+            this.updateInterval = startInterval(this);
             this.running = true;
+
+            document.body.style.removeProperty("pointer-events");
         } catch (err) {
             if (attemptId !== this.#initAttemptId) {
                 throw new AppError("Initialization cancelled.", {
@@ -110,6 +115,7 @@ export class StateManager {
         this.pnlService = null;
 
         this.currentContract = null;
+        document.getElementById("balanceValue").innerHTML = "";
         document.body.style.pointerEvents = "none";
         localStorage.removeItem("cachedBalance");
         localStorage.removeItem("cachedBalanceTime");
