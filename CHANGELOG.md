@@ -1,3 +1,76 @@
+# [1.12.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.11.0...v1.12.0) (2026-09-05)
+
+
+### Bug Fixes
+
+* After logout, balance now updates ([ff4f975](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ff4f97558c21328592a29785c3967e560c77a7b7))
+* BackendRequest would not retry if token expired ([7898fd2](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/7898fd2f0a7f99c170709666029069448f803739))
+* balanceValue could return null ([65ee605](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/65ee605b31efdc09610b1a04b44b7c117c245836))
+* cachedSolBalance still existed after refactor ([854c886](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/854c886d571b060ccba00fd7d9ea7388f1420f0e))
+* Chrome message could not send correctly ([da91704](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/da91704df3ac1a9c679a8bafb7deb2b5960b39a8))
+* Dashboard would open without data syncing first ([2e4a988](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/2e4a98801e82a41914abe8c2de5f9d3febe8bacf))
+* **Dashboard/StateManager:** double logs for error ([5e8a0b7](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/5e8a0b77af9193ae56f6efaf8aab96002d2c2d10))
+* **Dashboard/StateManager:** double logs for error ([2cd96b1](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/2cd96b14703dec50b166d35c1a7361f0d680e57f))
+* Duplicate permissions on release ([af39af4](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/af39af495d58d20408b5f336888ed0d046f70372))
+* Edit-mode inconsistent display of value ([ae7beae](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ae7beae84e364d7999d45b61ea5ad42adc1344d9))
+* Health would always return true or false if it previously returned the same ([a0a9d3d](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/a0a9d3dbbae7fb91c28d8a86fa26a5ff657ea39e))
+* **InitHelper:** Remove redundant try/catch ([ead1fe2](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ead1fe2cd38bb9161a72af0a019746d5587612e9))
+* Logout doesnt clear openPositions ([04a3d1b](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/04a3d1bd9f9b54b820e3ec3fbb107e9f1e5abe31))
+* Messages between popup and service worker would not pass ([5482c16](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/5482c16aef94fba3e7fa4f7e695832fa40a8d389))
+* **NotificationHelper:** if no sound was passed in parameters, error could occur ([456421c](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/456421c6b592a4178af4cfa420ca434d22a60a0a))
+* PNLDataManager ([c4f54e9](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/c4f54e90a71ec36d06bc7fe5b185bf775d7ddf98))
+* **PNLService:** double logs in case of error ([96e1aa8](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/96e1aa8b13c75bdf4a0821401caacfaa418806f2))
+* **PNLService:** setActiveToken should handle errors locally ([3cdd975](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/3cdd97504f03ba7d4017f92bccbeadbfaea0f7b9))
+* **PNLService:** this.lastUpdateTime never updated ([a814d83](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/a814d83325aa9f4ef75a144fd953c391d5e665ce))
+* Popup would bring Notification if error occured ([1521c3b](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/1521c3b7da5676a73f5361f0a708dfbce84204ae))
+* **PresetManager:** double logs in case of error ([338e0ab](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/338e0ab39c0a2757596015308ef9e8559fc363cc))
+* Prices being display in dollars instead of euros ([ef68a79](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ef68a79249ea6e941d336c10e4dfea0b28421ecb))
+* Rewatching token posiblity if sold 100% ([30550fa](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/30550fa3091abde24d475f2ada83e3c9404fd131))
+* TradeLog not imported, causing lag ([ff18498](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ff18498fbf4dc0d593b368f7b3e05354634037db))
+* **UIConfig:** Clear positions could receive pnlService is null ([f54c340](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/f54c340697f6757014da2b13731a4a0ea7241ac0))
+* User holds token > User Resets Account > Token Sells Tab still active ([a36025f](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/a36025f6c8f607cbef6a9f3484c91520637a9e5e))
+
+
+### Features
+
+* API Class to manage API requests and accessToken ([3a2959d](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/3a2959da48d18d5cfe771ae9adbce81104d1b6eb))
+* API request function to call requests ([26e5e73](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/26e5e73d0a4b5f9173b823ccad98ca55fb6ebdf2))
+* AuthNotification validator for notifs ([204cb1d](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/204cb1d3a6cdeabb0b4ec1825be49260bad47901))
+* Block actions when WS not connected ([4e93677](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/4e9367724ce51ae99cac671421f931347acc2b58))
+* Blocker for multiple sessions ([a8826b8](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/a8826b85a1c4072148af6eaeabd14559bb1d55bb))
+* Blocker for multiple-sessions ([#23](https://github.com/Gadzzaa/TrenchersPaperTrading/issues/23)) ([5343159](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/53431595d2c4b5872484032c9a1ad772ff4e21d9))
+* Finished new API class ([9dfc798](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/9dfc798664972b8e71af4599556d490b36a1d98c))
+* Func isTrustedInternalSender inside ChromeHandler ([b1ac837](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/b1ac837a216ab3114931d6ba865a216e62aa3966))
+* Handle notifications only when workerRevision is valid ([ec1b8cb](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ec1b8cbbb475ddd7fd10561b2668b74116935621))
+* Implement basic notifications with worker revision ([8db09b1](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/8db09b137651d56c0688268ba66433aceccf5fa2))
+* Implement error handling with try/catch ([abe1d3f](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/abe1d3f22083a67d3fce570bbff7c626ff3aea5e))
+* Implement new functions in the AccountLoader ([3b0cc40](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/3b0cc405840fcdbb1677f19fc793d85a135208b7))
+* Implement the functions in ActionHelper and BalanceUpdater ([7a45c49](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/7a45c4918685c30ecba3ceb75f58f881bdc4af88))
+* Implement the new API in DataManager ([24b1fb3](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/24b1fb389a05e87eb34b0f47da0913a2bf10480b))
+* Implement the new API in popup ([efdc05c](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/efdc05c06ad23f4cb2062daf3a955534fc1b3bd8))
+* Implement the new API in SettingsManager ([0da02c7](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/0da02c701f435d90ca4fcfd3396d7c3c709dd8a2))
+* Implement the new API in Subscriptions Manager ([e0f9057](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/e0f9057f79fcd49a32f394170172f9414a32d0c3))
+* Implement the new API inside ServerStatus and ServerValidation ([dcb421b](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/dcb421bdd5d4620f9eab1833b30a3d9bd64d3a33))
+* Implement the new API inside transaction manager ([1a5e105](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/1a5e105389146e377b545364d2c1a66ca4a8755e))
+* Implement the new auth function from API ([0557037](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/055703738ededfa9ded37ec7166e4d6f32b12a83))
+* Implement the new functions in popup helpers ([33b6ec1](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/33b6ec13c3d01bd71c41fbd9873ba029615180ab))
+* Implement the new functions inside InitHelper ([21f7d46](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/21f7d46d18889ce014fc78d0b282007d58aa39df))
+* Implement the updated function in IntervalHelper ([64b86d9](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/64b86d908b3b6e7d4c49331dd97d25d187243e82))
+* Implement the updated functions in PNLService ([f49df2e](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/f49df2e10b2ee06e866e48113e0ddec30a43a332))
+* Implementation of refresh during a request ([f929a86](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/f929a86d9e4b346a1278cdd8cdda826bceaca642))
+* JWT Refresher functions ([e805159](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/e8051592e4feb5c92fb377703e76d1a66a655a9b))
+* Migration Logic for poolAddress ([1860394](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/1860394dbf2f8759a3429233c2d5a2ddeb0fdbf8))
+* MultipleWebsockets & WS Limits ([1915950](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/19159503c2a782fb9e572485c32dc5b0d8f7f20c))
+* MultipleWebsockets support ([#22](https://github.com/Gadzzaa/TrenchersPaperTrading/issues/22)) ([ec0e3df](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/ec0e3dfb9a7b92ec2843edaefbaa86ad6137dc7a))
+* SubscriptionSelector redesign ([1ca9060](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/1ca9060b0129fc02b5fc4c48606ed0cc9b547c94))
+* Worker to manage Auth Calls across Popup and Dashboard ([1e73328](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/1e733289101bd84e62a1a28fe93443307d15c494))
+
+
+### Performance Improvements
+
+* setPositions() & getPositions() ([c06b4aa](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/c06b4aa5d2607d62a30e7a6f04996156500ec656))
+* syncTradeLog() ([83b3b58](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/83b3b582f8ed322cc966f77e71184c287cb017ac))
+
 # [1.11.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.10.1...v1.11.0) (2026-04-24)
 
 

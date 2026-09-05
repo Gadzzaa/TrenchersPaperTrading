@@ -1,4 +1,4 @@
-export const USE_LOCAL = true; // toggle manually here
+export const USE_LOCAL = false; // toggle manually here
 let debugMode = false;
 
 const CONFIG = {
