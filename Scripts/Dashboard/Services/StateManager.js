@@ -115,7 +115,7 @@ export class StateManager {
         this.pnlService = null;
 
         this.currentContract = null;
-        document.getElementById("balanceValue").innerHTML = "";
+        document.getElementById("balanceValue")?.replaceChildren()
         document.body.style.pointerEvents = "none";
         localStorage.removeItem("cachedBalance");
         localStorage.removeItem("cachedBalanceTime");
