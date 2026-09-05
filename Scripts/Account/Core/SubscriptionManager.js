@@ -1,5 +1,4 @@
 import {SubscriptionAPI} from "../Helpers/SubscriptionAPI.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SubscriptionManager {
     /**
@@ -15,31 +14,23 @@ export class SubscriptionManager {
      * @param {string} type - "monthly" or "yearly".
      */
     async upgradeSubscription(type) {
-        try {
-            const response = await this.subscriptionAPI.upgradeSubscription(
-                type,
-                this.api
-            );
+        const response = await this.subscriptionAPI.upgradeSubscription(
+            type,
+            this.api
+        );
 
-            const url = response.url;
-            await chrome.tabs.create({url});
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+        const url = response.url;
+        await chrome.tabs.create({url});
     }
 
     /**
      * Creates URL to manage subscription and opens it in a new tab.
      * */
     async manageSubscription() {
-        try {
-            const response = await this.subscriptionAPI.manageSubscription(
-                this.api
-            );
-            const url = response.url;
-            await chrome.tabs.create({url});
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+        const response = await this.subscriptionAPI.manageSubscription(
+            this.api
+        );
+        const url = response.url;
+        await chrome.tabs.create({url});
     }
 }
