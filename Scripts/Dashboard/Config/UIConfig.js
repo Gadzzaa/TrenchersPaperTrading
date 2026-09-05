@@ -72,7 +72,7 @@ export class UIConfig {
                 return true;
             }
             if (message.type === "clearPositions") {
-                stateManager?.pnlService.clearPositions(true)
+                stateManager.pnlService?.clearPositions(true)
                 sendResponse({ok: true})
                 return true;
             }
