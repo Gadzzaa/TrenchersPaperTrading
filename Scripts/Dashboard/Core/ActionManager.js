@@ -55,20 +55,13 @@ export class ActionManager {
         UIHelper.disableAllTradeButtons();
         let loadingDotsInterval = GlobalUIHelper.startLoadingDots(button)
 
-        let Constants = {
-            transactionManager: null,
-            poolAddress: null,
-            action: null,
-            dataAmount: null,
-            button: button,
-        };
+        const {action, transactionManager} =
+            ActionHelper.createTransactionContext(button, stateManager);
 
-        ActionHelper.loadAndValidateBasicConstants(Constants, stateManager);
-
-        if (Constants.action === "buy")
-            await ActionHelper.handleBuy(Constants.transactionManager, stateManager);
-        if (Constants.action === "sell")
-            await ActionHelper.handleSell(Constants.transactionManager, stateManager);
+        if (action === "buy")
+            await ActionHelper.handleBuy(transactionManager, stateManager);
+        else
+            await ActionHelper.handleSell(transactionManager, stateManager);
 
         await updateBalanceUI(true, stateManager);
         GlobalUIHelper.stopLoadingDots(button, loadingDotsInterval);
