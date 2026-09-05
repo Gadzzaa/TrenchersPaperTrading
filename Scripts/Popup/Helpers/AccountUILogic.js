@@ -1,4 +1,3 @@
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {SubscriptionManager} from "../../Account/Core/SubscriptionManager.js";
 import {DataManager} from "../../Account/Core/DataManager.js"
 import {FooterHelper} from "./FooterHelper.js";
@@ -13,15 +12,11 @@ export class AccountUILogic {
         const confirmed = await DialogsValidators.askResetConfirmation(stateManager);
         if (!confirmed) return;
 
-        let dataManager = new DataManager(stateManager);
+        const dataManager = new DataManager(stateManager);
 
-        try {
-            await dataManager.resetAccount(amount);
-            FooterHelper.focusDefaultButton();
-            await AccountLoader.loadData(stateManager);
-        } catch (err) {
-            throw ErrorHandler.log(err);
-        }
+        await dataManager.resetAccount(amount);
+        FooterHelper.focusDefaultButton();
+        await AccountLoader.loadData(stateManager);
     }
 
     static upgradeSubscription(plan, stateManager) {
@@ -47,8 +42,6 @@ export class AccountUILogic {
     static async #runSubscriptionOperation(operation) {
         try {
             await operation();
-        } catch (error) {
-            throw ErrorHandler.log(error);
         } finally {
             AccountUILogic.hideSubscriptionDiv();
         }
