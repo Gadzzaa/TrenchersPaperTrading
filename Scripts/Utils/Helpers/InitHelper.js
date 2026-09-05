@@ -65,15 +65,11 @@ export class InitHelper {
     static async validateSession(stateManager) {
         await InitHelper.searchToken(stateManager);
 
-        let dataManager = new DataManager(stateManager);
+        const dataManager = new DataManager(stateManager);
 
         const isSessionValid = await dataManager.checkSession();
         if (!isSessionValid) {
             stateManager.pnlService?.clearPositions();
-            try {
-            } catch (error) {
-                console.error("Failed to clear invalid session token:", error);
-            }
             try {
                 await ChromeHandler.sendMessageAsync("NO_SESSION", {
                     workerRevision:
