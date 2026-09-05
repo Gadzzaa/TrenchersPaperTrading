@@ -39,8 +39,13 @@ export class PNLService {
     }
 
     update(force = false) {
-        if (Date.now() - this.lastUpdateTime < this.refreshTime && !force) return;
+        const now = Date.now();
+
+        if (!force && now - this.lastUpdateTime < this.refreshTime)
+            return;
+
         let pool = this.poolWatcher.get(this.positionManager.currentPool);
+
         if (!pool)
             pool = {
                 price: 0,
@@ -48,11 +53,12 @@ export class PNLService {
             }
 
 
-        const uiData = this.positionManager.calculatePnlUI(
-            pool.price,
-        );
+        const uiData = this.positionManager.calculatePnlUI(pool.price,);
+
         if (uiData)
             this.ui.update(uiData);
+
+        this.lastUpdateTime = now;
     }
 
     setActiveToken(poolAddress) {
