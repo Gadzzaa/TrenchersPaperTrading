@@ -1,36 +1,25 @@
 import {SettingsAPI} from "../Helpers/SettingsAPI.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SettingsManager {
     /**
-     * @param {Variables} variables - Contains session and user variables.
+     * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(variables) {
-        this.api = new SettingsAPI();
-        this.variables = variables;
+    constructor(stateManager) {
+        this.settingsAPI = new SettingsAPI();
+        this.api = stateManager.api;
     }
 
     /**
      * @param {Object} settings - Object containing user settings to be saved.
      */
-    async saveSettings(settings) {
-        try {
-            await this.api.saveSettings(this.variables.getAuthToken(), settings);
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    saveSettings(settings) {
+        return this.settingsAPI.saveSettings(this.api, settings);
     }
 
     /**
      * @returns {Promise<Object>} - Object containing user settings.
      * */
-    async getSettings() {
-        try {
-            return await this.api.getSettings(
-                this.variables.getAuthToken(),
-            );
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    getSettings() {
+        return this.settingsAPI.getSettings(this.api);
     }
 }

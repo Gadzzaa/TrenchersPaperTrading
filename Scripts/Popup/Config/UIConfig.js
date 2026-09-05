@@ -2,6 +2,8 @@ import {UILoader} from "../Core/UILoader.js"
 import {UIHelper} from "../Helpers/UIHelper.js";
 import {DialogManager} from "../Core/DialogManager.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {isNoSessionError} from "../../Server/AuthErrorHelper.js";
+import {acceptAuthNotification} from "../../Server/AuthNotification.js";
 
 export class UIConfig {
 
@@ -62,18 +64,13 @@ export class UIConfig {
     }
 
     static createRuntimeMessageListener(stateManager) {
-        return (message, _sender, sendResponse) => {
+        return (message, sender, sendResponse) => {
             if (message.origin !== "TrenchersPaperTrading") return true;
+
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
                     stateManager.initialize(true).catch((error) => {
-                        const code = error?.code || error?.cause?.code;
-                        const isExpectedNoSession =
-                            code === "INVALID_TOKEN" ||
-                            code === "INVALID_SESSION" ||
-                            code === "REFRESH_TOKEN_REQUIRED" ||
-                            code === "UNAUTHORIZED";
-                        if (isExpectedNoSession) {
+                        if (isNoSessionError(error)) {
                             const loginPanel = document.getElementById("loginPanel");
                             if (loginPanel) loginPanel.classList.remove("loginHidden");
                             return;
@@ -117,15 +114,28 @@ export class UIConfig {
             }
 
             if (message.type === "NO_SESSION_UI") {
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
+                stateManager.api.invalidateSession();
+
                 const loginPanel = document.getElementById("loginPanel");
                 loginPanel.classList.remove("loginHidden")
-                sendResponse({ok: true});
 
+                sendResponse({ok: true});
                 return true;
             }
 
             if (message.type === "SESSION_VALID_UI") {
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
                 const loginPanel = document.getElementById("loginPanel");
+
                 !loginPanel.classList.contains("loginHidden") && loginPanel.classList.add("loginHidden")
                 sendResponse({ok: true});
 

@@ -1,30 +1,27 @@
-import {BackendRequest} from "../../Server/BackendRequest.js";
-
 export class SettingsAPI {
     /**
-     * @param {string} authToken - Session token of the user
+     * @param {import("../../Server/API.js").API} api
      * @param {Object} settings - Object containing user settings to be saved
      * @returns {Promise<Object>} - {success: boolean}
      */
-    async saveSettings(authToken, settings) {
-        return await new BackendRequest()
+    saveSettings(api, settings) {
+        return api.createRequest()
             .addEndpoint("/save-settings")
             .addMethod("POST")
-            .addAuthParams(authToken)
-            .addBody(JSON.stringify(settings))
-            .addRetries(2)
+            .addBody(settings)
+            .addRetries()
             .build();
     }
 
     /**
-     * @param {string} authToken - Session token of the user
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Contains user settings { settings: Object }
      */
-    async getSettings(authToken) {
-        return await new BackendRequest()
+    getSettings(api) {
+        return api.createRequest()
             .addEndpoint("/get-settings")
             .addMethod("GET")
-            .addAuthParams(authToken)
+            .addRetries()
             .build();
     }
 }

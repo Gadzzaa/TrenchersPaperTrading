@@ -1,9 +1,9 @@
-import {BackendRequest} from "../../Server/BackendRequest.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
+import {isAuthError} from "../../Server/AuthErrorHelper.js";
 
 export class DataAPI {
     /**
-     * @param {string} authToken - Session token of the user.
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Array of account data:
      * {
      *  userId: number,
@@ -15,12 +15,11 @@ export class DataAPI {
      *  realizedPNL: number
      * }
      */
-    async getAccData(authToken) {
-        const response = await new BackendRequest()
+    async getAccData(api) {
+        const response = await api.createRequest()
             .addEndpoint("/popupData")
             .addMethod("GET")
-            .addAuthParams(authToken)
-            .addRetries(2)
+            .addRetries()
             .build();
 
         if (!response)
@@ -35,17 +34,15 @@ export class DataAPI {
     }
 
     /**
-     * @param {string} authToken - Session token of the user.
+     * @param {import("../../Server/API.js").API} api
      * @param {number} balance - Balance to reset the account to.
      * @returns {Promise<number>} - Resets left after the reset.
      */
-    async resetAccount(authToken, balance) {
-        const response = await new BackendRequest()
+    async resetAccount(api, balance) {
+        const response = await api.createRequest()
             .addEndpoint("/reset")
             .addMethod("PATCH")
-            .addAuthParams(authToken)
-            .addBody(JSON.stringify({amount: balance}))
-            .addRetries(2)
+            .addBody({amount: balance})
             .build();
 
         if (response?.resetsLeft == null)
@@ -58,40 +55,34 @@ export class DataAPI {
     }
 
     /**
-     * @param {string} authToken - Session token of the user.
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<boolean>} - Status of the session validity.
      */
-    async checkSession(authToken) {
+    async checkSession(api) {
         try {
-            const response = await new BackendRequest()
+            const response = await api.createRequest()
                 .addEndpoint("/check-session")
                 .addMethod("GET")
-                .addAuthParams(authToken)
-                .addRetries(0)
+                .addRetries()
                 .build();
 
             return Boolean(response.success);
         } catch (error) {
-            const code = error?.code || error?.cause?.code || error?.meta?.json?.code;
-            const authFailureCodes = new Set([
-                "UNAUTHORIZED",
-                "INVALID_SESSION",
-                "AUTHORIZATION_TOKEN_REQUIRED",
-            ]);
-            if (authFailureCodes.has(code)) return false;
+            if (isAuthError(error))
+                return false;
             throw error;
         }
     }
 
     /**
-     * @param {string} authToken - Session token of the user.
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Object of trade log entries.
      */
-    async getTradeLog(authToken) {
-        const response = await new BackendRequest()
+    async getTradeLog(api) {
+        const response = await api.createRequest()
             .addEndpoint("/tradeLog")
             .addMethod("GET")
-            .addAuthParams(authToken)
+            .addRetries()
             .build();
 
         if (!response)
@@ -104,14 +95,14 @@ export class DataAPI {
     }
 
     /**
-     * @param {string} authToken - Session token of the user
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>}
      */
-    async getWebsocketLimits(authToken) {
-        const response = await new BackendRequest()
+    async getWebsocketLimits(api) {
+        const response = await api.createRequest()
             .addEndpoint("/websocket-limits")
             .addMethod("GET")
-            .addAuthParams(authToken)
+            .addRetries()
             .build();
 
         if (!response)

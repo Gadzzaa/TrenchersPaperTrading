@@ -72,5 +72,7 @@ export class PnlUIController {
         });
         DOM_el.positionEl.classList.remove("positive", "negative");
         DOM_el.positionEl.textContent = "0.00 SOL (0.00%)";
+
+        this.toggleSellsTab(0);
     }
 }

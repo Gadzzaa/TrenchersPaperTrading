@@ -1,5 +1,5 @@
 import {UIHelper} from "../Helpers/UIHelper.js";
-import {UIHelper as GlobalUIHelper} from "../../Utils/Helpers/UIHelper.js";
+import {LoadingUIHelper} from "../../Utils/Helpers/LoadingUIHelper.js";
 import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {ActionHelper} from "../Helpers/ActionHelper.js";
@@ -30,9 +30,9 @@ export class ActionManager {
      */
     static toggleEditMode(stateManager) {
         if (document.body.classList.contains("edit-mode")) {
-            EditHelper.activateEditMode(stateManager);
+            EditHelper.exitEditMode(stateManager);
         } else {
-            EditHelper.deactivateEditMode();
+            EditHelper.enterEditMode();
         }
     }
 
@@ -43,7 +43,7 @@ export class ActionManager {
      * @returns {Promise<void>}
      */
     static async #handleBasicActions(button, stateManager) {
-        let ws = stateManager.pnlService?.wsManager?.ws;
+        const ws = stateManager.pnlService?.wsManager?.ws;
         if (!ws || ws.readyState !== WebSocket.OPEN)
             throw new AppError("WebSocket is not connected.", {
                 code: "WS_NOT_CONNECTED",
@@ -53,30 +53,22 @@ export class ActionManager {
             })
 
         UIHelper.disableAllTradeButtons();
-        let loadingDotsInterval = GlobalUIHelper.startLoadingDots(button)
+        const loadingDotsInterval = LoadingUIHelper.startLoadingDots(button)
 
-        let Constants = {
-            transactionManager: null,
-            poolAddress: null,
-            action: null,
-            dataAmount: null,
-            button: button,
-        };
+        try {
+            const {action, transactionManager} =
+                ActionHelper.createTransactionContext(button, stateManager);
 
-        ActionHelper.loadAndValidateBasicConstants(Constants, stateManager);
+            if (action === "buy")
+                await ActionHelper.handleBuy(transactionManager, stateManager);
+            else
+                await ActionHelper.handleSell(transactionManager, stateManager);
 
-        if (Constants.action === "buy")
-            await ActionHelper.handleBuy(
-                Constants.transactionManager,
-                Constants.poolAddress,
-                stateManager,
-            );
-        if (Constants.action === "sell")
-            await ActionHelper.handleSell(Constants.transactionManager, stateManager);
-
-        await updateBalanceUI(true, stateManager);
-        GlobalUIHelper.stopLoadingDots(button, loadingDotsInterval);
-        UIHelper.enableAllTradeButtons();
+            await updateBalanceUI(true, stateManager);
+        } finally {
+            LoadingUIHelper.stopLoadingDots(button, loadingDotsInterval);
+            UIHelper.enableAllTradeButtons();
+        }
     }
 
     /**
@@ -107,10 +99,11 @@ export class ActionManager {
         button.textContent = `${amount}`;
         button.dataset.amount = amount.toString();
 
-        if (action === "buy")
-            EditHelper.editBuyPresets({presets, activePreset}, {button, amount});
-        else
-            EditHelper.editSellPresets({presets, activePreset}, {button, amount});
+        EditHelper.editPreset(
+            action,
+            {presets, activePreset},
+            {button, amount}
+        );
 
 
         PresetManager.setPresets(presets);

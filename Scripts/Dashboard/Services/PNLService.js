@@ -3,15 +3,15 @@ import {PnlUIController} from "../Core/PnlUIController.js";
 import {PoolWatcher} from "../Core/PoolWatcher.js";
 import {PositionManager} from "../Core/PositionManager.js";
 import {WebsocketManager} from "../Core/WebsocketManager.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 import {DataManager} from "../../Account/Core/DataManager.js";
 import {StorageManager} from "../../Utils/Core/StorageManager.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class PNLService {
     constructor(stateManager) {
         this.stateManager = stateManager;
-        this.wsManager = new WebsocketManager(stateManager.variables.getAuthToken());
+        this.wsManager = new WebsocketManager(stateManager);
 
         this.positionManager = new PositionManager();
         this.poolWatcher = new PoolWatcher(this.wsManager);
@@ -23,17 +23,13 @@ export class PNLService {
     }
 
     async start() {
-        try {
-            await this.wsManager.connect((data) => {
-                this.poolWatcher.updatePool(data);
-                this.update();
-            })
-            console.log(
-                "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
-            );
-        } catch (err) {
-            throw ErrorHandler.log(err);
-        }
+        await this.wsManager.connect((data) => {
+            this.poolWatcher.updatePool(data);
+            this.update();
+        })
+        console.log(
+            "[TrenchersPT] 🟢 Websocket connected. Listening for pool updates...",
+        );
     }
 
     stop() {
@@ -44,8 +40,13 @@ export class PNLService {
     }
 
     update(force = false) {
-        if (Date.now() - this.lastUpdateTime < this.refreshTime && !force) return;
+        const now = Date.now();
+
+        if (!force && now - this.lastUpdateTime < this.refreshTime)
+            return;
+
         let pool = this.poolWatcher.get(this.positionManager.currentPool);
+
         if (!pool)
             pool = {
                 price: 0,
@@ -53,26 +54,26 @@ export class PNLService {
             }
 
 
-        const uiData = this.positionManager.calculatePnlUI(
-            pool.price,
-        );
+        const uiData = this.positionManager.calculatePnlUI(pool.price,);
+
         if (uiData)
             this.ui.update(uiData);
+
+        this.lastUpdateTime = now;
     }
 
     setActiveToken(poolAddress) {
         this.positionManager.setActive(poolAddress);
-        let pnlData = this.pnlDataManager.get(poolAddress);
 
-        StorageManager.getFromStorage("pnlRefreshInterval").then((sliderValue) => {
-            if (!sliderValue) sliderValue = 500;
-            this.poolWatcher.watch(poolAddress, pnlData);
-            this.refreshTime = sliderValue;
+        const pnlData = this.pnlDataManager.get(poolAddress);
+
+        void this.#configureActivePool(poolAddress, pnlData).catch((error) => {
+            ErrorHandler.log(error, {poolAddress});
         });
     }
 
-    async syncTradeLog(variables) {
-        const dataManager = new DataManager(variables);
+    async syncTradeLog() {
+        const dataManager = new DataManager(this.stateManager);
         const tradeLog = await dataManager.getTradeLog();
         const tokens = tradeLog?.tokens;
         if (!Array.isArray(tokens)) {
@@ -91,5 +92,27 @@ export class PNLService {
         this.positionManager.clear();
         this.ui.clear();
         if (global) localStorage.removeItem("openPositions");
+    }
+
+    async #configureActivePool(poolAddress, pnlData) {
+        let refreshTime = 500;
+
+        try {
+            const storedRefreshTime =
+                await StorageManager.getFromStorage("pnlRefreshInterval");
+
+            const parsedRefreshTime = Number(storedRefreshTime);
+
+            if (Number.isFinite(parsedRefreshTime) && parsedRefreshTime > 0)
+                refreshTime = parsedRefreshTime;
+        } catch (error) {
+            ErrorHandler.log(error, {poolAddress});
+        }
+
+        if (this.positionManager.currentPool !== poolAddress)
+            return;
+
+        this.refreshTime = refreshTime;
+        this.poolWatcher.watch(poolAddress, pnlData);
     }
 }

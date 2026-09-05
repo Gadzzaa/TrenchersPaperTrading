@@ -2,6 +2,7 @@ import {StateManager} from "../Services/StateManager.js";
 import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
 import {DialogManager} from "../Core/DialogManager.js"
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
+import {acceptAuthNotification} from "../../Server/AuthNotification.js";
 
 export class UIConfig {
     static settings = [
@@ -52,12 +53,12 @@ export class UIConfig {
      * @returns {(message: any, sender: any, sendResponse: (response?: any) => void) => void}
      */
     static createRuntimeMessageListener(stateManager) {
-        return (message, _sender, sendResponse) => {
+        return (message, sender, sendResponse) => {
             if (message.origin !== "TrenchersPaperTrading") return true;
 
             if (message.type === "initDashboard") {
                 console.log("User registered, initializing dashboard...");
-                stateManager.initialize();
+                stateManager.initialize().catch(handleInitializationError);
                 sendResponse({ok: true})
                 return true;
             }
@@ -71,7 +72,7 @@ export class UIConfig {
                 return true;
             }
             if (message.type === "clearPositions") {
-                stateManager?.pnlService.clearPositions(true)
+                stateManager.pnlService?.clearPositions(true)
                 sendResponse({ok: true})
                 return true;
             }
@@ -83,12 +84,9 @@ export class UIConfig {
 
             if (message.type === "STATUS_UPDATE") {
                 if (message.payload.status) {
-                    stateManager.initialize(true).catch((error) => {
-                        ErrorHandler.show(error);
-                    });
-                    sendResponse({ok: true});
+                    stateManager.initialize(true).catch(handleInitializationError)
                 } else {
-                    stateManager.disconnect();
+                    stateManager.stopDashboard();
                     new DialogManager(stateManager)
                         .addMessage("Server unavailable. Reconnecting...")
                         .addType("no-internet")
@@ -96,11 +94,9 @@ export class UIConfig {
                         .catch((error) => {
                             ErrorHandler.show(error);
                         })
-                        .finally(() => {
-                            sendResponse({ok: true});
-                        });
                 }
 
+                sendResponse({ok: true});
                 return true;
             }
 
@@ -112,28 +108,54 @@ export class UIConfig {
                     .catch((error) => {
                         ErrorHandler.show(error);
                     })
-                    .finally(() => {
-                        sendResponse({ok: true});
-                    });
+                sendResponse({ok: true});
                 return true;
             }
 
             if (message.type === "NO_SESSION_UI") {
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
+                stateManager.api.invalidateSession();
+                stateManager.endDashboardSession();
+
                 new DialogManager(stateManager)
                     .addMessage("Please log in to trade")
                     .addType("no-session")
                     .show()
                     .then((value) => {
                         if (value?.dontRestart) return;
-                        stateManager.disconnect()
-                        stateManager.initialize(true)
+                        return stateManager.initialize(true).catch(handleInitializationError)
                     }).catch((error) => {
                     ErrorHandler.show(error);
-                }).finally(() => {
-                    sendResponse({ok: true});
                 });
+
+                sendResponse({ok: true});
+                return true;
+            }
+            if (message.type === "SESSION_VALID_UI") {
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
+                    sendResponse({ok: true, ignored: true});
+                    return true;
+                }
+
+                sendResponse({ok: true});
                 return true;
             }
         };
     }
+}
+
+function handleInitializationError(error) {
+    if (
+        error?.code === "INIT_CANCELLED" ||
+        error?.code === "CONNECTION_CANCELLED" ||
+        error?.code === "SESSION_CHANGED"
+    ) {
+        return;
+    }
+
+    ErrorHandler.show(error);
 }

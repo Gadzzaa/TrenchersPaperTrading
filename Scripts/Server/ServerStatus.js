@@ -1,5 +1,5 @@
-import {BackendRequest} from "./BackendRequest.js";
 import {ChromeHandler} from "../ChromeHandler.js";
+import {API} from "./API.js";
 
 export class ServerStatus {
     POLL_RATE = 1000 * 5;
@@ -44,11 +44,9 @@ export class ServerStatus {
         this.checking = true;
         let status = false;
         try {
-            const response = await new BackendRequest()
+            const response = await new API().createPublicRequest()
                 .addEndpoint("/health")
                 .addMethod("GET")
-                .bypassStatusCheck()
-                .bypassCredentials()
                 .build();
             status = response.status === "ok";
         } catch (error) {
@@ -66,11 +64,10 @@ export class ServerStatus {
     }
 
     /**
-     * @returns {boolean} - Returns the current server status
+     * @returns {Promise<Boolean> | boolean} - Returns the current server status
      */
     async getStatus() {
-        if (typeof this.status !== "boolean")
-            await this.startAndPing();
+        await this.ping();
         return this.status;
     }
 }

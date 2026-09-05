@@ -3,11 +3,13 @@ import {UIConfig} from "../Config/UIConfig.js"
 import {UIHelper} from "../Helpers/UIHelper.js"
 import {AccountLoader} from "../Core/AccountLoader.js";
 import {FooterHelper} from "../Helpers/FooterHelper.js";
+import {API} from "../../Server/API.js";
 
 export class StateManager {
     constructor() {
         this.initializing = false;
-        this.variables = null;
+
+        this.api = new API();
 
         this.tokens = [];
 
@@ -28,8 +30,8 @@ export class StateManager {
 
             InitHelper.loadSettings(UIConfig);
 
-            await InitHelper.validateHealth(this);
-            await InitHelper.validateVersion(this)
+            await InitHelper.validateHealth();
+            await InitHelper.validateVersion()
 
             document.body.style.removeProperty("pointer-events");
 
@@ -42,7 +44,6 @@ export class StateManager {
     }
 
     disconnect() {
-        this.variables = null;
         this.isPremium = false;
         this.clearUI();
     }

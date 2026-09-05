@@ -2,7 +2,7 @@ import {LoginUILogic} from "../Helpers/LoginUILogic.js";
 import {FooterHelper} from "../Helpers/FooterHelper.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {AccountLoader} from "./AccountLoader.js";
-import {UIHelper as GlobalUIHelper} from "../../Utils/Helpers/UIHelper.js"
+import {LoadingUIHelper} from "../../Utils/Helpers/LoadingUIHelper.js"
 import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class LoginUIManager {
@@ -12,45 +12,30 @@ export class LoginUIManager {
         const logoutButton = document.getElementById("logoutButton");
         const showPassButton = document.getElementById("showPasswordButton");
 
-        loginButton.addEventListener("click", async () => {
-            const loginInterval = GlobalUIHelper.startLoadingDots(loginButton);
-            try {
-                await LoginUILogic.login(stateManager);
-                await AccountLoader.loadData(stateManager)
-                FooterHelper.focusDefaultButton();
-                await ChromeHandler.sendMessageAsync("SESSION_VALID");
-            } catch (err) {
-                ErrorHandler.show(err, {show: false}, {show: true, stateManager});
-            } finally {
-                LoginUIManager.clearInputs();
-                GlobalUIHelper.stopLoadingDots(loginButton, loginInterval)
-            }
+        loginButton.addEventListener("click", () => {
+            LoginUIManager.#runSessionAction(
+                loginButton,
+                stateManager,
+                () => LoginUILogic.login(stateManager)
+            )
         });
-        registerButton.addEventListener("click", async () => {
-            const registerInterval = GlobalUIHelper.startLoadingDots(registerButton);
-            try {
-                await LoginUILogic.register(stateManager);
-                await AccountLoader.loadData(stateManager);
-                FooterHelper.focusDefaultButton();
-                await ChromeHandler.sendMessageAsync("SESSION_VALID");
-            } catch (err) {
-                ErrorHandler.show(err, {show: false}, {show: true, stateManager});
-            } finally {
-                LoginUIManager.clearInputs();
-                GlobalUIHelper.stopLoadingDots(registerButton, registerInterval)
-            }
+        registerButton.addEventListener("click", () => {
+            LoginUIManager.#runSessionAction(
+                registerButton,
+                stateManager,
+                () => LoginUILogic.register(stateManager)
+            )
         });
         logoutButton.addEventListener("click", async () => {
-            const logoutInterval = GlobalUIHelper.startLoadingDots(logoutButton);
+            const logoutInterval = LoadingUIHelper.startLoadingDots(logoutButton);
             try {
-                await LoginUILogic.logout(stateManager);
+                await stateManager.api.logout();
                 stateManager.clearUI();
                 FooterHelper.focusDefaultButton();
-                await ChromeHandler.sendMessageAsync("NO_SESSION");
             } catch (err) {
                 ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
-                GlobalUIHelper.stopLoadingDots(logoutButton, logoutInterval);
+                LoadingUIHelper.stopLoadingDots(logoutButton, logoutInterval);
             }
         });
         showPassButton.addEventListener("click", () => {
@@ -64,6 +49,35 @@ export class LoginUIManager {
 
         usernameInput.value = "";
         passwordInput.value = "";
+    }
+
+    /**
+     * @param {HTMLButtonElement} button
+     * @param {StateManager} stateManager
+     * @param {() => Promise<boolean>} action
+     */
+    static async #runSessionAction(button, stateManager, action) {
+        const loadingInterval =
+            LoadingUIHelper.startLoadingDots(button);
+
+        try {
+            const sessionEstablished = await action();
+
+            if (!sessionEstablished) return;
+
+            await AccountLoader.loadData(stateManager);
+            FooterHelper.focusDefaultButton();
+
+            await ChromeHandler.sendMessageAsync("SESSION_VALID", {
+                workerRevision: stateManager.api.getWorkerRevision(),
+            });
+        } catch (error) {
+            ErrorHandler.show(error, {show: false}, {show: true, stateManager}
+            );
+        } finally {
+            LoginUIManager.clearInputs();
+            LoadingUIHelper.stopLoadingDots(button, loadingInterval);
+        }
     }
 
 

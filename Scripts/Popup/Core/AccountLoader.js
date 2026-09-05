@@ -1,11 +1,11 @@
-import {AccountLoader as AccountHelper} from "../Helpers/AccountLoader.js";
+import {AccountUIHelper} from "../Helpers/AccountUIHelper.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {SettingsManager} from "../../Account/Core/SettingsManager.js";
 import {DataManager} from "../../Account/Core/DataManager.js";
 
 export class AccountLoader {
     static async loadData(stateManager) {
-        let dataManager = new DataManager(stateManager.variables);
+        let dataManager = new DataManager(stateManager);
         let data = await dataManager.fetchAccountData();
         stateManager.clearUI();
         AccountLoader.#validateData(data);
@@ -13,7 +13,7 @@ export class AccountLoader {
         AccountLoader.#loadAccountPage(stateManager, data);
         await AccountLoader.#loadSettings(stateManager);
 
-        AccountHelper.applyPremiumUI(stateManager.isPremium);
+        AccountUIHelper.applyPremiumUI(stateManager.isPremium);
     }
 
     static #validateData(data) {
@@ -39,14 +39,14 @@ export class AccountLoader {
         if (usernameText.textContent !== data.username) usernameText.textContent = data.username;
 
         solBalance.textContent = `${data.portfolio.solBalance.toFixed(2)} SOL`;
-        localStorage.setItem("cachedSolBalance", data.portfolio.solBalance.toFixed(2));
-        localStorage.setItem("cachedSolBalanceTime", Date.now().toString());
+        localStorage.setItem("cachedBalance", data.portfolio.solBalance.toFixed(2));
+        localStorage.setItem("cachedBalanceTime", Date.now().toString());
 
         pnlData.textContent = `${data.realizedPNL >= 0 ? "+" : ""}${data.realizedPNL.toFixed(2)} SOL / 24h`;
 
         for (const [poolAddress, token] of Object.entries(data.portfolio.tokens)) {
             if (token.amount <= 0) continue;
-            AccountHelper.addToken(stateManager, poolAddress, token.name, token.symbol, token.amount, token.image);
+            AccountUIHelper.addToken(stateManager, poolAddress, token.name, token.symbol, token.amount, token.image);
         }
     }
 
@@ -66,7 +66,7 @@ export class AccountLoader {
 
         versionInfo.textContent = data.version;
 
-        stateManager.resetsTimer = AccountHelper.startCountdown(data.resets.lastReset, resetsWhenText);
+        stateManager.resetsTimer = AccountUIHelper.startCountdown(data.resets.lastReset, resetsWhenText);
     }
 
     static #loadSubscriptionInfo(stateManager, data) {
@@ -80,7 +80,7 @@ export class AccountLoader {
         let subscription = data.subscriptionInfo.subscription;
         stateManager.isPremium = data.subscriptionInfo?.premium === true;
 
-        subscriptionType.textContent = AccountHelper.capitalize(subscription.status);
+        subscriptionType.textContent = AccountUIHelper.capitalize(subscription.status);
         subscriptionNextPayment.textContent = "";
         if (subscription.currentPeriodEnd) {
             if (subscription.cancelAtPeriodEnd)
@@ -93,17 +93,17 @@ export class AccountLoader {
         }
 
         subscriptionPrice.textContent = `${subscription.currency}${parseFloat(subscription.price).toFixed(2)}`;
-        subscriptionMethod.textContent = AccountHelper.capitalize(subscription.paymentMethodType);
+        subscriptionMethod.textContent = AccountUIHelper.capitalize(subscription.paymentMethodType);
         if (stateManager.isPremium) upgradeButton.classList.add("disabled");
         else upgradeButton.classList.remove("disabled");
     }
 
     static async #loadSettings(stateManager) {
-        let settingsManager = new SettingsManager(stateManager.variables);
+        let settingsManager = new SettingsManager(stateManager);
         try {
             const settings = await settingsManager.getSettings();
-            AccountHelper.applyPremiumSetting("saveWindowPos", settings.saveWindowPos, false);
-            AccountHelper.applyPremiumSetting(
+            AccountUIHelper.applyPremiumSetting("saveWindowPos", settings.saveWindowPos, false);
+            AccountUIHelper.applyPremiumSetting(
                 "pnlRefreshInterval",
                 settings.pnlRefreshInterval,
                 500,
@@ -114,8 +114,8 @@ export class AccountLoader {
             console.warn("Using default settings due to error:", err);
 
             // Fallback to defaults if backend fails
-            AccountHelper.applyPremiumSetting("saveWindowPos", false);
-            AccountHelper.applyPremiumSetting("pnlRefreshInterval", 500);
+            AccountUIHelper.applyPremiumSetting("saveWindowPos", false);
+            AccountUIHelper.applyPremiumSetting("pnlRefreshInterval", 500);
         }
     }
 

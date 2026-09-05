@@ -1,25 +1,20 @@
 import {DataAPI} from "../Helpers/DataAPI.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class DataManager {
     /**
-     * @param {Variables} variables - Contains session and user variables.
+     * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(variables) {
-        this.api = new DataAPI();
-        this.variables = variables;
+    constructor(stateManager) {
+        this.dataAPI = new DataAPI();
+        this.api = stateManager.api;
     }
 
     /**
      * @returns {Promise<Object>} - Fetches account data and updates variables.
      * */
-    async fetchAccountData() {
-        try {
-            return await this.api.getAccData(this.variables.getAuthToken());
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    fetchAccountData() {
+        return this.dataAPI.getAccData(this.api);
     }
 
     /**
@@ -27,40 +22,26 @@ export class DataManager {
      * @returns {Promise<{success: boolean, resetsRemaining: number}>} - Resets the account and returns resets left.
      */
     async resetAccount(balance) {
-        try {
-            const resetsRemaining = await this.api.resetAccount(
-                this.variables.getAuthToken(),
-                balance,
-            );
-
-            ChromeHandler.sendMessage("clearPositions")
-            ChromeHandler.sendMessage("updateBalanceUI")
-
-            return {success: true, resetsRemaining};
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
-    }
-
-    async checkSession() {
-        return await this.api.checkSession(
-            this.variables.getAuthToken()?.toString(),
+        const resetsRemaining = await this.dataAPI.resetAccount(
+            this.api,
+            balance,
         );
+
+        ChromeHandler.sendMessage("clearPositions");
+        ChromeHandler.sendMessage("updateBalanceUI");
+
+        return {success: true, resetsRemaining};
     }
 
-    async getTradeLog() {
-        try {
-            return await this.api.getTradeLog(this.variables.getAuthToken());
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    checkSession() {
+        return this.dataAPI.checkSession(this.api);
     }
 
-    async getWebsocketLimits() {
-        try {
-            return await this.api.getWebsocketLimits(this.variables.getAuthToken())
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    getTradeLog() {
+        return this.dataAPI.getTradeLog(this.api);
+    }
+
+    getWebsocketLimits() {
+        return this.dataAPI.getWebsocketLimits(this.api);
     }
 }

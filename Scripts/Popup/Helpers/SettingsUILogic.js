@@ -1,5 +1,4 @@
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {SettingsManager} from "../../Account/Core/SettingsManager.js";
 import {setDebugMode} from "../../../config.js";
 import {StorageManager} from "../../Utils/Core/StorageManager.js";
@@ -36,26 +35,26 @@ export class SettingsUILogic {
         chrome.storage.local.set({animation: quality});
     }
 
-    static setAndSavePremiumSettings(stateManager) {
+    static async setAndSavePremiumSettings(stateManager) {
         const checkbox = document.getElementById("saveWindowBox");
         const slider = document.getElementById("pnlSlider");
-        let settings = {
+
+        const settings = {
             saveWindowPos: checkbox ? checkbox.checked : false,
             pnlRefreshInterval: slider ? slider.value * 100 : 500,
         };
 
-        let settingsManager = new SettingsManager(stateManager.variables);
-        settingsManager
-            .saveSettings(settings)
-            .then(() => {
-                console.log("Settings saved:", settings);
-                Object.entries(settings).forEach(([key, value]) =>
-                    StorageManager.setToStorage(key, value),
-                );
-            })
-            .catch((err) => {
-                throw ErrorHandler.log(err);
-            });
+        const settingsManager = new SettingsManager(stateManager);
+
+        await settingsManager.saveSettings(settings);
+
+        await Promise.all(
+            Object.entries(settings).map(([key, value]) =>
+                StorageManager.setToStorage(key, value),
+            ),
+        );
+
+        console.log("Settings saved:", settings);
     }
 
     static toggleDebugMode(button) {

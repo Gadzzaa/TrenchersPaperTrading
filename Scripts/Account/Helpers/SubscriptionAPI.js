@@ -1,22 +1,30 @@
-import {BackendRequest} from "../../Server/BackendRequest.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
+
+const SUBSCRIPTION_LOOKUP_KEYS = Object.freeze({
+    monthly: "pro_monthly",
+    yearly: "pro_yearly",
+});
 
 export class SubscriptionAPI {
     /**
      * @param {string} type - "monthly" or "yearly".
-     * @param {string} authToken - User session token.
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Object containing URL of the checkout session: { url: string }
      */
-    async upgradeSubscription(type, authToken) {
-        let lookup_key;
-        if (type === "monthly") lookup_key = "pro_monthly";
-        else lookup_key = "pro_yearly";
+    async upgradeSubscription(type, api) {
+        const lookupKey = SUBSCRIPTION_LOOKUP_KEYS[type];
 
-        const response = await new BackendRequest()
+        if (!lookupKey) {
+            throw new AppError("Unsupported subscription type.", {
+                code: "INVALID_DATA",
+                meta: {type},
+            });
+        }
+
+        const response = await api.createRequest()
             .addEndpoint("/create-checkout-session")
             .addMethod("POST")
-            .addAuthParams(authToken)
-            .addBody(JSON.stringify({lookup_key}))
+            .addBody({lookup_key: lookupKey})
             .build();
 
         if (!response)
@@ -26,14 +34,13 @@ export class SubscriptionAPI {
     }
 
     /**
-     * @param {string} authToken - Session token of the user.
+     * @param {import("../../Server/API.js").API} api
      * @returns {Promise<Object>} - Object containing URL of the customer portal session: { url: string }
      */
-    async manageSubscription(authToken) {
-        const response = await new BackendRequest()
+    async manageSubscription(api) {
+        const response = await api.createRequest()
             .addEndpoint("/create-portal-session")
             .addMethod("POST")
-            .addAuthParams(authToken)
             .build();
 
         if (!response)

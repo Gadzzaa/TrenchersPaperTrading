@@ -7,22 +7,11 @@ export class ActionHelper {
     /**
      * Executes buy transaction flow.
      * @param {TransactionManager} transactionManager
-     * @param {string} poolAddress
      * @param {StateManager} stateManager
      * @returns {Promise<void>}
      */
-    static async handleBuy(transactionManager, poolAddress, stateManager) {
+    static async handleBuy(transactionManager, stateManager) {
         const result = await transactionManager.buyToken(stateManager);
-        if (!result?.success)
-            throw new AppError(result.error || "Unknown error occurred.", {
-                code: "BUY_FAILED",
-                meta: {
-                    transactionResult: result,
-                    transactionManager,
-                    poolAddress,
-                    stateManager,
-                },
-            });
 
         ActionHelper.confirmAction("buy", result.solSpent, result.tokenData.symbol);
     }
@@ -35,15 +24,6 @@ export class ActionHelper {
      */
     static async handleSell(transactionManager, stateManager) {
         const result = await transactionManager.sellToken(stateManager);
-        if (!result?.success)
-            throw new AppError(result.error || "Unknown error occurred.", {
-                code: "SELL_FAILED",
-                meta: {
-                    transactionResult: result,
-                    transactionManager,
-                    stateManager,
-                },
-            });
 
         ActionHelper.confirmAction("sell", result.solReceived);
     }
@@ -69,40 +49,37 @@ export class ActionHelper {
 
     /**
      * Loads and validates required constants for trade action execution.
-     * @param {Record<string, any>} Constants
+     * @param {HTMLButtonElement} button
      * @param {StateManager} stateManager
      */
-    static loadAndValidateBasicConstants(Constants, stateManager) {
-        Constants.poolAddress = stateManager.currentContract;
-        Constants.action = Constants.button.dataset.action;
-        Constants.dataAmount = parseFloat(Constants.button.dataset.amount);
+    static createTransactionContext(button, stateManager) {
+        const poolAddress = stateManager.currentContract;
+        const action = button.dataset.action;
+        const amount = Number(button.dataset.amount);
+        const errors = [];
 
-        let error = false,
-            errMsg = "";
+        if (!poolAddress)
+            errors.push("No pool address found.");
 
-        if (!Constants.poolAddress) {
-            errMsg += "No pool address found. \n";
-            error = true;
-        }
-        if (!Constants.action) {
-            errMsg += "No action specified inside the button. \n";
-            error = true;
-        }
-        if (!Constants.dataAmount) {
-            errMsg += "No amount specified inside the button. \n";
-            error = true;
-        }
-        if (error)
-            throw new AppError(errMsg, {
+        if (!["buy", "sell"].includes(action))
+            errors.push("Invalid transaction action.");
+
+        if (!Number.isFinite(amount) || amount <= 0)
+            errors.push("Invalid transaction amount.");
+
+        if (errors.length > 0) {
+            throw new AppError(errors.join("\n"), {
                 code: "INVALID_DATA",
-                meta: {
-                    Constants,
-                },
+                meta: {poolAddress, action, amount},
             });
+        }
 
-        Constants.transactionManager = new TransactionManager(
-            {poolAddress: Constants.poolAddress, amount: Constants.dataAmount},
-            stateManager.variables,
-        );
+        return {
+            action,
+            transactionManager: new TransactionManager(
+                {poolAddress, amount},
+                stateManager,
+            ),
+        };
     }
 }

@@ -2,7 +2,6 @@ import {defaultPresets} from "../Config/defaultPresets.js";
 import {PresetHelper} from "../Helpers/PresetHelper.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {StateManager} from "../Services/StateManager.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class PresetManager {
     /**
@@ -10,11 +9,11 @@ export class PresetManager {
      * @param {StateManager} stateManager
      */
     static initUI(stateManager) {
-        let currentPreset = PresetManager.getUsingPreset();
+        const currentPreset = PresetManager.getUsingPreset();
         PresetManager.applyPreset(currentPreset, stateManager);
 
         const presetButtons = document.querySelectorAll("#Presets .preset");
-        if (!presetButtons)
+        if (presetButtons.length === 0)
             throw new AppError("Preset buttons not found", {
                 code: "PRESET_NOT_FOUND",
                 meta: {
@@ -35,14 +34,14 @@ export class PresetManager {
      * @param {StateManager} stateManager
      */
     static applyPreset(presetName, stateManager) {
-        let prevPresetName = PresetManager.getUsingPreset();
-        let prevPresetData = PresetManager.getPresetData(prevPresetName);
+        const prevPresetName = PresetManager.getUsingPreset();
+        const prevPresetData = PresetManager.getPresetData(prevPresetName);
         try {
-            let presetData = PresetManager.getPresetData(presetName);
+            const presetData = PresetManager.getPresetData(presetName);
             PresetHelper.applyPreset(presetName, presetData, stateManager);
         } catch (error) {
             PresetHelper.applyPreset(prevPresetName, prevPresetData, stateManager);
-            throw ErrorHandler.log(`Could not apply preset: ${presetName}`, {
+            throw new AppError(`Could not apply preset: ${presetName}`, {
                 code: "PRESET_APPLY_FAILED",
                 cause: error,
                 meta: {

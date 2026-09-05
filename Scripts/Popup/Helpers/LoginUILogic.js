@@ -1,48 +1,29 @@
-import {Variables} from "../../Account/Core/Variables.js";
-import {AuthManager} from "../../Account/Core/AuthManager.js";
 import {DialogsValidators} from "./DialogsValidators.js";
 
 export class LoginUILogic {
     static async login(stateManager) {
-        let usernameInput = document.getElementById("formUsername");
-        let passwordInput = document.getElementById("formPassword");
+        const {username, password} = this.#getCredentials();
 
-        stateManager.variables = new Variables({
-            username: usernameInput.value,
-        });
-        let authManager = new AuthManager(stateManager.variables);
-
-        await authManager.login(passwordInput.value);
+        await stateManager.api.login(username, password);
+        return true;
     }
 
     static async register(stateManager) {
-        let usernameInput = document.getElementById("formUsername");
-        let passwordInput = document.getElementById("formPassword");
+        const amount = await DialogsValidators.askStartupBalance(stateManager);
+        if (!amount) return false;
 
-        let amount = await DialogsValidators.askStartupBalance(stateManager);
-        if (!amount) return;
+        const agreedToTOS = await DialogsValidators.askTOSAgreement(stateManager);
+        if (!agreedToTOS) return false;
 
-        let agreedToTOS = await DialogsValidators.askTOSAgreement(stateManager);
-        if (!agreedToTOS) return;
+        const {username, password} = this.#getCredentials();
 
-        stateManager.variables = new Variables({
-            username: usernameInput.value,
-            balance: amount,
-        });
-        let authManager = new AuthManager(stateManager.variables);
-
-        await authManager.register(passwordInput.value);
-    }
-
-    static async logout(stateManager) {
-        let authManager = new AuthManager(stateManager.variables);
-
-        await authManager.logout();
+        await stateManager.api.register(username, password, amount);
+        return true;
     }
 
     static togglePasswordVisibility(button) {
         const icon = button.querySelector("i");
-        let passwordInput = document.getElementById("formPassword");
+        const passwordInput = document.getElementById("formPassword");
 
         if (passwordInput.type === "password") {
             passwordInput.type = "text";
@@ -53,5 +34,15 @@ export class LoginUILogic {
             icon.classList.remove("fa-eye");
             icon.classList.add("fa-eye-slash");
         }
+    }
+
+    static #getCredentials() {
+        const usernameInput = document.getElementById("formUsername");
+        const passwordInput = document.getElementById("formPassword");
+
+        return {
+            username: usernameInput.value,
+            password: passwordInput.value,
+        };
     }
 }

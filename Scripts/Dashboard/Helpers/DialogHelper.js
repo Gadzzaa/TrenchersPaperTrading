@@ -1,3 +1,5 @@
+import {acceptAuthNotification} from "../../Server/AuthNotification.js";
+
 export class DialogHelper {
 
     static handleNoInternet() {
@@ -15,12 +17,16 @@ export class DialogHelper {
         })
     }
 
-    static handleNoSession() {
+    static handleNoSession(stateManager) {
         return new Promise(resolve => {
-            const chromeListener = (message) => {
-                if (message.origin !== "TrenchersPaperTrading") return;
-                const shouldResolve = message.type === "SESSION_VALID_UI";
-                if (!shouldResolve) return;
+            const chromeListener = (message, sender) => {
+                if (message.type !== "SESSION_VALID_UI")
+                    return;
+
+                if (!acceptAuthNotification(message, sender, stateManager.api)) {
+                    return;
+                }
+
                 chrome.runtime.onMessage.removeListener(chromeListener);
                 resolve();
             }

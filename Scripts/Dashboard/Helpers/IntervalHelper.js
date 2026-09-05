@@ -14,19 +14,26 @@ export function startInterval(stateManager) {
     stateManager.currentPreset = document.querySelector(".activePreset")?.id;
 
     return setInterval(async () => {
+
         if (stateManager.fetchingBalance) return;
         stateManager.fetchingBalance = true;
+
         try {
-            checkPendingPresets(stateManager);
-            updateCurrentPreset(stateManager);
-            await updateCurrentContract(stateManager);
-            await updateBalanceUI(false, stateManager);
+            await syncDashboardData(stateManager);
         } catch (err) {
             ErrorHandler.log(err);
         } finally {
             stateManager.fetchingBalance = false;
         }
+       
     }, 1000);
+}
+
+export async function syncDashboardData(stateManager) {
+    checkPendingPresets(stateManager);
+    updateCurrentPreset(stateManager);
+    await updateCurrentContract(stateManager);
+    await updateBalanceUI(false, stateManager);
 }
 
 /**
@@ -69,7 +76,7 @@ async function updateCurrentContract(stateManager) {
  * @returns {Promise<void>}
  */
 async function searchPosition(stateManager) {
-    await stateManager.pnlService.syncTradeLog(stateManager.variables);
+    await stateManager.pnlService.syncTradeLog();
 
     const storedPositions = localStorage.getItem("openPositions");
     if (!storedPositions) {

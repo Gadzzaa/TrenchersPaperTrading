@@ -1,13 +1,10 @@
 import {TransactionAPI} from "../Helpers/TransactionAPI.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
-import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 
 export class TransactionManager {
     #poolAddress;
-    #amount = 0;
-    #slippagePercentage = 0;
-    #feeAmount = 0;
-    #authToken;
+    #amount;
+    #slippagePercentage;
+    #feeAmount;
 
     /**
      * @param {Object} tokenData - Contains token transaction details.
@@ -17,23 +14,24 @@ export class TransactionManager {
      *    slippagePercentage: number,
      *    feeAmount: number
      * }
-     * @param {Variables} variables - Contains session and user variables.
+     * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(tokenData = {}, variables) {
-        tokenData.poolAddress && (this.#poolAddress = tokenData.poolAddress);
-        tokenData.amount && (this.#amount = tokenData.amount);
-        tokenData.slippagePercentage &&
-        (this.#slippagePercentage = tokenData.slippagePercentage);
-        tokenData.feeAmount && (this.#feeAmount = tokenData.feeAmount);
+    constructor(
+        {
+            poolAddress,
+            amount = 0,
+            slippagePercentage = 0,
+            feeAmount = 0,
+        } = {},
+        stateManager,
+    ) {
+        this.#poolAddress = poolAddress;
+        this.#amount = amount;
+        this.#slippagePercentage = slippagePercentage;
+        this.#feeAmount = feeAmount;
 
-        this.api = new TransactionAPI();
-        this.variables = variables;
-
-        this.#authToken = this.variables.getAuthToken();
-        if (this.#authToken == null)
-            throw ErrorHandler.log(new AppError("User is not authenticated."), {
-                code: "INVALID_TOKEN",
-            });
+        this.transactionAPI = new TransactionAPI();
+        this.api = stateManager.api;
     }
 
     /**
@@ -47,53 +45,38 @@ export class TransactionManager {
      *  }
      * */
     async buyToken(stateManager) {
-        try {
-            const payload = {
-                poolAddress: this.#poolAddress,
-                solAmount: this.#amount,
-                slippage: this.#slippagePercentage,
-                fee: this.#feeAmount,
-            };
-            let authToken = this.#authToken;
+        const payload = this.#createTradePayload("solAmount")
+        const response = await this.transactionAPI.buy(payload, this.api);
+        const activePoolAddress = response.poolAddress || this.#poolAddress;
 
-            if (!authToken)
-                throw new AppError("Authorization token is required for transactions.", {
-                    code: "INVALID_TOKEN",
-                });
-            const response = await this.api.buy(payload, authToken);
-            const activePoolAddress = response.poolAddress || this.#poolAddress;
-
-            if (activePoolAddress !== this.#poolAddress) {
-                stateManager.pnlService.pnlDataManager.replacePoolAddress(
-                    this.#poolAddress,
-                    activePoolAddress,
-                    response.pnlData,
-                );
-                // Subscribe first. WebSocket messages are ordered, so the
-                // subsequent unwatch removes only the old alias without ever
-                // leaving the live pool unsubscribed during the handoff.
-                stateManager.pnlService.poolWatcher.watch(activePoolAddress, response.pnlData);
-                stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
-                this.#poolAddress = activePoolAddress;
-            } else {
-                stateManager.pnlService.pnlDataManager.add(activePoolAddress, response.pnlData);
-            }
-
-            await stateManager.pnlService.syncTradeLog(stateManager.variables)
-
-            stateManager.pnlService.setActiveToken(activePoolAddress);
-            stateManager.pnlService.update(true)
-
-            return {
-                success: response.success,
-                tokensReceived: response.tokensReceived,
-                solSpent: response.solSpent,
-                effectivePrice: response.effectivePrice,
-                tokenData: response.tokenData,
-            };
-        } catch (error) {
-            throw ErrorHandler.log(error);
+        if (activePoolAddress !== this.#poolAddress) {
+            stateManager.pnlService.pnlDataManager.replacePoolAddress(
+                this.#poolAddress,
+                activePoolAddress,
+                response.pnlData,
+            );
+            // Subscribe first. WebSocket messages are ordered, so the
+            // subsequent unwatch removes only the old alias without ever
+            // leaving the live pool unsubscribed during the handoff.
+            stateManager.pnlService.poolWatcher.watch(activePoolAddress, response.pnlData);
+            stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
+            this.#poolAddress = activePoolAddress;
+        } else {
+            stateManager.pnlService.pnlDataManager.add(activePoolAddress, response.pnlData);
         }
+
+        await stateManager.pnlService.syncTradeLog()
+
+        stateManager.pnlService.setActiveToken(activePoolAddress);
+        stateManager.pnlService.update(true)
+
+        return {
+            success: response.success,
+            tokensReceived: response.tokensReceived,
+            solSpent: response.solSpent,
+            effectivePrice: response.effectivePrice,
+            tokenData: response.tokenData,
+        };
     }
 
     /**
@@ -106,53 +89,53 @@ export class TransactionManager {
      *  }
      * */
     async sellToken(stateManager) {
-        try {
-            const payload = {
-                poolAddress: this.#poolAddress,
-                sellPercentage: this.#amount,
-                slippage: this.#slippagePercentage,
-                fee: this.#feeAmount,
-            };
+        const payload = this.#createTradePayload("sellPercentage")
 
-            const response = await this.api.sell(payload, this.#authToken);
-            const activePoolAddress = response.poolAddress || this.#poolAddress;
+        const response = await this.transactionAPI.sell(payload, this.api);
+        const activePoolAddress = response.poolAddress || this.#poolAddress;
 
-            await stateManager.pnlService.syncTradeLog(stateManager.variables)
+        await stateManager.pnlService.syncTradeLog()
 
-            if (this.#amount === 100)
-                stateManager.pnlService.poolWatcher.unwatch(activePoolAddress);
-            else {
-                if (activePoolAddress !== this.#poolAddress) {
-                    stateManager.pnlService.poolWatcher.watch(
-                        activePoolAddress,
-                        stateManager.pnlService.pnlDataManager.get(activePoolAddress),
-                    );
-                    stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
-                    this.#poolAddress = activePoolAddress;
-                    stateManager.pnlService.setActiveToken(activePoolAddress);
-                }
+        if (this.#amount === 100)
+            stateManager.pnlService.poolWatcher.unwatch(activePoolAddress);
+        else {
+            if (activePoolAddress !== this.#poolAddress) {
+                stateManager.pnlService.poolWatcher.watch(
+                    activePoolAddress,
+                    stateManager.pnlService.pnlDataManager.get(activePoolAddress),
+                );
+                stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
+                this.#poolAddress = activePoolAddress;
+                stateManager.pnlService.setActiveToken(activePoolAddress);
             }
-            stateManager.pnlService.update(true)
-
-            return {
-                success: response.success,
-                solReceived: response.solReceived,
-                tokensSold: response.tokensSold,
-                effectivePrice: response.effectivePrice,
-            };
-        } catch (error) {
-            throw ErrorHandler.log(error);
         }
+        stateManager.pnlService.update(true)
+
+        return {
+            success: response.success,
+            solReceived: response.solReceived,
+            tokensSold: response.tokensSold,
+            effectivePrice: response.effectivePrice,
+        };
     }
 
     /**
      * @returns {Promise<Object>} - Object containing user's portfolio data.
      * */
-    async getPortfolio() {
-        try {
-            return await this.api.getPortfolio(this.#authToken);
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    getPortfolio() {
+        return this.transactionAPI.getPortfolio(this.api);
+    }
+
+    /**
+     * @param {"solAmount"|"sellPercentage"} amountField
+     * @returns {Object}
+     */
+    #createTradePayload(amountField) {
+        return {
+            poolAddress: this.#poolAddress,
+            [amountField]: this.#amount,
+            slippage: this.#slippagePercentage,
+            fee: this.#feeAmount,
+        };
     }
 }

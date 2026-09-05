@@ -1,4 +1,5 @@
 import {SettingsUILogic} from "../Helpers/SettingsUILogic.js";
+import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SettingsUIManager {
     static createButtons(stateManager) {
@@ -25,15 +26,27 @@ export class SettingsUIManager {
         });
 
         saveWindowBox.addEventListener("change", () => {
-            SettingsUILogic.setAndSavePremiumSettings(stateManager);
+            void SettingsUIManager.#savePremiumSettings(stateManager);
         });
 
         pnlSlider.addEventListener("mouseup", function () {
-            SettingsUILogic.setAndSavePremiumSettings(stateManager);
+            void SettingsUIManager.#savePremiumSettings(stateManager);
         });
 
         debugButton.addEventListener("click", () => {
             SettingsUILogic.toggleDebugMode(debugButton);
         });
+    }
+
+    static async #savePremiumSettings(stateManager) {
+        try {
+            await SettingsUILogic.setAndSavePremiumSettings(stateManager);
+        } catch (error) {
+            ErrorHandler.show(
+                error,
+                {show: false},
+                {show: true, stateManager},
+            );
+        }
     }
 }

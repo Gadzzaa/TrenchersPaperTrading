@@ -1,4 +1,3 @@
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {SubscriptionManager} from "../../Account/Core/SubscriptionManager.js";
 import {DataManager} from "../../Account/Core/DataManager.js"
 import {FooterHelper} from "./FooterHelper.js";
@@ -7,46 +6,45 @@ import {AccountLoader} from "../Core/AccountLoader.js";
 
 export class AccountUILogic {
     static async resetAccount(stateManager) {
-        let amount = await DialogsValidators.askStartupBalance(stateManager);
+        const amount = await DialogsValidators.askStartupBalance(stateManager);
         if (!amount) return;
 
-        let confirmed = await DialogsValidators.askResetConfirmation(stateManager);
+        const confirmed = await DialogsValidators.askResetConfirmation(stateManager);
         if (!confirmed) return;
 
-        let dataManager = new DataManager(stateManager.variables);
+        const dataManager = new DataManager(stateManager);
 
-        await dataManager
-            .resetAccount(amount)
-            .then(() => {
-                FooterHelper.focusDefaultButton();
-                AccountLoader.loadData(stateManager);
-            })
-            .catch((err) => {
-                throw ErrorHandler.log(err);
-            });
+        await dataManager.resetAccount(amount);
+        FooterHelper.focusDefaultButton();
+        await AccountLoader.loadData(stateManager);
     }
 
+    static upgradeSubscription(plan, stateManager) {
+        const subscriptionManager = new SubscriptionManager(stateManager);
 
-    static async upgradeSubscription(plan, stateManager) {
-        let subscriptionManager = new SubscriptionManager(stateManager.variables);
-        await subscriptionManager
-            .upgradeSubscription(plan)
-            .catch((err) => {
-                throw ErrorHandler.log(err);
-            })
-            .finally(() => {
-                AccountUILogic.hideSubscriptionDiv();
-            });
+        return AccountUILogic.#runSubscriptionOperation(
+            () => subscriptionManager.upgradeSubscription(plan),
+        );
     }
 
-    static async manageSubscription(stateManager) {
-        let subscriptionManager = new SubscriptionManager(stateManager.variables);
-        await subscriptionManager.manageSubscription().catch((err) => {
-            throw ErrorHandler.log(err);
-        }).finally
-        (() => {
+    static manageSubscription(stateManager) {
+        const subscriptionManager = new SubscriptionManager(stateManager);
+
+        return AccountUILogic.#runSubscriptionOperation(
+            () => subscriptionManager.manageSubscription(),
+        );
+    }
+
+    /**
+     * @param {() => Promise<void>} operation
+     * @returns {Promise<void>}
+     */
+    static async #runSubscriptionOperation(operation) {
+        try {
+            await operation();
+        } finally {
             AccountUILogic.hideSubscriptionDiv();
-        });
+        }
     }
 
     static showSubscriptionDiv() {

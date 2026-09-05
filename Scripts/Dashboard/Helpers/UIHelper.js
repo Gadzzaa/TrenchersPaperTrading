@@ -37,14 +37,11 @@ export class UIHelper {
      * @param {StateManager} stateManager
      */
     static createStorageEvents(stateManager) {
-        let storageChangeListener =
-            UIConfig.createStorageMessageListener(stateManager);
-
-        // Remove existing listeners before adding new ones to prevent duplicates
-        if (storageChangeListener)
-            chrome.storage.onChanged.removeListener(storageChangeListener);
-
-        chrome.storage.onChanged.addListener(storageChangeListener);
+        chrome.storage.onChanged.addListener(
+            UIConfig.createStorageMessageListener(
+                stateManager
+            )
+        );
     }
 
     /**
@@ -52,15 +49,11 @@ export class UIHelper {
      * @param {StateManager} stateManager
      */
     static createRuntimeEvents(stateManager) {
-        let runtimeMessageListener =
-            UIConfig.createRuntimeMessageListener(stateManager);
-
-        // Remove existing listeners before adding new ones to prevent duplicates
-        if (runtimeMessageListener) {
-            chrome.runtime.onMessage.removeListener(runtimeMessageListener);
-        }
-
-        chrome.runtime.onMessage.addListener(runtimeMessageListener);
+        chrome.runtime.onMessage.addListener(
+            UIConfig.createRuntimeMessageListener(
+                stateManager
+            )
+        );
     }
 
     /**

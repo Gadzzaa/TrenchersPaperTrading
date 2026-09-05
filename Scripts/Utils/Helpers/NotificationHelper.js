@@ -78,12 +78,14 @@ export class NotificationHelper {
 
     /**
      * @param {string} message - The message to be displayed in the notification.
-     * @param {HTMLAudioElement} sound -
+     * @param {HTMLAudioElement | null} sound -
      */
-    static execNotification(message, sound) {
-        return Promise.allSettled([
-            NotificationHelper.sendMessageToInjector(message),
-            sound.play(),
-        ]);
+    static execNotification(message, sound = null) {
+        const operations = [NotificationHelper.sendMessageToInjector(message)];
+
+        if (sound)
+            operations.push(sound.play());
+
+        return Promise.allSettled(operations);
     }
 }
