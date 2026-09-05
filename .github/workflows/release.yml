@@ -5,20 +5,20 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install dependencies
         run: npm ci
@@ -26,9 +26,8 @@ jobs:
       # --- GET RELEASE INFO BEFORE SEMANTIC RELEASE ---
       - name: Get Current Latest Release
         id: pre_release
-        continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CURRENT_TAG=$(gh release view --json tagName -q '.tagName' 2>/dev/null || echo "none")
           echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
@@ -38,7 +37,7 @@ jobs:
       - name: Run Semantic Release
         id: semantic
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
       # --- GET LATEST RELEASE INFO ---
@@ -46,7 +45,7 @@ jobs:
         id: latest_release
         if: success()
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME=$(gh release view --json tagName -q '.tagName' 2>/dev/null || echo "none")
           echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
@@ -70,13 +69,14 @@ jobs:
           TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
           VERSION="${TAG_NAME#v}"
           
+          EXIT_CODE=0
+
           node Scripts/check-webstore-version.cjs \
             "${{ secrets.CHROME_EXTENSION_ID }}" \
             "$VERSION" \
             "${{ secrets.CHROME_CLIENT_ID }}" \
             "${{ secrets.CHROME_CLIENT_SECRET }}" \
-            "${{ secrets.CHROME_REFRESH_TOKEN }}"
-          EXIT_CODE=$?
+            "${{ secrets.CHROME_REFRESH_TOKEN }}" || EXIT_CODE=$?
           
           if [ $EXIT_CODE -eq 0 ]; then
             echo "Version check passed, proceeding with upload"
@@ -96,7 +96,7 @@ jobs:
       - name: Download Extension ZIP from Release
         if: steps.latest_release.outputs.skip_upload != 'true' && steps.check_webstore_version.outputs.should_upload != 'false'
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="${{ steps.latest_release.outputs.tag_name }}"
           ZIP_NAME="extension-${TAG_NAME}.zip"
