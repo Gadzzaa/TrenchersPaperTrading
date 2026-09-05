@@ -2,7 +2,6 @@ import {defaultPresets} from "../Config/defaultPresets.js";
 import {PresetHelper} from "../Helpers/PresetHelper.js";
 import {AppError} from "../../ErrorHandling/Helpers/AppError.js";
 import {StateManager} from "../Services/StateManager.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class PresetManager {
     /**
@@ -42,7 +41,7 @@ export class PresetManager {
             PresetHelper.applyPreset(presetName, presetData, stateManager);
         } catch (error) {
             PresetHelper.applyPreset(prevPresetName, prevPresetData, stateManager);
-            throw ErrorHandler.log(`Could not apply preset: ${presetName}`, {
+            throw new AppError(`Could not apply preset: ${presetName}`, {
                 code: "PRESET_APPLY_FAILED",
                 cause: error,
                 meta: {
