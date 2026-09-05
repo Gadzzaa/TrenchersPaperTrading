@@ -77,7 +77,7 @@ export class StateManager {
                 });
             }
 
-            throw ErrorHandler.log(err);
+            throw err
         } finally {
             if (attemptId === this.#initAttemptId)
                 this.initializing = false;
