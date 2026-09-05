@@ -1,4 +1,4 @@
-export class UIHelper {
+export class LoadingUIHelper {
     /**
      * @param {HTMLButtonElement} button - Button element to show loading dots on
      * @returns {number} - Interval ID to clear later

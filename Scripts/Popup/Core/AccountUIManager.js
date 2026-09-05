@@ -1,5 +1,5 @@
 import {AccountUILogic} from "../Helpers/AccountUILogic.js";
-import {UIHelper as GlobalUIHelper} from "../../Utils/Helpers/UIHelper.js";
+import {LoadingUIHelper} from "../../Utils/Helpers/LoadingUIHelper.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class AccountUIManager {
@@ -42,7 +42,7 @@ export class AccountUIManager {
                 () => AccountUILogic.manageSubscription(stateManager),
             )
         });
-       
+
         closeSubscriptionButton.addEventListener("click", () => {
             AccountUILogic.hideSubscriptionDiv();
         })
@@ -53,14 +53,14 @@ export class AccountUIManager {
      * @param {() => Promise<void>} action
      */
     static async #runButtonAction(button, action) {
-        const loadingInterval = GlobalUIHelper.startLoadingDots(button);
+        const loadingInterval = LoadingUIHelper.startLoadingDots(button);
 
         try {
             await action();
         } catch (error) {
             ErrorHandler.show(error);
         } finally {
-            GlobalUIHelper.stopLoadingDots(button, loadingInterval);
+            LoadingUIHelper.stopLoadingDots(button, loadingInterval);
         }
     }
 }

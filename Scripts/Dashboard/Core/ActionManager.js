@@ -1,5 +1,5 @@
 import {UIHelper} from "../Helpers/UIHelper.js";
-import {UIHelper as GlobalUIHelper} from "../../Utils/Helpers/UIHelper.js";
+import {LoadingUIHelper} from "../../Utils/Helpers/LoadingUIHelper.js";
 import {updateBalanceUI} from "../Helpers/BalanceUpdater.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {ActionHelper} from "../Helpers/ActionHelper.js";
@@ -53,7 +53,7 @@ export class ActionManager {
             })
 
         UIHelper.disableAllTradeButtons();
-        const loadingDotsInterval = GlobalUIHelper.startLoadingDots(button)
+        const loadingDotsInterval = LoadingUIHelper.startLoadingDots(button)
 
         try {
             const {action, transactionManager} =
@@ -66,7 +66,7 @@ export class ActionManager {
 
             await updateBalanceUI(true, stateManager);
         } finally {
-            GlobalUIHelper.stopLoadingDots(button, loadingDotsInterval);
+            LoadingUIHelper.stopLoadingDots(button, loadingDotsInterval);
             UIHelper.enableAllTradeButtons();
         }
     }

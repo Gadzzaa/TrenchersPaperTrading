@@ -2,7 +2,7 @@ import {LoginUILogic} from "../Helpers/LoginUILogic.js";
 import {FooterHelper} from "../Helpers/FooterHelper.js";
 import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 import {AccountLoader} from "./AccountLoader.js";
-import {UIHelper as GlobalUIHelper} from "../../Utils/Helpers/UIHelper.js"
+import {LoadingUIHelper} from "../../Utils/Helpers/LoadingUIHelper.js"
 import {ChromeHandler} from "../../ChromeHandler.js";
 
 export class LoginUIManager {
@@ -27,7 +27,7 @@ export class LoginUIManager {
             )
         });
         logoutButton.addEventListener("click", async () => {
-            const logoutInterval = GlobalUIHelper.startLoadingDots(logoutButton);
+            const logoutInterval = LoadingUIHelper.startLoadingDots(logoutButton);
             try {
                 await stateManager.api.logout();
                 stateManager.clearUI();
@@ -35,7 +35,7 @@ export class LoginUIManager {
             } catch (err) {
                 ErrorHandler.show(err, {show: false}, {show: true, stateManager});
             } finally {
-                GlobalUIHelper.stopLoadingDots(logoutButton, logoutInterval);
+                LoadingUIHelper.stopLoadingDots(logoutButton, logoutInterval);
             }
         });
         showPassButton.addEventListener("click", () => {
@@ -58,7 +58,7 @@ export class LoginUIManager {
      */
     static async #runSessionAction(button, stateManager, action) {
         const loadingInterval =
-            GlobalUIHelper.startLoadingDots(button);
+            LoadingUIHelper.startLoadingDots(button);
 
         try {
             const sessionEstablished = await action();
@@ -76,7 +76,7 @@ export class LoginUIManager {
             );
         } finally {
             LoginUIManager.clearInputs();
-            GlobalUIHelper.stopLoadingDots(button, loadingInterval);
+            LoadingUIHelper.stopLoadingDots(button, loadingInterval);
         }
     }
 
