@@ -43,7 +43,7 @@ export class ActionManager {
      * @returns {Promise<void>}
      */
     static async #handleBasicActions(button, stateManager) {
-        let ws = stateManager.pnlService?.wsManager?.ws;
+        const ws = stateManager.pnlService?.wsManager?.ws;
         if (!ws || ws.readyState !== WebSocket.OPEN)
             throw new AppError("WebSocket is not connected.", {
                 code: "WS_NOT_CONNECTED",
@@ -53,19 +53,22 @@ export class ActionManager {
             })
 
         UIHelper.disableAllTradeButtons();
-        let loadingDotsInterval = GlobalUIHelper.startLoadingDots(button)
+        const loadingDotsInterval = GlobalUIHelper.startLoadingDots(button)
 
-        const {action, transactionManager} =
-            ActionHelper.createTransactionContext(button, stateManager);
+        try {
+            const {action, transactionManager} =
+                ActionHelper.createTransactionContext(button, stateManager);
 
-        if (action === "buy")
-            await ActionHelper.handleBuy(transactionManager, stateManager);
-        else
-            await ActionHelper.handleSell(transactionManager, stateManager);
+            if (action === "buy")
+                await ActionHelper.handleBuy(transactionManager, stateManager);
+            else
+                await ActionHelper.handleSell(transactionManager, stateManager);
 
-        await updateBalanceUI(true, stateManager);
-        GlobalUIHelper.stopLoadingDots(button, loadingDotsInterval);
-        UIHelper.enableAllTradeButtons();
+            await updateBalanceUI(true, stateManager);
+        } finally {
+            GlobalUIHelper.stopLoadingDots(button, loadingDotsInterval);
+            UIHelper.enableAllTradeButtons();
+        }
     }
 
     /**
