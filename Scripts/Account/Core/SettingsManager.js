@@ -1,5 +1,4 @@
 import {SettingsAPI} from "../Helpers/SettingsAPI.js";
-import {ErrorHandler} from "../../ErrorHandling/Core/ErrorHandler.js";
 
 export class SettingsManager {
     /**
@@ -13,22 +12,14 @@ export class SettingsManager {
     /**
      * @param {Object} settings - Object containing user settings to be saved.
      */
-    async saveSettings(settings) {
-        try {
-            await this.settingsAPI.saveSettings(this.api, settings);
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    saveSettings(settings) {
+        return this.settingsAPI.saveSettings(this.api, settings);
     }
 
     /**
      * @returns {Promise<Object>} - Object containing user settings.
      * */
-    async getSettings() {
-        try {
-            return await this.settingsAPI.getSettings(this.api);
-        } catch (error) {
-            throw ErrorHandler.log(error);
-        }
+    getSettings() {
+        return this.settingsAPI.getSettings(this.api);
     }
 }
