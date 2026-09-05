@@ -2,9 +2,9 @@ import {TransactionAPI} from "../Helpers/TransactionAPI.js";
 
 export class TransactionManager {
     #poolAddress;
-    #amount = 0;
-    #slippagePercentage = 0;
-    #feeAmount = 0;
+    #amount;
+    #slippagePercentage;
+    #feeAmount;
 
     /**
      * @param {Object} tokenData - Contains token transaction details.
@@ -16,12 +16,19 @@ export class TransactionManager {
      * }
      * @param {StateManager} stateManager - Contains session and user variables.
      */
-    constructor(tokenData = {}, stateManager) {
-        tokenData.poolAddress && (this.#poolAddress = tokenData.poolAddress);
-        tokenData.amount && (this.#amount = tokenData.amount);
-        tokenData.slippagePercentage &&
-        (this.#slippagePercentage = tokenData.slippagePercentage);
-        tokenData.feeAmount && (this.#feeAmount = tokenData.feeAmount);
+    constructor(
+        {
+            poolAddress,
+            amount = 0,
+            slippagePercentage = 0,
+            feeAmount = 0,
+        } = {},
+        stateManager,
+    ) {
+        this.#poolAddress = poolAddress;
+        this.#amount = amount;
+        this.#slippagePercentage = slippagePercentage;
+        this.#feeAmount = feeAmount;
 
         this.transactionAPI = new TransactionAPI();
         this.api = stateManager.api;
@@ -38,12 +45,7 @@ export class TransactionManager {
      *  }
      * */
     async buyToken(stateManager) {
-        const payload = {
-            poolAddress: this.#poolAddress,
-            solAmount: this.#amount,
-            slippage: this.#slippagePercentage,
-            fee: this.#feeAmount,
-        };
+        const payload = this.#createTradePayload("solAmount")
         const response = await this.transactionAPI.buy(payload, this.api);
         const activePoolAddress = response.poolAddress || this.#poolAddress;
 
@@ -87,12 +89,7 @@ export class TransactionManager {
      *  }
      * */
     async sellToken(stateManager) {
-        const payload = {
-            poolAddress: this.#poolAddress,
-            sellPercentage: this.#amount,
-            slippage: this.#slippagePercentage,
-            fee: this.#feeAmount,
-        };
+        const payload = this.#createTradePayload("sellPercentage")
 
         const response = await this.transactionAPI.sell(payload, this.api);
         const activePoolAddress = response.poolAddress || this.#poolAddress;
@@ -127,5 +124,18 @@ export class TransactionManager {
      * */
     getPortfolio() {
         return this.transactionAPI.getPortfolio(this.api);
+    }
+
+    /**
+     * @param {"solAmount"|"sellPercentage"} amountField
+     * @returns {Object}
+     */
+    #createTradePayload(amountField) {
+        return {
+            poolAddress: this.#poolAddress,
+            [amountField]: this.#amount,
+            slippage: this.#slippagePercentage,
+            fee: this.#feeAmount,
+        };
     }
 }
