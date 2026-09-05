@@ -2,30 +2,28 @@ import {DialogsValidators} from "./DialogsValidators.js";
 
 export class LoginUILogic {
     static async login(stateManager) {
-        let usernameInput = document.getElementById("formUsername");
-        let passwordInput = document.getElementById("formPassword");
+        const {username, password} = this.#getCredentials();
 
-        await stateManager.api.login(usernameInput.value, passwordInput.value);
-        return true
+        await stateManager.api.login(username, password);
+        return true;
     }
 
     static async register(stateManager) {
-        let usernameInput = document.getElementById("formUsername");
-        let passwordInput = document.getElementById("formPassword");
-
-        let amount = await DialogsValidators.askStartupBalance(stateManager);
+        const amount = await DialogsValidators.askStartupBalance(stateManager);
         if (!amount) return false;
 
-        let agreedToTOS = await DialogsValidators.askTOSAgreement(stateManager);
+        const agreedToTOS = await DialogsValidators.askTOSAgreement(stateManager);
         if (!agreedToTOS) return false;
 
-        await stateManager.api.register(usernameInput.value, passwordInput.value, amount);
-        return true
+        const {username, password} = this.#getCredentials();
+
+        await stateManager.api.register(username, password, amount);
+        return true;
     }
 
     static togglePasswordVisibility(button) {
         const icon = button.querySelector("i");
-        let passwordInput = document.getElementById("formPassword");
+        const passwordInput = document.getElementById("formPassword");
 
         if (passwordInput.type === "password") {
             passwordInput.type = "text";
@@ -36,5 +34,15 @@ export class LoginUILogic {
             icon.classList.remove("fa-eye");
             icon.classList.add("fa-eye-slash");
         }
+    }
+
+    static #getCredentials() {
+        const usernameInput = document.getElementById("formUsername");
+        const passwordInput = document.getElementById("formPassword");
+
+        return {
+            username: usernameInput.value,
+            password: passwordInput.value,
+        };
     }
 }
