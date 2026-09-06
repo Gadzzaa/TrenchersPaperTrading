@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   release:
+    environment: chrome-web-store
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
