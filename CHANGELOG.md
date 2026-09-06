@@ -1,3 +1,11 @@
+## [1.12.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.12.0...v1.12.1) (2026-09-06)
+
+
+### Bug Fixes
+
+* Harden injection security ([#28](https://github.com/Gadzzaa/TrenchersPaperTrading/issues/28)) ([7ae5ae5](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/7ae5ae576356a7f8b9bc3fda5e977e1b29750cef))
+* harden injection's security ([7dd68a8](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/7dd68a87e6a6a3056f891ff47af74de57b649ee8))
+
 # [1.12.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.11.0...v1.12.0) (2026-09-05)
 
 
