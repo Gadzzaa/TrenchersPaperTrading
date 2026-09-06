@@ -7,8 +7,5 @@
     "semantic-release": "^25.0.0",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"
-  },
-  "dependencies": {
-    "fs": "^0.0.1-security"
   }
 }
