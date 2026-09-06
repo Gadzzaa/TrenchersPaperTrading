@@ -142,3 +142,6 @@ TrenchersPaperTrading.zip
 .idea/discord.xml
 .idea/TrenchersPaperTrading.iml
 /.idea
+
+/.obsidian/
+/extension-v*.zip
