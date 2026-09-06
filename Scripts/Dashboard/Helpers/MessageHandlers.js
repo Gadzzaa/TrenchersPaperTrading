@@ -16,8 +16,10 @@ export class MessageHandlers {
             function handleMessage(event) {
                 // Security: Verify origin is from axiom.trade (parent page)
                 if (
-                    !event.origin.includes("axiom.trade") &&
-                    event.origin !== window.location.origin
+                    event.origin !== "https://axiom.trade" ||
+                    event.source !== window.parent ||
+                    event.data === null ||
+                    typeof event.data !== "object"
                 ) {
                     return;
                 }
