@@ -43,6 +43,8 @@ export class DataAPI {
             .addEndpoint("/reset")
             .addMethod("PATCH")
             .addBody({amount: balance})
+            .addIdempotencyKey()
+            .addRetries()
             .build();
 
         if (response?.resetsLeft == null)

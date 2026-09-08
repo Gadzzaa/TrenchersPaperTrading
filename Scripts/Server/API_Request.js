@@ -38,6 +38,20 @@ export class API_Request {
         return this;
     }
 
+    addIdempotencyKey(key = globalThis.crypto.randomUUID()) {
+        if (typeof key !== "string" || key.length === 0) {
+            throw new TypeError(
+                "Idempotency key must be a non-empty string",
+            );
+        }
+
+        this.addHeaders({
+            "Idempotency-Key": key,
+        });
+
+        return this;
+    }
+
     addEndpoint(endpoint) {
         APIHelper.validateEndpoint(endpoint)
         this.#endpoint = endpoint;

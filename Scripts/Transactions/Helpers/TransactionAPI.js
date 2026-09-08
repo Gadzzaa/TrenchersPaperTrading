@@ -58,6 +58,8 @@ export class TransactionAPI {
             .addEndpoint(`/${action}`)
             .addMethod("POST")
             .addBody(payload)
+            .addIdempotencyKey()
+            .addRetries()
             .build();
 
         if (!response?.success) {
