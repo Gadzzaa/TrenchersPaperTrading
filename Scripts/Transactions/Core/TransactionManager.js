@@ -4,7 +4,6 @@ export class TransactionManager {
     #poolAddress;
     #amount;
     #slippagePercentage;
-    #feeAmount;
 
     /**
      * @param {Object} tokenData - Contains token transaction details.
@@ -12,7 +11,6 @@ export class TransactionManager {
      *    poolAddress: string,
      *    amount: number,
      *    slippagePercentage: number,
-     *    feeAmount: number
      * }
      * @param {StateManager} stateManager - Contains session and user variables.
      */
@@ -21,14 +19,12 @@ export class TransactionManager {
             poolAddress,
             amount = 0,
             slippagePercentage = 0,
-            feeAmount = 0,
         } = {},
         stateManager,
     ) {
         this.#poolAddress = poolAddress;
         this.#amount = amount;
         this.#slippagePercentage = slippagePercentage;
-        this.#feeAmount = feeAmount;
 
         this.transactionAPI = new TransactionAPI();
         this.api = stateManager.api;
@@ -135,7 +131,6 @@ export class TransactionManager {
             poolAddress: this.#poolAddress,
             [amountField]: this.#amount,
             slippage: this.#slippagePercentage,
-            fee: this.#feeAmount,
         };
     }
 }
