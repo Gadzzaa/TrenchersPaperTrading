@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.12.1...v1.13.0) (2026-09-27)
+
+
+### Features
+
+* Add Idempotency retries for Buy, Sell, Reset ([40f3add](https://github.com/Gadzzaa/TrenchersPaperTrading/commit/40f3add516eed3f5c975dcb67e2dabd5dc6b1e82))
+
 ## [1.12.1](https://github.com/Gadzzaa/TrenchersPaperTrading/compare/v1.12.0...v1.12.1) (2026-09-06)
 
 
