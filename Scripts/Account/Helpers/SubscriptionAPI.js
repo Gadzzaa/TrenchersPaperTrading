@@ -25,6 +25,8 @@ export class SubscriptionAPI {
             .addEndpoint("/create-checkout-session")
             .addMethod("POST")
             .addBody({lookup_key: lookupKey})
+            .addIdempotencyKey()
+            .addRetries()
             .build();
 
         if (!response)
