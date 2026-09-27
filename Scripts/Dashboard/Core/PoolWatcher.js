@@ -18,9 +18,8 @@ export class PoolWatcher {
     /**
      * Starts watching a pool through websocket.
      * @param {string} poolAddress
-     * @param {any} pnlData
      */
-    watch(poolAddress, pnlData) {
+    watch(poolAddress) {
         const normalizedPoolAddress = this.#normalizePoolAddress(poolAddress);
         if (!normalizedPoolAddress) return;
 
@@ -28,7 +27,7 @@ export class PoolWatcher {
             this.watchedPools.set(normalizedPoolAddress, {price: null, liquidity: null});
         }
 
-        this.ws.send({type: "watchPool", poolAddress: normalizedPoolAddress, poolData: pnlData});
+        this.ws.send({type: "watchPool", poolAddress: normalizedPoolAddress});
     }
 
     /**

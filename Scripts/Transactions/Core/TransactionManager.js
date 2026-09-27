@@ -46,19 +46,12 @@ export class TransactionManager {
         const activePoolAddress = response.poolAddress || this.#poolAddress;
 
         if (activePoolAddress !== this.#poolAddress) {
-            stateManager.pnlService.pnlDataManager.replacePoolAddress(
-                this.#poolAddress,
-                activePoolAddress,
-                response.pnlData,
-            );
             // Subscribe first. WebSocket messages are ordered, so the
             // subsequent unwatch removes only the old alias without ever
             // leaving the live pool unsubscribed during the handoff.
-            stateManager.pnlService.poolWatcher.watch(activePoolAddress, response.pnlData);
+            stateManager.pnlService.poolWatcher.watch(activePoolAddress);
             stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
             this.#poolAddress = activePoolAddress;
-        } else {
-            stateManager.pnlService.pnlDataManager.add(activePoolAddress, response.pnlData);
         }
 
         await stateManager.pnlService.syncTradeLog()
@@ -98,7 +91,6 @@ export class TransactionManager {
             if (activePoolAddress !== this.#poolAddress) {
                 stateManager.pnlService.poolWatcher.watch(
                     activePoolAddress,
-                    stateManager.pnlService.pnlDataManager.get(activePoolAddress),
                 );
                 stateManager.pnlService.poolWatcher.unwatch(this.#poolAddress);
                 this.#poolAddress = activePoolAddress;

@@ -123,6 +123,5 @@ export class StateManager {
 
     #clearPersistentSessionData() {
         localStorage.removeItem("openPositions");
-        localStorage.removeItem("pnlDataArray");
     }
 }

@@ -1,4 +1,3 @@
-import {PNLDataManager} from "../Core/PNLDataManager.js";
 import {PnlUIController} from "../Core/PnlUIController.js";
 import {PoolWatcher} from "../Core/PoolWatcher.js";
 import {PositionManager} from "../Core/PositionManager.js";
@@ -16,7 +15,6 @@ export class PNLService {
         this.positionManager = new PositionManager();
         this.poolWatcher = new PoolWatcher(this.wsManager);
         this.ui = new PnlUIController();
-        this.pnlDataManager = new PNLDataManager();
 
         this.refreshTime = 500; // Default refresh time in ms
         this.lastUpdateTime = Date.now();
@@ -65,11 +63,10 @@ export class PNLService {
     setActiveToken(poolAddress) {
         this.positionManager.setActive(poolAddress);
 
-        const pnlData = this.pnlDataManager.get(poolAddress);
-
-        void this.#configureActivePool(poolAddress, pnlData).catch((error) => {
-            ErrorHandler.log(error, {poolAddress});
-        });
+        void this.#configureActivePool(poolAddress)
+            .catch((error) => {
+                ErrorHandler.log(error, {poolAddress});
+            });
     }
 
     async syncTradeLog() {
@@ -94,7 +91,7 @@ export class PNLService {
         if (global) localStorage.removeItem("openPositions");
     }
 
-    async #configureActivePool(poolAddress, pnlData) {
+    async #configureActivePool(poolAddress) {
         let refreshTime = 500;
 
         try {
@@ -113,6 +110,6 @@ export class PNLService {
             return;
 
         this.refreshTime = refreshTime;
-        this.poolWatcher.watch(poolAddress, pnlData);
+        this.poolWatcher.watch(poolAddress);
     }
 }

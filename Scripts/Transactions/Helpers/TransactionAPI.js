@@ -10,7 +10,6 @@ export class TransactionAPI {
      *   tokensReceived: number,
      *   solSpent: number,
      *   effectivePrice: number,
-     *   pnlData: Object,
      *   tokenData: Object
      * }
      */
