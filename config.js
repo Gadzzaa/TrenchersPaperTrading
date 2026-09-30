@@ -3,8 +3,8 @@ let debugMode = false;
 
 const CONFIG = {
     API_BASE_URL: USE_LOCAL
-        ? "http://localhost:3000/api"
-        : "https://trencherspapertrading.xyz/api",
+        ? "http://localhost:3000/api/v1"
+        : "https://trencherspapertrading.xyz/api/v1",
     WS_URL: USE_LOCAL
         ? "ws://localhost:3000/ws"
         : "wss://trencherspapertrading.xyz/ws",
