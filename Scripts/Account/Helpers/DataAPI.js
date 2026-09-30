@@ -17,7 +17,7 @@ export class DataAPI {
      */
     async getAccData(api) {
         const response = await api.createRequest()
-            .addEndpoint("/popupData")
+            .addEndpoint("/popup-data")
             .addMethod("GET")
             .addRetries()
             .build();
@@ -82,7 +82,7 @@ export class DataAPI {
      */
     async getTradeLog(api) {
         const response = await api.createRequest()
-            .addEndpoint("/tradeLog")
+            .addEndpoint("/trade-log")
             .addMethod("GET")
             .addRetries()
             .build();
