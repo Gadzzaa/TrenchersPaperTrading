@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="244" viewBox="0 0 480 244" role="img" aria-labelledby="title description">
+<title id="title">Make it yours</title>
+<desc id="description">Tune the experience to your workflow. Theme, sound, and animation controls. Premium P&amp;L refresh and saved position. Stripe subscription management.</desc>
+<defs><linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1b1830"/><stop offset="1" stop-color="#101727"/></linearGradient><radialGradient id="glow"><stop stop-color="#fda4af" stop-opacity=".1"/><stop offset="1" stop-color="#fda4af" stop-opacity="0"/></radialGradient><clipPath id="clip"><rect x="1" y="1" width="478" height="242" rx="18"/></clipPath></defs>
+<rect x="1" y="1" width="478" height="242" rx="18" fill="url(#card)" stroke="#41425b" stroke-width="2"/>
+<g clip-path="url(#clip)"><ellipse cx="445" cy="0" rx="190" ry="200" fill="url(#glow)"/></g>
+<rect x="28" y="26" width="44" height="44" rx="12" fill="#fda4af" fill-opacity=".09"/>
+<g transform="translate(28 26)" fill="none" stroke="#fda4af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v26M22 9v26M32 9v26"/><path d="M8 17h8M18 27h8M28 14h8"/></g>
+<text x="86" y="55" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#f2efff" text-anchor="start" >Make it yours</text>
+<text x="442" y="51" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#fda4af" text-anchor="end" >04</text>
+<text x="28" y="100" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#b7bfd0" text-anchor="start" >Tune the experience to your workflow.</text>
+<circle cx="34" cy="133" r="3" fill="#fda4af"/>
+<text x="48" y="139" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Theme, sound, and animation controls</text>
+<circle cx="34" cy="165" r="3" fill="#fda4af"/>
+<text x="48" y="171" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Premium P&amp;L refresh and saved position</text>
+<circle cx="34" cy="197" r="3" fill="#fda4af"/>
+<text x="48" y="203" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Stripe subscription management</text>
+<path d="M28 224h424" stroke="#fda4af" stroke-opacity=".2"/>
+</svg>

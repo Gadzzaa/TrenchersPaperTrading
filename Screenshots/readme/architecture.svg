@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="760" viewBox="0 0 1000 760" role="img" aria-labelledby="title description">
+<title id="title">TrenchersPT platform architecture</title>
+<desc id="description">The public Chrome frontend contains the dashboard, account popup, and authentication service worker. It connects through REST API v1 and authenticated WebSockets to the private TPTServer backend. The backend uses MongoDB for persistence, Helius and Solana for market data, and Stripe for subscriptions.</desc>
+<defs><linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#130f26"/><stop offset="1" stop-color="#0a1723"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#7786a3"/></marker></defs>
+<rect x="1" y="1" width="998" height="758" rx="24" fill="url(#background)" stroke="#3b3b58" stroke-width="2"/>
+<rect x="24" y="24" width="952" height="182" rx="18" fill="#131a2a" stroke="#b69bff" stroke-opacity=".6"/>
+<text x="48" y="60" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#b69bff" text-anchor="start" letter-spacing="1.5">01 / BROWSER</text>
+<text x="950" y="60" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa9c3" text-anchor="end" >Public frontend · Chrome Manifest V3</text>
+<rect x="48" y="94" width="290" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="48" y="110" width="3" height="54" rx="1.5" fill="#b69bff"/>
+<text x="193.0" y="129" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >Trading dashboard</text>
+<text x="193.0" y="156" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Trades · Presets · Position P&amp;L</text>
+<rect x="355" y="94" width="290" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="355" y="110" width="3" height="54" rx="1.5" fill="#b69bff"/>
+<text x="500.0" y="129" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >Account popup</text>
+<text x="500.0" y="156" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Portfolio · Settings · Billing</text>
+<rect x="662" y="94" width="290" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="662" y="110" width="3" height="54" rx="1.5" fill="#b69bff"/>
+<text x="807.0" y="129" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >Service worker</text>
+<text x="807.0" y="156" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Login · Refresh · Session state</text>
+<path d="M500 206v27M500 258v20" fill="none" stroke="#7786a3" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="500" y="249" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#a5b4d0" text-anchor="middle" >REST requests + authenticated WebSockets</text>
+<rect x="24" y="278" width="952" height="198" rx="18" fill="#131a2a" stroke="#6ee7bf" stroke-opacity=".6"/>
+<text x="48" y="314" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#6ee7bf" text-anchor="start" letter-spacing="1.5">02 / TPTSERVER</text>
+<text x="950" y="314" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa9c3" text-anchor="end" >Private backend · Node.js + Express</text>
+<rect x="48" y="352" width="584" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="48" y="368" width="3" height="54" rx="1.5" fill="#6ee7bf"/>
+<text x="340.0" y="387" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >REST API /api/v1</text>
+<text x="340.0" y="414" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Accounts · Trade simulation · Portfolio · Settings</text>
+<rect x="662" y="352" width="290" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="662" y="368" width="3" height="54" rx="1.5" fill="#6ee7bf"/>
+<text x="807.0" y="387" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >WebSocket /ws</text>
+<text x="807.0" y="414" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Live prices + liquidity</text>
+<path d="M500 476v14M193 514h614" fill="none" stroke="#7786a3" stroke-width="2"/>
+<path d="M193 514v34" fill="none" stroke="#7786a3" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M500 514v34" fill="none" stroke="#7786a3" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M807 514v34" fill="none" stroke="#7786a3" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="193" y="506" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#a5b4d0" text-anchor="middle" >Persistence</text>
+<text x="500" y="506" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#a5b4d0" text-anchor="middle">Market data</text>
+<text x="807" y="506" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#a5b4d0" text-anchor="middle" >Subscriptions</text>
+<rect x="24" y="548" width="952" height="166" rx="18" fill="#131a2a" stroke="#7dd3fc" stroke-opacity=".6"/>
+<text x="48" y="584" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#7dd3fc" text-anchor="start" letter-spacing="1.5">03 / DATA &amp; INTEGRATIONS</text>
+<text x="950" y="584" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#9aa9c3" text-anchor="end" >Platform services</text>
+<rect x="48" y="608" width="290" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="48" y="624" width="3" height="54" rx="1.5" fill="#7dd3fc"/>
+<text x="193.0" y="643" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >MongoDB</text>
+<text x="193.0" y="670" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Accounts · Positions · Records</text>
+<rect x="355" y="608" width="290" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="355" y="624" width="3" height="54" rx="1.5" fill="#7dd3fc"/>
+<text x="500.0" y="643" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >Helius / Solana</text>
+<text x="500.0" y="670" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Pool data · RPC · Subscriptions</text>
+<rect x="662" y="608" width="290" height="86" rx="12" fill="#0b1322" stroke="#364258"/>
+<rect x="662" y="624" width="3" height="54" rx="1.5" fill="#7dd3fc"/>
+<text x="807.0" y="643" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#f1effc" text-anchor="middle" >Stripe</text>
+<text x="807.0" y="670" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#aebbd1" text-anchor="middle" >Checkout · Portal · Webhooks</text>
+<text x="500" y="743" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#9babc4" text-anchor="middle" >The backend owns persisted account state. The frontend brings it into your trading workflow.</text>
+</svg>

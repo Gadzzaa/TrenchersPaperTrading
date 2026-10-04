@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="244" viewBox="0 0 480 244" role="img" aria-labelledby="title description">
+<title id="title">Trading workspace</title>
+<desc id="description">Practice directly alongside the market. Three editable trading presets. SOL buys and percentage-based sells. Partial exits and full position closes.</desc>
+<defs><linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1b1830"/><stop offset="1" stop-color="#101727"/></linearGradient><radialGradient id="glow"><stop stop-color="#b69bff" stop-opacity=".1"/><stop offset="1" stop-color="#b69bff" stop-opacity="0"/></radialGradient><clipPath id="clip"><rect x="1" y="1" width="478" height="242" rx="18"/></clipPath></defs>
+<rect x="1" y="1" width="478" height="242" rx="18" fill="url(#card)" stroke="#41425b" stroke-width="2"/>
+<g clip-path="url(#clip)"><ellipse cx="445" cy="0" rx="190" ry="200" fill="url(#glow)"/></g>
+<rect x="28" y="26" width="44" height="44" rx="12" fill="#b69bff" fill-opacity=".09"/>
+<g transform="translate(28 26)" fill="none" stroke="#b69bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8v24M22 5v23M31 12v23"/><rect x="10" y="14" width="6" height="10" rx="1"/><rect x="19" y="9" width="6" height="11" rx="1"/><rect x="28" y="19" width="6" height="9" rx="1"/></g>
+<text x="86" y="55" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#f2efff" text-anchor="start" >Trading workspace</text>
+<text x="442" y="51" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#b69bff" text-anchor="end" >01</text>
+<text x="28" y="100" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#b7bfd0" text-anchor="start" >Practice directly alongside the market.</text>
+<circle cx="34" cy="133" r="3" fill="#b69bff"/>
+<text x="48" y="139" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Three editable trading presets</text>
+<circle cx="34" cy="165" r="3" fill="#b69bff"/>
+<text x="48" y="171" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >SOL buys and percentage-based sells</text>
+<circle cx="34" cy="197" r="3" fill="#b69bff"/>
+<text x="48" y="203" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Partial exits and full position closes</text>
+<path d="M28 224h424" stroke="#b69bff" stroke-opacity=".2"/>
+</svg>

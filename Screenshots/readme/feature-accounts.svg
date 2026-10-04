@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="244" viewBox="0 0 480 244" role="img" aria-labelledby="title description">
+<title id="title">Practice accounts</title>
+<desc id="description">Keep your progress between sessions. Server-backed account and trade data. Account resets within your allowance. Free and premium account access.</desc>
+<defs><linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1b1830"/><stop offset="1" stop-color="#101727"/></linearGradient><radialGradient id="glow"><stop stop-color="#6ee7bf" stop-opacity=".1"/><stop offset="1" stop-color="#6ee7bf" stop-opacity="0"/></radialGradient><clipPath id="clip"><rect x="1" y="1" width="478" height="242" rx="18"/></clipPath></defs>
+<rect x="1" y="1" width="478" height="242" rx="18" fill="url(#card)" stroke="#41425b" stroke-width="2"/>
+<g clip-path="url(#clip)"><ellipse cx="445" cy="0" rx="190" ry="200" fill="url(#glow)"/></g>
+<rect x="28" y="26" width="44" height="44" rx="12" fill="#6ee7bf" fill-opacity=".09"/>
+<g transform="translate(28 26)" fill="none" stroke="#6ee7bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M31 14a12 12 0 1 0 2 12M31 7v8h-8"/><path d="M21 15v7l5 3"/></g>
+<text x="86" y="55" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#f2efff" text-anchor="start" >Practice accounts</text>
+<text x="442" y="51" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#6ee7bf" text-anchor="end" >03</text>
+<text x="28" y="100" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#b7bfd0" text-anchor="start" >Keep your progress between sessions.</text>
+<circle cx="34" cy="133" r="3" fill="#6ee7bf"/>
+<text x="48" y="139" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Server-backed account and trade data</text>
+<circle cx="34" cy="165" r="3" fill="#6ee7bf"/>
+<text x="48" y="171" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Account resets within your allowance</text>
+<circle cx="34" cy="197" r="3" fill="#6ee7bf"/>
+<text x="48" y="203" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Free and premium account access</text>
+<path d="M28 224h424" stroke="#6ee7bf" stroke-opacity=".2"/>
+</svg>

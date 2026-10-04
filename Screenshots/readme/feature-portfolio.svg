@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="244" viewBox="0 0 480 244" role="img" aria-labelledby="title description">
+<title id="title">Portfolio &amp; P&amp;L</title>
+<desc id="description">See what each practice decision does. Virtual balance and open holdings. Live position value and P&amp;L. Rolling 24-hour realized P&amp;L.</desc>
+<defs><linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1b1830"/><stop offset="1" stop-color="#101727"/></linearGradient><radialGradient id="glow"><stop stop-color="#7dd3fc" stop-opacity=".1"/><stop offset="1" stop-color="#7dd3fc" stop-opacity="0"/></radialGradient><clipPath id="clip"><rect x="1" y="1" width="478" height="242" rx="18"/></clipPath></defs>
+<rect x="1" y="1" width="478" height="242" rx="18" fill="url(#card)" stroke="#41425b" stroke-width="2"/>
+<g clip-path="url(#clip)"><ellipse cx="445" cy="0" rx="190" ry="200" fill="url(#glow)"/></g>
+<rect x="28" y="26" width="44" height="44" rx="12" fill="#7dd3fc" fill-opacity=".09"/>
+<g transform="translate(28 26)" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10v23h25M12 27l7-7 6 4 9-12"/></g>
+<text x="86" y="55" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#f2efff" text-anchor="start" >Portfolio &amp; P&amp;L</text>
+<text x="442" y="51" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#7dd3fc" text-anchor="end" >02</text>
+<text x="28" y="100" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#b7bfd0" text-anchor="start" >See what each practice decision does.</text>
+<circle cx="34" cy="133" r="3" fill="#7dd3fc"/>
+<text x="48" y="139" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Virtual balance and open holdings</text>
+<circle cx="34" cy="165" r="3" fill="#7dd3fc"/>
+<text x="48" y="171" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Live position value and P&amp;L</text>
+<circle cx="34" cy="197" r="3" fill="#7dd3fc"/>
+<text x="48" y="203" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#dbe0ef" text-anchor="start" >Rolling 24-hour realized P&amp;L</text>
+<path d="M28 224h424" stroke="#7dd3fc" stroke-opacity=".2"/>
+</svg>
